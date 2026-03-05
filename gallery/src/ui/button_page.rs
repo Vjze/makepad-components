@@ -112,7 +112,7 @@ script_mod! {
 
         Label{
             text: "Makepad Icon Crate"
-            draw_text.color: #9f9f9f
+            draw_text.color: (shad_theme.color_muted_foreground)
             draw_text.text_style.font_size: 10
         }
 
