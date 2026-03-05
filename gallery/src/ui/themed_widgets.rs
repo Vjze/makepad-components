@@ -22,10 +22,9 @@ script_mod! {
     }
 
     mod.widgets.GalleryCodeSnippet = CodeView{
-        width: Fill
-        height: Fit
-        margin: Inset{top: 4}
-        draw_bg.color: (shad_theme.color_secondary)
+        editor.width: Fill
+        editor.height: Fit
+        editor.margin: Inset{top: 4}
         editor.draw_bg.color: (shad_theme.color_secondary)
     }
 }

@@ -94,14 +94,7 @@ script_mod! {
         }
 
         GalleryCodeSnippet{
-            text: r#"use makepad_components::*;
-
-ShadAccordion{
-    item_faq := ShadAccordionItem{
-        title: "What is Makepad?"
-        body: Label{text: "A Rust-native UI framework."}
-    }
-}"#
+            text: "use makepad_components::*;\n\nShadAccordion{\n    item_faq := ShadAccordionItem{\n        title: \"What is Makepad?\"\n        body: Label{text: \"A Rust-native UI framework.\"}\n    }\n}"
         }
 
         View{width: Fill, height: Fill}
