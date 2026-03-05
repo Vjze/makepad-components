@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::BREADCRUMB_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -81,7 +82,7 @@ script_mod! {
         }
 
         breadcrumb_code_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadBreadcrumb{\n    ShadBreadcrumbLink{ text: \"Home\" }\n    ShadBreadcrumbSeparator{}\n    ShadBreadcrumbLink{ text: \"Components\" }\n    ShadBreadcrumbSeparator{}\n    ShadBreadcrumbPage{ text: \"Breadcrumb\" }\n}"
+            code: #(BREADCRUMB_PREVIEW_CODE)
         }
     }
 }

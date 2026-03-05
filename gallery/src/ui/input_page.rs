@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::INPUT_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -97,7 +98,7 @@ script_mod! {
         }
 
         input_code_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadInput{ empty_message: \"Email\" }"
+            code: #(INPUT_PREVIEW_CODE)
         }
     }
 }

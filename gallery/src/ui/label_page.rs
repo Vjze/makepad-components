@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::LABEL_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -41,7 +42,7 @@ script_mod! {
         }
 
         label_code_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadLabel{ text: \"Your email address\" }"
+            code: #(LABEL_PREVIEW_CODE)
         }
     }
 }

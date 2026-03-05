@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::ACCORDION_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -94,7 +95,7 @@ script_mod! {
         }
 
         accordion_example_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadAccordion{\n    item_faq := mod.widgets.ShadAccordionItem{\n        title: \"What is Makepad?\"\n        body: Label{text: \"A Rust-native UI framework.\"}\n    }\n}"
+            code: #(ACCORDION_PREVIEW_CODE)
         }
     }
 }

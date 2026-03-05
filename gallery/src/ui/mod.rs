@@ -15,6 +15,7 @@ pub mod input_page;
 pub mod label_page;
 pub mod root;
 pub mod sidebar;
+pub mod snippets;
 pub mod themed_widgets;
 
 pub fn script_mod(vm: &mut ScriptVm) {

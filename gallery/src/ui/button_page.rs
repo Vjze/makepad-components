@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::BUTTON_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -135,7 +136,7 @@ script_mod! {
         }
 
         button_example_snippet := GalleryCodeSnippet{
-            code: "View{\n    width: Fit\n    height: Fit\n    flow: Right\n    spacing: 8\n    mod.widgets.ShadButton{text: \"Default\"}\n    mod.widgets.ShadButtonDestructive{text: \"Delete\"}\n    mod.widgets.ShadButtonOutline{text: \"Outline\"}\n}"
+            code: #(BUTTON_PREVIEW_CODE)
         }
     }
 }
