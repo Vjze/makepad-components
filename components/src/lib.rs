@@ -13,6 +13,8 @@ pub mod button;
 pub mod button_group;
 pub mod checkbox;
 pub mod collapsible;
+pub mod input;
+pub mod label;
 pub mod theme;
 
 pub fn script_mod(vm: &mut ScriptVm) {
@@ -28,4 +30,6 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::button_group::script_mod(vm);
     crate::checkbox::script_mod(vm);
     crate::collapsible::script_mod(vm);
+    crate::input::script_mod(vm);
+    crate::label::script_mod(vm);
 }
