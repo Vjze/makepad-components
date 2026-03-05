@@ -56,6 +56,58 @@ jobs:
       - name: Build Wasm package (small profile, no bindgen)
         run: cargo makepad wasm --strip --brotli --no-threads build -p "${APP_PACKAGE}" --profile=small
 
+      - name: Patch index.html for GitHub Pages subpath hosting
+        run: |
+          APP_DIR="target/makepad-wasm-app/small/${APP_PACKAGE}"
+          INDEX_FILE="${APP_DIR}/index.html"
+          SNIPPET_FILE="$(mktemp)"
+          TMP_FILE="$(mktemp)"
+
+          cat > "${SNIPPET_FILE}" <<'EOF'
+            const makepadBasePath = (() => {
+                const p = window.location.pathname || "/";
+                const slash = p.lastIndexOf("/");
+                return slash >= 0 ? p.slice(0, slash + 1) : "/";
+            })();
+            const rewriteMakepadUrl = (url) => {
+                if (typeof url !== "string" || !url.startsWith("/")) {
+                    return url;
+                }
+                if (!(url.startsWith("/makepad_") || url.startsWith("/$report_error"))) {
+                    return url;
+                }
+                if (makepadBasePath === "/") {
+                    return url;
+                }
+                return makepadBasePath.replace(/\/$/, "") + url;
+            };
+            const originalFetch = window.fetch.bind(window);
+            window.fetch = (input, init) => {
+                if (typeof input === "string") {
+                    return originalFetch(rewriteMakepadUrl(input), init);
+                }
+                if (input instanceof Request) {
+                    const rewritten = rewriteMakepadUrl(input.url);
+                    if (rewritten !== input.url) {
+                        input = new Request(rewritten, input);
+                    }
+                }
+                return originalFetch(input, init);
+            };
+          EOF
+
+          awk -v snippet="${SNIPPET_FILE}" '
+            { print }
+            $0 ~ /<script type='\''module'\''>/ && inserted == 0 {
+              while ((getline line < snippet) > 0) print line
+              close(snippet)
+              inserted = 1
+            }
+          ' "${INDEX_FILE}" > "${TMP_FILE}"
+
+          mv "${TMP_FILE}" "${INDEX_FILE}"
+          rm -f "${INDEX_FILE}.br"
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
