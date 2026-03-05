@@ -36,8 +36,10 @@ script_mod! {
             draw_bg.color: (shad_theme.color_secondary)
 
             code_view := CodeView{
-                width: Fill
-                height: Fit
+                editor +: {
+                    width: Fill
+                    height: Fit
+                }
             }
         }
     }
