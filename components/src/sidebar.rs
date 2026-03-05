@@ -25,6 +25,9 @@ script_mod! {
         align: Align{x: 0.0, y: 0.5}
         grab_key_focus: false
         reset_hover_on_click: true
+        draw_bg +: {
+            border_radius: (shad_theme.radius)
+        }
         draw_text.text_style.font_size: 10
         draw_text.color: (shad_theme.color_muted_foreground)
         draw_text.color_hover: (shad_theme.color_primary)

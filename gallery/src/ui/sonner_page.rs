@@ -82,8 +82,20 @@ script_mod! {
                             toast_desc_btn := ShadButton{text: "Toast with description"}
                         }
 
-                        toast_event := ShadSonner{open: false}
-                        toast_desc := ShadSonnerWithDescription{open: false}
+                        View{
+                            width: Fill
+                            height: 200
+                            toast_event := ShadSonner{
+                                width: Fill
+                                height: Fill
+                                open: false
+                            }
+                            toast_desc := ShadSonnerWithDescription{
+                                width: Fill
+                                height: Fill
+                                open: false
+                            }
+                        }
                     }
 
                     code_page := View{

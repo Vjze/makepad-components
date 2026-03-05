@@ -20,11 +20,16 @@ script_mod! {
     }
 
     mod.widgets.ShadToastTitle = mod.widgets.Label{
+        width: Fit
+        height: Fit
         draw_text.color: (shad_theme.color_primary)
         draw_text.text_style.font_size: 12
     }
 
-    mod.widgets.ShadToastDescription = mod.widgets.ShadAlertDescription{}
+    mod.widgets.ShadToastDescription = mod.widgets.ShadAlertDescription{
+        width: Fit
+        height: Fit
+    }
 
     mod.widgets.ShadSonnerBase = #(ShadSonner::register_widget(vm))
 
@@ -34,15 +39,15 @@ script_mod! {
         open: false
 
         overlay: Modal{
+            align: Align{x: 1.0 y: 0.0}
+
             bg_view +: {
                 draw_bg.color: vec4(0.0, 0.0, 0.0, 0.0)
             }
 
             content +: {
-                width: Fill
-                height: Fill
-                flow: Down
-                align: Align{x: 1.0, y: 0.0}
+                width: Fit
+                height: Fit
                 margin: Inset{top: 16, right: 16}
 
                 toast_panel := RoundedView{
@@ -60,7 +65,7 @@ script_mod! {
                     }
 
                     body := View{
-                        width: Fill
+                        width: Fit
                         height: Fit
                         flow: Down
                         spacing: 4.0
@@ -84,15 +89,15 @@ script_mod! {
         open: false
 
         overlay: Modal{
+            align: Align{x: 1.0 y: 0.0}
+
             bg_view +: {
                 draw_bg.color: vec4(0.0, 0.0, 0.0, 0.0)
             }
 
             content +: {
-                width: Fill
-                height: Fill
-                flow: Down
-                align: Align{x: 1.0, y: 0.0}
+                width: Fit
+                height: Fit
                 margin: Inset{top: 16, right: 16}
 
                 toast_panel := RoundedView{
@@ -110,7 +115,7 @@ script_mod! {
                     }
 
                     body := View{
-                        width: Fill
+                        width: Fit
                         height: Fit
                         flow: Down
                         spacing: 4.0
