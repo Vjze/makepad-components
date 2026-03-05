@@ -51,6 +51,8 @@ script_mod! {
             sidebar_button_group := mod.widgets.GallerySidebarItem{text: "Button Group"}
             sidebar_checkbox := mod.widgets.GallerySidebarItem{text: "Checkbox"}
             sidebar_collapsible := mod.widgets.GallerySidebarItem{text: "Collapsible"}
+            sidebar_input := mod.widgets.GallerySidebarItem{text: "Input"}
+            sidebar_label := mod.widgets.GallerySidebarItem{text: "Label"}
         }
     }
 }
