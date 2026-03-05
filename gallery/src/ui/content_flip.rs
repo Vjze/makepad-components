@@ -11,6 +11,7 @@ script_mod! {
 
         accordion_page := mod.widgets.GalleryAccordionPage{}
         alert_page := mod.widgets.GalleryAlertPage{}
+        alert_dialog_page := mod.widgets.GalleryAlertDialogPage{}
         aspect_ratio_page := mod.widgets.GalleryAspectRatioPage{}
         avatar_page := mod.widgets.GalleryAvatarPage{}
         badge_page := mod.widgets.GalleryBadgePage{}

@@ -13,6 +13,7 @@ This workspace contains:
 - **Aspect Ratio**: ratio-constrained container for media/content layouts (`ShadAspectRatio`).
 - **Accordion**: a composable accordion item widget with open/close state and script-call support (`set_is_open`, `is_open`).
 - **Alerts**: shadcn-inspired alert layouts with default and destructive variants.
+- **Alert Dialog**: modal dialog with title, description, and Cancel/Confirm buttons; `set_open(bool)` / `is_open()` API and optional destructive variant.
 - **Theme tokens**: centralized `shad_theme` color + radius tokens in script space.
 - **Icons**: SVG-based icon widgets (`IconCheck`, `IconX`, `IconSearch`).
 - **Gallery app**: a live catalog demonstrating component usage and styling.
@@ -136,7 +137,7 @@ script_mod! {
 
 - [x] Accordion
 - [x] Alert
-- [ ] Alert Dialog
+- [x] Alert Dialog
 - [x] Aspect Ratio
 - [x] Avatar
 - [x] Badge
@@ -229,6 +230,15 @@ script_mod! {
 - `ShadAlertDestructive`
 - `ShadAlertDestructiveIcon`
 - `ShadAlertDestructiveTitle`
+
+### Alert Dialog (`components/src/alert_dialog.rs`)
+
+- `ShadAlertDialog` — modal with primary Confirm and outline Cancel
+- `ShadAlertDialogDestructive` — same layout with destructive Confirm (e.g. Delete)
+
+Props: `open` (bool). Title and description are set in the script template (`title_label`, `description_label`).
+
+Script API: `set_open(bool)` and `is_open() -> bool` (e.g. from app or script to show/hide). Optional: use actions (Confirmed / Cancelled) in `handle_actions` when buttons or backdrop close the dialog.
 
 ### Sidebar (`components/src/sidebar.rs`)
 

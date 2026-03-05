@@ -5,6 +5,8 @@ use makepad_widgets::*;
 
 pub mod accordion;
 pub mod alert;
+pub mod alert_dialog;
+pub use alert_dialog::ShadAlertDialog;
 pub mod aspect_ratio;
 pub mod avatar;
 pub mod badge;
@@ -25,6 +27,7 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::theme::script_mod(vm);
     crate::accordion::script_mod(vm);
     crate::alert::script_mod(vm);
+    crate::alert_dialog::script_mod(vm);
     crate::aspect_ratio::script_mod(vm);
     crate::avatar::script_mod(vm);
     crate::badge::script_mod(vm);

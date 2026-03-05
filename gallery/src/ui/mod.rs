@@ -2,6 +2,7 @@ use makepad_components::makepad_widgets::*;
 
 pub mod accordion_page;
 pub mod alert_page;
+pub mod alert_dialog_page;
 pub mod aspect_ratio_page;
 pub mod avatar_page;
 pub mod badge_page;
@@ -26,6 +27,7 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::sidebar::script_mod(vm);
     crate::ui::accordion_page::script_mod(vm);
     crate::ui::alert_page::script_mod(vm);
+    crate::ui::alert_dialog_page::script_mod(vm);
     crate::ui::aspect_ratio_page::script_mod(vm);
     crate::ui::avatar_page::script_mod(vm);
     crate::ui::badge_page::script_mod(vm);

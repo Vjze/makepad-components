@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use makepad_components::ShadAlertDialog;
 
 app_main!(App);
 
@@ -85,6 +86,30 @@ impl MatchEvent for App {
         self.set_page(
             cx,
             actions,
+            ids!(sidebar_alert_dialog),
+            live_id!(alert_dialog_page),
+        );
+        if self.ui.button(cx, ids!(open_default_btn)).clicked(actions) {
+            if let Some(mut d) = self
+                .ui
+                .widget_flood(cx, ids!(default_dialog))
+                .borrow_mut::<ShadAlertDialog>()
+            {
+                d.set_open(true);
+            }
+        }
+        if self.ui.button(cx, ids!(open_destructive_btn)).clicked(actions) {
+            if let Some(mut d) = self
+                .ui
+                .widget_flood(cx, ids!(destructive_dialog))
+                .borrow_mut::<ShadAlertDialog>()
+            {
+                d.set_open(true);
+            }
+        }
+        self.set_page(
+            cx,
+            actions,
             ids!(sidebar_aspect_ratio),
             live_id!(aspect_ratio_page),
         );
@@ -140,6 +165,16 @@ impl MatchEvent for App {
             ids!(alert_preview_flip),
             ids!(alert_demo_indicator),
             ids!(alert_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(alert_dialog_demo_tab),
+            ids!(alert_dialog_code_tab),
+            ids!(alert_dialog_preview_flip),
+            ids!(alert_dialog_demo_indicator),
+            ids!(alert_dialog_code_indicator),
         );
         Self::handle_preview_tabs(
             &self.ui,

@@ -22,6 +22,7 @@ script_mod! {
 
             sidebar_accordion := ShadSidebarItem{text: "Accordion"}
             sidebar_alert := ShadSidebarItem{text: "Alert"}
+            sidebar_alert_dialog := ShadSidebarItem{text: "Alert Dialog"}
             sidebar_aspect_ratio := ShadSidebarItem{text: "Aspect Ratio"}
             sidebar_avatar := ShadSidebarItem{text: "Avatar"}
             sidebar_badge := ShadSidebarItem{text: "Badge"}
