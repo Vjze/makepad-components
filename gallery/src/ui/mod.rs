@@ -5,6 +5,7 @@ pub mod alert_page;
 pub mod avatar_page;
 pub mod badge_page;
 pub mod button_page;
+pub mod checkbox_page;
 pub mod content_flip;
 pub mod root;
 pub mod sidebar;
@@ -18,6 +19,7 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::avatar_page::script_mod(vm);
     crate::ui::badge_page::script_mod(vm);
     crate::ui::button_page::script_mod(vm);
+    crate::ui::checkbox_page::script_mod(vm);
     crate::ui::content_flip::script_mod(vm);
     crate::ui::root::script_mod(vm);
 }

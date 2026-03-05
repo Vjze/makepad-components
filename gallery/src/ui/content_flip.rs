@@ -14,5 +14,6 @@ script_mod! {
         avatar_page := mod.widgets.GalleryAvatarPage{}
         badge_page := mod.widgets.GalleryBadgePage{}
         button_page := mod.widgets.GalleryButtonPage{}
+        checkbox_page := mod.widgets.GalleryCheckboxPage{}
     }
 }

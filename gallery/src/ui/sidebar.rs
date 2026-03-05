@@ -46,6 +46,7 @@ script_mod! {
             sidebar_avatar := mod.widgets.GallerySidebarItem{text: "Avatar"}
             sidebar_badge := mod.widgets.GallerySidebarItem{text: "Badge"}
             sidebar_button := mod.widgets.GallerySidebarItem{text: "Button"}
+            sidebar_checkbox := mod.widgets.GallerySidebarItem{text: "Checkbox"}
         }
     }
 }
