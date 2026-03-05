@@ -16,6 +16,7 @@ pub mod collapsible;
 pub mod input;
 pub mod label;
 pub mod sidebar;
+pub mod switch;
 pub mod theme;
 
 pub fn script_mod(vm: &mut ScriptVm) {
@@ -34,4 +35,5 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::input::script_mod(vm);
     crate::label::script_mod(vm);
     crate::sidebar::script_mod(vm);
+    crate::switch::script_mod(vm);
 }

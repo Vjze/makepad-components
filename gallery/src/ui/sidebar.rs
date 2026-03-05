@@ -30,6 +30,7 @@ script_mod! {
             sidebar_button_group := ShadSidebarItem{text: "Button Group"}
             sidebar_checkbox := ShadSidebarItem{text: "Checkbox"}
             sidebar_collapsible := ShadSidebarItem{text: "Collapsible"}
+            sidebar_switch := ShadSidebarItem{text: "Switch"}
             sidebar_input := ShadSidebarItem{text: "Input"}
             sidebar_label := ShadSidebarItem{text: "Label"}
             sidebar_sidebar := ShadSidebarItem{text: "Sidebar"}
