@@ -1,4 +1,3 @@
-use makepad_components::accordion::AccordionItemWidgetRefExt;
 use makepad_components::makepad_widgets::*;
 
 app_main!(App);
@@ -96,7 +95,6 @@ script_mod! {
 
                                 View{width: Fill, height: Fit}
 
-                                option_multiple := CheckBox{text: "Multiple"}
                                 option_icon := CheckBox{text: "Icon"}
                                 option_disabled := CheckBox{text: "Disabled"}
                                 option_bordered := CheckBox{text: "Bordered"}
@@ -349,74 +347,12 @@ impl App {
         makepad_components::script_mod(vm);
         App::from_script_mod(vm, self::script_mod)
     }
-
-    fn sync_accordion_state(&self, cx: &mut Cx) {
-        self.ui
-            .accordion_item(cx, ids!(accordion_panel.item_accessible))
-            .set_is_open(cx, self.open_accessible);
-        self.ui
-            .accordion_item(cx, ids!(accordion_panel.item_styled))
-            .set_is_open(cx, self.open_styled);
-        self.ui
-            .accordion_item(cx, ids!(accordion_panel.item_third))
-            .set_is_open(cx, self.open_third);
-    }
-
-    fn set_single_open(&mut self, item: LiveId, is_open: bool) {
-        if is_open {
-            self.open_accessible = item == live_id!(item_accessible);
-            self.open_styled = item == live_id!(item_styled);
-            self.open_third = item == live_id!(item_third);
-            return;
-        }
-
-        if item == live_id!(item_accessible) {
-            self.open_accessible = false;
-        } else if item == live_id!(item_styled) {
-            self.open_styled = false;
-        } else if item == live_id!(item_third) {
-            self.open_third = false;
-        }
-    }
-
-    fn set_multi_open(&mut self, item: LiveId, is_open: bool) {
-        if item == live_id!(item_accessible) {
-            self.open_accessible = is_open;
-        } else if item == live_id!(item_styled) {
-            self.open_styled = is_open;
-        } else if item == live_id!(item_third) {
-            self.open_third = is_open;
-        }
-    }
-
-    fn normalize_single_mode(&mut self) {
-        let open_count =
-            self.open_accessible as u8 + self.open_styled as u8 + self.open_third as u8;
-        if open_count <= 1 {
-            return;
-        }
-
-        if self.open_accessible {
-            self.open_styled = false;
-            self.open_third = false;
-        } else if self.open_styled {
-            self.open_third = false;
-        }
-    }
 }
 
 #[derive(Script, ScriptHook)]
 pub struct App {
     #[live]
     ui: WidgetRef,
-    #[rust]
-    allow_multiple: bool,
-    #[rust]
-    open_accessible: bool,
-    #[rust]
-    open_styled: bool,
-    #[rust]
-    open_third: bool,
 }
 
 impl MatchEvent for App {
@@ -432,94 +368,12 @@ impl MatchEvent for App {
                 .page_flip(cx, ids!(content_flip))
                 .set_active_page(cx, live_id!(button_page));
         }
-
-        if let Some(value) = self
-            .ui
-            .check_box(cx, ids!(option_multiple))
-            .changed(actions)
-        {
-            self.allow_multiple = value;
-            if !self.allow_multiple {
-                self.normalize_single_mode();
-            }
-            self.sync_accordion_state(cx);
-        }
-
-        let item_actions = [
-            (
-                live_id!(item_accessible),
-                self.ui
-                    .fold_button(cx, ids!(accordion_panel.item_accessible.header.fold_button))
-                    .opening(actions),
-                self.ui
-                    .fold_button(cx, ids!(accordion_panel.item_accessible.header.fold_button))
-                    .closing(actions),
-            ),
-            (
-                live_id!(item_styled),
-                self.ui
-                    .fold_button(cx, ids!(accordion_panel.item_styled.header.fold_button))
-                    .opening(actions),
-                self.ui
-                    .fold_button(cx, ids!(accordion_panel.item_styled.header.fold_button))
-                    .closing(actions),
-            ),
-            (
-                live_id!(item_third),
-                self.ui
-                    .fold_button(cx, ids!(accordion_panel.item_third.header.fold_button))
-                    .opening(actions),
-                self.ui
-                    .fold_button(cx, ids!(accordion_panel.item_third.header.fold_button))
-                    .closing(actions),
-            ),
-        ];
-
-        let mut changed = false;
-        for (item, opening, closing) in item_actions {
-            if opening {
-                if self.allow_multiple {
-                    self.set_multi_open(item, true);
-                } else {
-                    self.set_single_open(item, true);
-                }
-                changed = true;
-            } else if closing {
-                if self.allow_multiple {
-                    self.set_multi_open(item, false);
-                } else {
-                    self.set_single_open(item, false);
-                }
-                changed = true;
-            }
-        }
-
-        if changed {
-            self.sync_accordion_state(cx);
-        }
     }
 }
 
 impl AppMain for App {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
-        if let Event::Startup = event {
-            self.allow_multiple = true;
-            self.open_accessible = false;
-            self.open_styled = true;
-            self.open_third = true;
-            self.ui
-                .check_box(cx, ids!(option_multiple))
-                .set_active(cx, true);
-            self.sync_accordion_state(cx);
-        }
-
         self.match_event(cx, event);
         self.ui.handle_event(cx, event, &mut Scope::empty());
-
-        // FoldHeader currently reacts to FoldButton actions broadly; re-apply our
-        // explicit accordion state after widget action handling to keep icon/body in sync.
-        if let Event::Actions(_) = event {
-            self.sync_accordion_state(cx);
-        }
     }
 }
