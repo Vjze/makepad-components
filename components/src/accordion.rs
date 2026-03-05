@@ -83,6 +83,10 @@ pub struct AccordionItem {
     #[find]
     #[redraw]
     #[live]
+    fold_button: FoldButtonRef,
+    #[find]
+    #[redraw]
+    #[live]
     body: WidgetRef,
     #[layout]
     layout: Layout,
@@ -129,9 +133,8 @@ impl Widget for AccordionItem {
 
         if let Event::Actions(actions) = event {
             let uid = self.widget_uid();
-            let fold_button = self.header.fold_button(cx, ids!(fold_button));
-            let opening = fold_button.opening(actions);
-            let closing = fold_button.closing(actions);
+            let opening = self.fold_button.opening(actions);
+            let closing = self.fold_button.closing(actions);
 
             if opening && !self.is_open {
                 self.is_open = true;
@@ -187,8 +190,8 @@ impl Widget for AccordionItem {
 impl AccordionItem {
     pub fn set_is_open(&mut self, cx: &mut Cx, is_open: bool) {
         self.is_open = is_open;
-        let fold_button = self.header.fold_button(cx, ids!(fold_button));
-        fold_button.set_is_open(cx, is_open, animator::Animate::No);
+        self.fold_button
+            .set_is_open(cx, is_open, animator::Animate::No);
         self.area.redraw(cx);
     }
 
