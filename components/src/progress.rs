@@ -56,14 +56,15 @@ script_mod! {
             border_radius: (shad_theme.radius)
             border_size: 0.0
             border_color: #0000
-            anim_phase: instance(0.0)
             bar_width: uniform(0.4)
+            sweep_duration: uniform(1.5)
 
             pixel: fn() {
                 let sdf = Sdf2d.viewport(self.pos * self.rect_size)
                 let r = max(1.0, self.border_radius)
                 let bw = self.rect_size.x * self.bar_width
-                let start_x = (self.rect_size.x - bw) * self.anim_phase
+                let phase = fract(self.draw_pass.time / self.sweep_duration)
+                let start_x = (self.rect_size.x - bw) * phase
 
                 sdf.box(0.0, 0.0, self.rect_size.x, self.rect_size.y, r)
                 sdf.fill_keep(self.color)
@@ -82,18 +83,12 @@ script_mod! {
         }
 
         animator: Animator{
-            load: {
+            time: {
                 default: @on
                 on: AnimatorState{
                     redraw: true
-                    from: {all: Loop {duration: 1.5, end: 1000000000.0}}
-                    apply: {
-                        draw_bg: {anim_phase: [{time: 0.0, value: 0.0}, {time: 1.0, value: 1.0}]}
-                    }
-                }
-                off: AnimatorState{
-                    from: {all: Forward {duration: 0.0}}
-                    apply: {draw_bg: {anim_phase: 0.0}}
+                    from: {all: Loop {duration: 100.0, end: 1000000000.0}}
+                    apply: {}
                 }
             }
         }
