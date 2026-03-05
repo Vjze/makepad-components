@@ -60,6 +60,16 @@ script_mod! {
             }
         }
 
+        Label{
+            text: "Code Snippet"
+            draw_text.color: (shad_theme.color_muted_foreground)
+            draw_text.text_style.font_size: 10
+        }
+
+        GalleryCodeSnippet{
+            text: "use makepad_components::*;\n\nShadAlert{\n    width: Fill\n    icon := ShadAlertIcon{text: \"ⓘ\"}\n    content := ShadAlertContent{\n        title := ShadAlertTitle{text: \"Heads up!\"}\n        description := ShadAlertDescription{text: \"Action complete.\"}\n    }\n}"
+        }
+
         View{width: Fill, height: Fill}
     }
 }

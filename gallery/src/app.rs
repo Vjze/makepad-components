@@ -14,6 +14,7 @@ script_mod! {
 impl App {
     fn run(vm: &mut ScriptVm) -> Self {
         crate::makepad_widgets::script_mod(vm);
+        makepad_code_editor::script_mod(vm);
         makepad_components::script_mod(vm);
         crate::ui::script_mod(vm);
         App::from_script_mod(vm, self::script_mod)

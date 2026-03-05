@@ -128,6 +128,16 @@ script_mod! {
             IconSearch{}
         }
 
+        Label{
+            text: "Code Snippet"
+            draw_text.color: (shad_theme.color_muted_foreground)
+            draw_text.text_style.font_size: 10
+        }
+
+        GalleryCodeSnippet{
+            text: "use makepad_components::*;\n\nShadButton{text: \"Default\"}\nShadButtonDestructive{text: \"Delete\"}\nShadButtonOutline{text: \"Outline\"}"
+        }
+
         View{width: Fill, height: Fill}
     }
 }

@@ -20,4 +20,12 @@ script_mod! {
         draw_text.color: (shad_theme.color_primary)
         draw_text.text_style.font_size: 10
     }
+
+    mod.widgets.GalleryCodeSnippet = CodeView{
+        width: Fill
+        height: Fit
+        margin: Inset{top: 4}
+        draw_bg.color: (shad_theme.color_secondary)
+        editor.draw_bg.color: (shad_theme.color_secondary)
+    }
 }
