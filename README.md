@@ -16,6 +16,7 @@ This workspace contains:
 - **Alert Dialog**: modal dialog with title, description, and Cancel/Confirm buttons; `set_open(bool)` / `is_open()` API and optional destructive variant.
 - **Theme tokens**: centralized `shad_theme` color + radius tokens in script space.
 - **Icons**: SVG-based icon widgets (`IconCheck`, `IconX`, `IconSearch`).
+- **Kbd**: keyboard shortcut key caps (`ShadKbd`, `ShadKbdLabel`, `ShadKbdSeparator`) for displaying shortcuts (e.g. ⌘ ⇧ ⌥ ⌃ or Ctrl + B).
 - **Gallery app**: a live catalog demonstrating component usage and styling.
 
 ## Workspace Layout
@@ -145,8 +146,8 @@ script_mod! {
 - [x] Button
 - [x] Button Group
 - [ ] Calendar
-- [ ] Card
-- [ ] Carousel
+- [x] Card
+- [x] Carousel
 - [ ] Chart
 - [x] Checkbox
 - [x] Collapsible
@@ -166,14 +167,14 @@ script_mod! {
 - [ ] Input Group
 - [ ] Input OTP
 - [ ] Item
-- [ ] Kbd
+- [x] Kbd
 - [x] Label
 - [ ] Menubar
 - [ ] Native Select
 - [ ] Navigation Menu
 - [ ] Pagination
 - [ ] Popover
-- [ ] Progress
+- [x] Progress
 - [ ] Radio Group
 - [ ] Resizable
 - [ ] Scroll Area
@@ -189,7 +190,6 @@ script_mod! {
 - [ ] Table
 - [ ] Tabs
 - [ ] Textarea
-- [ ] Toast
 - [ ] Toggle
 - [ ] Toggle Group
 - [ ] Tooltip
@@ -239,6 +239,22 @@ script_mod! {
 Props: `open` (bool). Title and description are set in the script template (`title_label`, `description_label`).
 
 Script API: `set_open(bool)` and `is_open() -> bool` (e.g. from app or script to show/hide). Optional: use actions (Confirmed / Cancelled) in `handle_actions` when buttons or backdrop close the dialog.
+
+### Progress (`components/src/progress.rs`)
+
+- `ShadProgress` — default 50%
+- `ShadProgress33`, `ShadProgress66`, `ShadProgressFull` — 33%, 66%, 100%
+- `ShadProgressIndeterminate` — animated loading bar (continuous sweep)
+
+Use `ShadProgress66{}` for 66%. For custom values, extend `ShadProgressBase` with `draw_bg +: { progress: instance(0.42) }`.
+
+### Kbd (`components/src/kbd.rs`)
+
+- `ShadKbd` — key cap container (dark grey rounded rect, subtle border)
+- `ShadKbdLabel` — text/symbol inside a key (e.g. ⌘, ⇧, Ctrl, B)
+- `ShadKbdSeparator` — " + " between keys in a shortcut
+
+Use with a horizontal layout: `ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }` and `ShadKbdSeparator{}` for shortcuts like "Ctrl + B".
 
 ### Sidebar (`components/src/sidebar.rs`)
 

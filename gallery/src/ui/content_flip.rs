@@ -19,12 +19,15 @@ script_mod! {
         button_page := mod.widgets.GalleryButtonPage{}
         button_group_page := mod.widgets.GalleryButtonGroupPage{}
         card_page := mod.widgets.GalleryCardPage{}
+        carousel_page := mod.widgets.GalleryCarouselPage{}
         checkbox_page := mod.widgets.GalleryCheckboxPage{}
         collapsible_page := mod.widgets.GalleryCollapsiblePage{}
         skeleton_page := mod.widgets.GallerySkeletonPage{}
         switch_page := mod.widgets.GallerySwitchPage{}
         input_page := mod.widgets.GalleryInputPage{}
+        kbd_page := mod.widgets.GalleryKbdPage{}
         label_page := mod.widgets.GalleryLabelPage{}
+        progress_page := mod.widgets.GalleryProgressPage{}
         sidebar_page := mod.widgets.GallerySidebarPage{}
     }
 }

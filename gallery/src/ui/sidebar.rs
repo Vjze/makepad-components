@@ -30,11 +30,14 @@ script_mod! {
             sidebar_button := ShadSidebarItem{text: "Button"}
             sidebar_button_group := ShadSidebarItem{text: "Button Group"}
             sidebar_card := ShadSidebarItem{text: "Card"}
+            sidebar_carousel := ShadSidebarItem{text: "Carousel"}
             sidebar_checkbox := ShadSidebarItem{text: "Checkbox"}
             sidebar_collapsible := ShadSidebarItem{text: "Collapsible"}
             sidebar_skeleton := ShadSidebarItem{text: "Skeleton"}
             sidebar_switch := ShadSidebarItem{text: "Switch"}
             sidebar_input := ShadSidebarItem{text: "Input"}
+            sidebar_kbd := ShadSidebarItem{text: "Kbd"}
+            sidebar_progress := ShadSidebarItem{text: "Progress"}
             sidebar_label := ShadSidebarItem{text: "Label"}
             sidebar_sidebar := ShadSidebarItem{text: "Sidebar"}
         }

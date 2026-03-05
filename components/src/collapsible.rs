@@ -304,7 +304,7 @@ impl Widget for ShadCollapsible {
             let mut header_layout = Layout::flow_right().with_align_y(0.5);
             header_layout.padding = Inset {
                 left: 16.0,
-                right: 16.0,
+                right: 20.0,
                 top: 10.0,
                 bottom: 10.0,
             };

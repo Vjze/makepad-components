@@ -14,12 +14,16 @@ pub mod breadcrumb;
 pub mod button;
 pub mod button_group;
 pub mod card;
+pub mod carousel;
+pub use carousel::ShadCarousel;
 pub mod checkbox;
 pub mod collapsible;
-pub mod skeleton;
 pub mod input;
+pub mod kbd;
 pub mod label;
+pub mod progress;
 pub mod sidebar;
+pub mod skeleton;
 pub mod switch;
 pub mod theme;
 
@@ -36,11 +40,14 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::button::script_mod(vm);
     crate::button_group::script_mod(vm);
     crate::card::script_mod(vm);
+    crate::carousel::script_mod(vm);
     crate::checkbox::script_mod(vm);
     crate::collapsible::script_mod(vm);
     crate::skeleton::script_mod(vm);
     crate::input::script_mod(vm);
+    crate::kbd::script_mod(vm);
     crate::label::script_mod(vm);
+    crate::progress::script_mod(vm);
     crate::sidebar::script_mod(vm);
     crate::switch::script_mod(vm);
 }

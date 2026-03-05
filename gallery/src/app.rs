@@ -1,5 +1,5 @@
 use makepad_components::makepad_widgets::*;
-use makepad_components::ShadAlertDialog;
+use makepad_components::{ShadAlertDialog, ShadCarousel};
 
 app_main!(App);
 
@@ -13,7 +13,13 @@ script_mod! {
 }
 
 impl App {
-    fn set_page(&mut self, cx: &mut Cx, actions: &Actions, sidebar_button: &[LiveId], page: LiveId) {
+    fn set_page(
+        &mut self,
+        cx: &mut Cx,
+        actions: &Actions,
+        sidebar_button: &[LiveId],
+        page: LiveId,
+    ) {
         if self.ui.button(cx, sidebar_button).clicked(actions) {
             self.ui
                 .page_flip(cx, ids!(content_flip))
@@ -81,7 +87,12 @@ impl MatchEvent for App {
         // 1) Add a ShadSidebarItem in GallerySidebar (sidebar::<name>)
         // 2) Add a matching page in GalleryContentFlip (<name>_page)
         // 3) Add a set_page call here with the same IDs.
-        self.set_page(cx, actions, ids!(sidebar_accordion), live_id!(accordion_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_accordion),
+            live_id!(accordion_page),
+        );
         self.set_page(cx, actions, ids!(sidebar_alert), live_id!(alert_page));
         self.set_page(
             cx,
@@ -98,7 +109,11 @@ impl MatchEvent for App {
                 d.set_open(true);
             }
         }
-        if self.ui.button(cx, ids!(open_destructive_btn)).clicked(actions) {
+        if self
+            .ui
+            .button(cx, ids!(open_destructive_btn))
+            .clicked(actions)
+        {
             if let Some(mut d) = self
                 .ui
                 .widget_flood(cx, ids!(destructive_dialog))
@@ -106,6 +121,13 @@ impl MatchEvent for App {
             {
                 d.set_open(true);
             }
+        }
+        if let Some(mut carousel) = self
+            .ui
+            .widget_flood(cx, ids!(carousel_demo))
+            .borrow_mut::<ShadCarousel>()
+        {
+            carousel.handle_actions(cx, actions);
         }
         self.set_page(
             cx,
@@ -129,6 +151,7 @@ impl MatchEvent for App {
             live_id!(button_group_page),
         );
         self.set_page(cx, actions, ids!(sidebar_card), live_id!(card_page));
+        self.set_page(cx, actions, ids!(sidebar_carousel), live_id!(carousel_page));
         self.set_page(cx, actions, ids!(sidebar_checkbox), live_id!(checkbox_page));
         self.set_page(
             cx,
@@ -136,15 +159,12 @@ impl MatchEvent for App {
             ids!(sidebar_collapsible),
             live_id!(collapsible_page),
         );
-        self.set_page(
-            cx,
-            actions,
-            ids!(sidebar_skeleton),
-            live_id!(skeleton_page),
-        );
+        self.set_page(cx, actions, ids!(sidebar_skeleton), live_id!(skeleton_page));
         self.set_page(cx, actions, ids!(sidebar_switch), live_id!(switch_page));
         self.set_page(cx, actions, ids!(sidebar_input), live_id!(input_page));
+        self.set_page(cx, actions, ids!(sidebar_kbd), live_id!(kbd_page));
         self.set_page(cx, actions, ids!(sidebar_label), live_id!(label_page));
+        self.set_page(cx, actions, ids!(sidebar_progress), live_id!(progress_page));
         self.set_page(cx, actions, ids!(sidebar_sidebar), live_id!(sidebar_page));
 
         Self::handle_preview_tabs(
@@ -251,6 +271,16 @@ impl MatchEvent for App {
             &self.ui,
             cx,
             actions,
+            ids!(carousel_demo_tab),
+            ids!(carousel_code_tab),
+            ids!(carousel_preview_flip),
+            ids!(carousel_demo_indicator),
+            ids!(carousel_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
             ids!(checkbox_demo_tab),
             ids!(checkbox_code_tab),
             ids!(checkbox_preview_flip),
@@ -301,11 +331,31 @@ impl MatchEvent for App {
             &self.ui,
             cx,
             actions,
+            ids!(kbd_demo_tab),
+            ids!(kbd_code_tab),
+            ids!(kbd_preview_flip),
+            ids!(kbd_demo_indicator),
+            ids!(kbd_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
             ids!(label_demo_tab),
             ids!(label_code_tab),
             ids!(label_preview_flip),
             ids!(label_demo_indicator),
             ids!(label_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(progress_demo_tab),
+            ids!(progress_code_tab),
+            ids!(progress_preview_flip),
+            ids!(progress_demo_indicator),
+            ids!(progress_code_indicator),
         );
         Self::handle_preview_tabs(
             &self.ui,

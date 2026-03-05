@@ -1,5 +1,5 @@
-use makepad_components::makepad_widgets::*;
 use makepad_code_editor::code_view::CodeView;
+use makepad_components::makepad_widgets::*;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -16,8 +16,6 @@ script_mod! {
         draw_bg.color: (shad_theme.color_muted_foreground)
         draw_bg.color_hover: (shad_theme.color_secondary_hover)
     }
-
-    mod.widgets.GalleryToggle = mod.widgets.ShadSwitch
 
     mod.widgets.GalleryComponentPage = ScrollYView{
         width: Fill
