@@ -4,7 +4,7 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GalleryAccordionPage = View{
+    mod.widgets.GalleryAccordionPage = ScrollYView{
         width: Fill
         height: Fill
         flow: Down
@@ -87,6 +87,14 @@ script_mod! {
             }
         }
 
-        View{width: Fill, height: Fill}
+        Label{
+            text: "Preview + Source"
+            draw_text.color: (shad_theme.color_muted_foreground)
+            draw_text.text_style.font_size: 10
+        }
+
+        accordion_example_snippet := GalleryCodeSnippet{
+            code: "mod.widgets.ShadAccordion{\n    item_faq := mod.widgets.ShadAccordionItem{\n        title: \"What is Makepad?\"\n        body: Label{text: \"A Rust-native UI framework.\"}\n    }\n}"
+        }
     }
 }

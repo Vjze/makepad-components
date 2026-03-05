@@ -4,7 +4,7 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GalleryAlertPage = View{
+    mod.widgets.GalleryAlertPage = ScrollYView{
         width: Fill
         height: Fill
         flow: Down
@@ -60,6 +60,14 @@ script_mod! {
             }
         }
 
-        View{width: Fill, height: Fill}
+        Label{
+            text: "Preview + Source"
+            draw_text.color: (shad_theme.color_muted_foreground)
+            draw_text.text_style.font_size: 10
+        }
+
+        alert_example_snippet := GalleryCodeSnippet{
+            code: "mod.widgets.ShadAlert{\n    width: Fill\n    icon := mod.widgets.ShadAlertIcon{text: \"ⓘ\"}\n    content := mod.widgets.ShadAlertContent{\n        title := mod.widgets.ShadAlertTitle{text: \"Heads up!\"}\n        description := mod.widgets.ShadAlertDescription{text: \"Action complete.\"}\n    }\n}"
+        }
     }
 }

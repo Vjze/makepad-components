@@ -4,7 +4,7 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GalleryButtonPage = View{
+    mod.widgets.GalleryButtonPage = ScrollYView{
         width: Fill
         height: Fill
         flow: Down
@@ -128,6 +128,14 @@ script_mod! {
             IconSearch{}
         }
 
-        View{width: Fill, height: Fill}
+        Label{
+            text: "Preview + Source"
+            draw_text.color: (shad_theme.color_muted_foreground)
+            draw_text.text_style.font_size: 10
+        }
+
+        button_example_snippet := GalleryCodeSnippet{
+            code: "View{\n    width: Fit\n    height: Fit\n    flow: Right\n    spacing: 8\n    mod.widgets.ShadButton{text: \"Default\"}\n    mod.widgets.ShadButtonDestructive{text: \"Delete\"}\n    mod.widgets.ShadButtonOutline{text: \"Outline\"}\n}"
+        }
     }
 }

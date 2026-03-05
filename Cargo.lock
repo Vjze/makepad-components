@@ -239,6 +239,14 @@ version = "0.1.0"
 source = "git+https://github.com/makepad/makepad.git?branch=dev#8b515338a2f50c5e0e2742cdc8b8ee7278aff371"
 
 [[package]]
+name = "makepad-code-editor"
+version = "2.0.0"
+source = "git+https://github.com/makepad/makepad.git?branch=dev#8b515338a2f50c5e0e2742cdc8b8ee7278aff371"
+dependencies = [
+ "makepad-widgets",
+]
+
+[[package]]
 name = "makepad-components"
 version = "1.0.0"
 dependencies = [
@@ -296,6 +304,7 @@ dependencies = [
 name = "makepad-example-component-gallery"
 version = "1.0.0"
 dependencies = [
+ "makepad-code-editor",
  "makepad-components",
  "makepad-widgets",
 ]
