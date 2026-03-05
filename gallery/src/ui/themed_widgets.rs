@@ -1,5 +1,5 @@
 use makepad_components::makepad_widgets::*;
-use makepad_code_editor::code_view::CodeViewWidgetExt;
+use makepad_code_editor::code_view::CodeView;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -96,17 +96,21 @@ script_mod! {
         width: Fill
         height: Fit
         code: ""
-
         code_container := SolidView{
             width: Fill
-            height: 220
-            padding: Inset{top: 8, right: 8, bottom: 8, left: 8}
+            height: Fit
+            padding: Inset{top: 12, right: 12, bottom: 12, left: 12}
             draw_bg +: {
                 color: (shad_theme.color_muted)
                 border_radius: (shad_theme.radius)
             }
 
-            code_view := CodeView{}
+            code_view := CodeView{
+                keep_cursor_at_end: false
+                editor +: {
+                    height: Fit
+                }
+            }
         }
     }
 
@@ -138,8 +142,13 @@ impl GalleryCodeSnippet {
         let current_code = self.code.as_ref().trim().to_string();
         if current_code != self.last_code {
             self.last_code = current_code.clone();
-            let cv = self.view.code_view(cx, ids!(code_view));
-            cv.set_text(cx, &current_code);
+            if let Some(mut cv) = self
+                .view
+                .widget(cx, ids!(code_view))
+                .borrow_mut::<CodeView>()
+            {
+                cv.set_text(cx, &current_code);
+            }
         }
     }
 }
