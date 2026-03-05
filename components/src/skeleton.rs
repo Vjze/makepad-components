@@ -2,6 +2,7 @@ use makepad_widgets::*;
 
 script_mod! {
     use mod.prelude.widgets.*
+    use mod.widgets.*
 
     mod.widgets.ShadSkeleton = mod.widgets.RoundedView{
         width: 100
