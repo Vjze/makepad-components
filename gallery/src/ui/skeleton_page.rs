@@ -4,29 +4,18 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GallerySkeletonPage = ScrollYView{
-        width: Fill
-        height: Fill
-        flow: Down
-        draw_bg.color: (shad_theme.color_background)
-        padding: Inset{top: 20, right: 20, bottom: 20, left: 20}
-        spacing: 12.0
-
-        Label{
+    mod.widgets.GallerySkeletonPage = GalleryComponentPage{
+        GalleryPageTitle{
             text: "Skeleton"
-            draw_text.color: (shad_theme.color_primary)
-            draw_text.text_style.font_size: 18
         }
 
-        Label{
+        GalleryPageSubtitle{
             text: "Use to show a placeholder while content is loading."
-            draw_text.color: (shad_theme.color_muted_foreground)
-            draw_text.text_style.font_size: 10
         }
 
         GalleryHr{}
 
-        skeleton_preview_section := View{
+        skeleton_preview_section := GalleryExamplesSection{
             width: Fill
             height: Fit
             flow: Down

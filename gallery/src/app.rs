@@ -12,6 +12,14 @@ script_mod! {
 }
 
 impl App {
+    fn set_page(&mut self, cx: &mut Cx, actions: &Actions, sidebar_button: &[LiveId], page: LiveId) {
+        if self.ui.button(cx, sidebar_button).clicked(actions) {
+            self.ui
+                .page_flip(cx, ids!(content_flip))
+                .set_active_page(cx, page);
+        }
+    }
+
     fn set_preview_mode(
         ui: &WidgetRef,
         cx: &mut Cx,
@@ -68,111 +76,50 @@ pub struct App {
 
 impl MatchEvent for App {
     fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
-        if self.ui.button(cx, ids!(sidebar_accordion)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(accordion_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_alert)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(alert_page));
-        }
-
-        if self
-            .ui
-            .button(cx, ids!(sidebar_aspect_ratio))
-            .clicked(actions)
-        {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(aspect_ratio_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_avatar)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(avatar_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_badge)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(badge_page));
-        }
-
-        if self
-            .ui
-            .button(cx, ids!(sidebar_breadcrumb))
-            .clicked(actions)
-        {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(breadcrumb_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_button)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(button_page));
-        }
-
-        if self
-            .ui
-            .button(cx, ids!(sidebar_button_group))
-            .clicked(actions)
-        {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(button_group_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_checkbox)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(checkbox_page));
-        }
-
-        if self
-            .ui
-            .button(cx, ids!(sidebar_collapsible))
-            .clicked(actions)
-        {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(collapsible_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_skeleton)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(skeleton_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_switch)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(switch_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_input)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(input_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_label)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(label_page));
-        }
-
-        if self.ui.button(cx, ids!(sidebar_sidebar)).clicked(actions) {
-            self.ui
-                .page_flip(cx, ids!(content_flip))
-                .set_active_page(cx, live_id!(sidebar_page));
-        }
+        // Sidebar → page mappings. When adding a new component:
+        // 1) Add a ShadSidebarItem in GallerySidebar (sidebar::<name>)
+        // 2) Add a matching page in GalleryContentFlip (<name>_page)
+        // 3) Add a set_page call here with the same IDs.
+        self.set_page(cx, actions, ids!(sidebar_accordion), live_id!(accordion_page));
+        self.set_page(cx, actions, ids!(sidebar_alert), live_id!(alert_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_aspect_ratio),
+            live_id!(aspect_ratio_page),
+        );
+        self.set_page(cx, actions, ids!(sidebar_avatar), live_id!(avatar_page));
+        self.set_page(cx, actions, ids!(sidebar_badge), live_id!(badge_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_breadcrumb),
+            live_id!(breadcrumb_page),
+        );
+        self.set_page(cx, actions, ids!(sidebar_button), live_id!(button_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_button_group),
+            live_id!(button_group_page),
+        );
+        self.set_page(cx, actions, ids!(sidebar_checkbox), live_id!(checkbox_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_collapsible),
+            live_id!(collapsible_page),
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_skeleton),
+            live_id!(skeleton_page),
+        );
+        self.set_page(cx, actions, ids!(sidebar_switch), live_id!(switch_page));
+        self.set_page(cx, actions, ids!(sidebar_input), live_id!(input_page));
+        self.set_page(cx, actions, ids!(sidebar_label), live_id!(label_page));
+        self.set_page(cx, actions, ids!(sidebar_sidebar), live_id!(sidebar_page));
 
         Self::handle_preview_tabs(
             &self.ui,

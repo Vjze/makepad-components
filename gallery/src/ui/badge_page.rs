@@ -5,24 +5,13 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GalleryBadgePage = ScrollYView{
-        width: Fill
-        height: Fill
-        flow: Down
-        draw_bg.color: (shad_theme.color_background)
-        padding: Inset{top: 20, right: 20, bottom: 20, left: 20}
-        spacing: 12.0
-
-        Label{
+    mod.widgets.GalleryBadgePage = GalleryComponentPage{
+        GalleryPageTitle{
             text: "Badge"
-            draw_text.color: (shad_theme.color_primary)
-            draw_text.text_style.font_size: 18
         }
 
-        Label{
+        GalleryPageSubtitle{
             text: "Shadcn-inspired badge components from makepad-components library"
-            draw_text.color: (shad_theme.color_muted_foreground)
-            draw_text.text_style.font_size: 10
         }
 
         GalleryHr{}

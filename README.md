@@ -24,6 +24,19 @@ This workspace contains:
 - `gallery/` → `makepad-example-component-gallery` app
 - `.github/workflows/wasm-pages.yml` → GitHub Pages WASM build + deploy
 
+## Architecture & naming conventions
+
+- **Crate roles**:
+  - `components`: owns reusable `Shad*` UI widgets and the shared `shad_theme` design tokens.
+  - `makepad-icon`: provides icon widgets that can be used by both the component library and apps.
+  - `gallery`: owns the documentation/gallery UI that showcases components.
+- **Naming**:
+  - **`Shad*` widgets** live in the `components` crate and are intended for reuse in any Makepad app (for example `ShadButton`, `ShadAccordionItem`, `ShadSidebar`).
+  - **`Gallery*` widgets** live in the `gallery` crate and are only for the docs/gallery experience (for example layout wrappers, preview panels, and code snippet widgets).
+- **File placement**:
+  - New reusable components belong under `components/src/*.rs` and should be registered from `components::script_mod(vm)` into the `mod.widgets.*` namespace.
+  - Gallery-only layout and helper widgets belong under `gallery/src/ui/*.rs` (for example `themed_widgets.rs`) and are registered from `gallery::ui::script_mod(vm)`.
+
 ## Prerequisites
 
 - Rust stable toolchain
@@ -283,6 +296,18 @@ The gallery (`gallery/src/app.rs`) includes:
 - Icon preview section
 
 Run it to validate behavior and styling changes quickly.
+
+### Adding a new component + docs page
+
+- **Library component (`Shad*`)**
+  - Add or extend a module under `components/src/` (for example `button.rs`, `accordion.rs`).
+  - Register the widget in `components::script_mod(vm)` with a `Shad*` name in the `mod.widgets.*` namespace.
+  - Use `shad_theme` tokens for colors, radii, and spacing instead of hardcoded values.
+- **Gallery docs page (`Gallery*`)**
+  - Create a new page script under `gallery/src/ui/` (for example `tooltip_page.rs`) that uses `GalleryComponentPage`, `GalleryPageTitle`, and `GalleryPageSubtitle`.
+  - Add a snippet constant to `gallery/src/ui/snippets.rs` and reference it from `GalleryCodeSnippet` on the page.
+  - Add a `ShadSidebarItem` entry in `GallerySidebar` and a matching page in `GalleryContentFlip`.
+  - Wire the sidebar item to the page in `gallery/src/app.rs` using a `set_page` call in `handle_actions`.
 
 ## CI/CD
 
