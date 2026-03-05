@@ -39,6 +39,12 @@ impl MatchEvent for App {
                 .page_flip(cx, ids!(content_flip))
                 .set_active_page(cx, live_id!(button_page));
         }
+
+        if self.ui.button(cx, ids!(sidebar_alert)).clicked(actions) {
+            self.ui
+                .page_flip(cx, ids!(content_flip))
+                .set_active_page(cx, live_id!(alert_page));
+        }
     }
 }
 

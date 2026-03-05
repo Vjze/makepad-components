@@ -11,6 +11,7 @@ This workspace contains:
 
 - **Buttons**: shadcn-inspired variants (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`) plus size presets.
 - **Accordion**: a composable accordion item widget with open/close state and script-call support (`set_is_open`, `is_open`).
+- **Alerts**: shadcn-inspired alert layouts with default and destructive variants.
 - **Theme tokens**: centralized `shad_theme` color + radius tokens in script space.
 - **Icons**: SVG-based icon widgets (`IconCheck`, `IconX`, `IconSearch`).
 - **Gallery app**: a live catalog demonstrating component usage and styling.
@@ -139,6 +140,17 @@ script_mod! {
 - script calls: `set_is_open(bool)` and `is_open() -> bool`
 - `on_toggle` callback hook
 
+### Alerts (`components/src/alert.rs`)
+
+- `ShadAlert`
+- `ShadAlertIcon`
+- `ShadAlertContent`
+- `ShadAlertTitle`
+- `ShadAlertDescription`
+- `ShadAlertDestructive`
+- `ShadAlertDestructiveIcon`
+- `ShadAlertDestructiveTitle`
+
 ### Theme (`components/src/theme.rs`)
 
 Exports `mod.widgets.shad_theme` with tokens such as:
@@ -194,6 +206,7 @@ The gallery (`gallery/src/app.rs`) includes:
 - Sidebar navigation between component pages
 - Accordion showcase with custom header/body content
 - Button variant and size matrix
+- Alert default/destructive examples
 - Icon preview section
 
 Run it to validate behavior and styling changes quickly.
