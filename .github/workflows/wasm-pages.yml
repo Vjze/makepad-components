@@ -54,9 +54,6 @@ jobs:
       - name: Install Wasm toolchain
         run: cargo makepad wasm install-toolchain
 
-      - name: Install Wasm CLI tools
-        run: cargo makepad wasm install-cli-tools
-
       - name: Build Wasm package
         run: cargo makepad wasm build -p "${APP_PACKAGE}" --release
 
