@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use makepad_code_editor::code_view::CodeViewWidgetExt;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -27,29 +28,16 @@ script_mod! {
         width: Fill
         height: Fit
         code: ""
-        markdown := Markdown{
+        code_block := SolidView{
             width: Fill
             height: Fit
-            margin: Inset{top: 4}
-            body: ""
-            use_code_block_widget: false
-            paragraph_spacing: 8
-            pre_code_spacing: 8
+            margin: Inset{top: 4, bottom: 8}
+            padding: Inset{top: 12, right: 12, bottom: 12, left: 12}
+            draw_bg.color: (shad_theme.color_secondary)
 
-            draw_text.color: (shad_theme.color_muted_foreground)
-
-            splash_block := SolidView{
+            code_view := CodeView{
                 width: Fill
                 height: Fit
-                flow: Overlay
-                margin: Inset{bottom: 8}
-                padding: Inset{top: 8, right: 8, bottom: 8, left: 8}
-                draw_bg.color: (shad_theme.color_secondary)
-
-                splash_view := Splash{
-                    width: Fill
-                    height: Fit
-                }
             }
         }
     }
@@ -68,31 +56,19 @@ pub struct GalleryCodeSnippet {
 }
 
 impl GalleryCodeSnippet {
-    fn build_markdown(&self) -> String {
-        let source = self.code.as_ref().trim();
-        if source.is_empty() {
-            return String::new();
-        }
-        format!("```runsplash\n{source}\n```\n\n```rust\n{source}\n```")
-    }
-
-    fn sync_markdown(&mut self, cx: &mut Cx) {
-        // Optimization: avoid repeated string allocations in handle_event loop
-        // Previously: unconditionally called `build_markdown()` (which allocates via format!) every event
-        // Now: cache the raw code string, only reallocate when the raw code actually changes
+    fn sync_code(&mut self, cx: &mut Cx) {
         let current_code = self.code.as_ref().trim();
         if current_code != self.last_code {
             self.last_code = current_code.to_string();
-            let markdown = self.build_markdown();
-            let mut md = self.view.markdown(cx, ids!(markdown));
-            md.set_text(cx, &markdown);
+            let cv = self.view.code_view(cx, ids!(code_view));
+            cv.set_text(cx, &self.last_code);
         }
     }
 }
 
 impl Widget for GalleryCodeSnippet {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        self.sync_markdown(cx);
+        self.sync_code(cx);
         self.view.handle_event(cx, event, scope);
     }
 
