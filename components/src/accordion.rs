@@ -128,7 +128,7 @@ impl Widget for AccordionItem {
         }
 
         if let Event::Actions(actions) = event {
-            if let Some(fold_button) = self.header.widget(cx, ids!(fold_button)).borrow::<FoldButton>()
+            if let Some(fold_button) = self.widget(cx, ids!(header.fold_button)).borrow::<FoldButton>()
             {
                 let widget_uid = fold_button.widget_uid();
                 let opening = actions
@@ -195,8 +195,7 @@ impl AccordionItem {
     pub fn set_is_open(&mut self, cx: &mut Cx, is_open: bool) {
         self.is_open = is_open;
         if let Some(mut fold_button) = self
-            .header
-            .widget(cx, ids!(fold_button))
+            .widget(cx, ids!(header.fold_button))
             .borrow_mut::<FoldButton>()
         {
             fold_button.set_is_open(cx, is_open, animator::Animate::No);
