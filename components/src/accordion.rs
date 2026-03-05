@@ -83,10 +83,6 @@ pub struct AccordionItem {
     #[find]
     #[redraw]
     #[live]
-    fold_button: WidgetRef,
-    #[find]
-    #[redraw]
-    #[live]
     body: WidgetRef,
     #[layout]
     layout: Layout,
@@ -132,15 +128,17 @@ impl Widget for AccordionItem {
         }
 
         if let Event::Actions(actions) = event {
-            let uid = self.widget_uid();
+            let fold_button = self.header.fold_button(cx, ids!(fold_button));
+            let widget_uid = fold_button.widget_uid();
             let opening = actions
-                .find_widget_action(self.fold_button.widget_uid())
+                .find_widget_action(widget_uid)
                 .is_some_and(|action| matches!(action.cast(), FoldButtonAction::Opening));
             let closing = actions
-                .find_widget_action(self.fold_button.widget_uid())
+                .find_widget_action(widget_uid)
                 .is_some_and(|action| matches!(action.cast(), FoldButtonAction::Closing));
 
             if opening && !self.is_open {
+                let uid = self.widget_uid();
                 self.is_open = true;
                 self.area.redraw(cx);
                 cx.widget_to_script_call(
@@ -151,6 +149,7 @@ impl Widget for AccordionItem {
                     &[ScriptValue::from_bool(true)],
                 );
             } else if closing && self.is_open {
+                let uid = self.widget_uid();
                 self.is_open = false;
                 self.area.redraw(cx);
                 cx.widget_to_script_call(
@@ -194,7 +193,11 @@ impl Widget for AccordionItem {
 impl AccordionItem {
     pub fn set_is_open(&mut self, cx: &mut Cx, is_open: bool) {
         self.is_open = is_open;
-        if let Some(mut fold_button) = self.fold_button.borrow_mut::<FoldButton>() {
+        if let Some(mut fold_button) = self
+            .header
+            .widget(cx, ids!(fold_button))
+            .borrow_mut::<FoldButton>()
+        {
             fold_button.set_is_open(cx, is_open, animator::Animate::No);
         }
         self.area.redraw(cx);
