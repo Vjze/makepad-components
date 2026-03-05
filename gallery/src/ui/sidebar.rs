@@ -43,10 +43,14 @@ script_mod! {
 
             sidebar_accordion := mod.widgets.GallerySidebarItem{text: "Accordion"}
             sidebar_alert := mod.widgets.GallerySidebarItem{text: "Alert"}
+            sidebar_aspect_ratio := mod.widgets.GallerySidebarItem{text: "Aspect Ratio"}
             sidebar_avatar := mod.widgets.GallerySidebarItem{text: "Avatar"}
             sidebar_badge := mod.widgets.GallerySidebarItem{text: "Badge"}
+            sidebar_breadcrumb := mod.widgets.GallerySidebarItem{text: "Breadcrumb"}
             sidebar_button := mod.widgets.GallerySidebarItem{text: "Button"}
+            sidebar_button_group := mod.widgets.GallerySidebarItem{text: "Button Group"}
             sidebar_checkbox := mod.widgets.GallerySidebarItem{text: "Checkbox"}
+            sidebar_collapsible := mod.widgets.GallerySidebarItem{text: "Collapsible"}
         }
     }
 }

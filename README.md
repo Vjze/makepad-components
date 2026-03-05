@@ -10,6 +10,7 @@ This workspace contains:
 ## What You Get
 
 - **Buttons**: shadcn-inspired variants (`default`, `destructive`, `outline`, `secondary`, `ghost`, `link`) plus size presets.
+- **Aspect Ratio**: ratio-constrained container for media/content layouts (`ShadAspectRatio`).
 - **Accordion**: a composable accordion item widget with open/close state and script-call support (`set_is_open`, `is_open`).
 - **Alerts**: shadcn-inspired alert layouts with default and destructive variants.
 - **Theme tokens**: centralized `shad_theme` color + radius tokens in script space.
@@ -130,6 +131,10 @@ script_mod! {
 - `ShadButtonLg`
 - `ShadButtonIcon`
 
+### Aspect Ratio (`components/src/aspect_ratio.rs`)
+
+- `ShadAspectRatio`
+
 ### Accordion (`components/src/accordion.rs`)
 
 - `Accordion` (container `View` preset)
@@ -206,6 +211,7 @@ The gallery (`gallery/src/app.rs`) includes:
 - Sidebar navigation between component pages
 - Accordion showcase with custom header/body content
 - Button variant and size matrix
+- Aspect ratio examples (16:9, 1:1, 4:3, 9:16)
 - Alert default/destructive examples
 - Icon preview section
 
