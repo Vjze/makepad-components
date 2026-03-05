@@ -27,7 +27,7 @@ script_mod! {
         GalleryHr{}
 
         accordion_panel := ShadAccordion{
-            margin: Inset{top: 12}
+            margin: Inset{top: 12, right: 12}
             item_accessible := ShadAccordionItem{
                 title: "Is it accessible?"
                 is_open: true
