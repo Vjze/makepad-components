@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::BADGE_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -63,7 +64,7 @@ script_mod! {
         }
 
         badge_example_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadBadge{\n    label := mod.widgets.ShadBadgeLabel{text: \"Default\"}\n}\nmod.widgets.ShadBadgeDestructive{\n    label := mod.widgets.ShadBadgeDestructiveLabel{text: \"Destructive\"}\n}\nmod.widgets.ShadBadgeOutline{\n    label := mod.widgets.ShadBadgeOutlineLabel{text: \"Outline\"}\n}"
+            code: #(BADGE_PREVIEW_CODE)
         }
     }
 }

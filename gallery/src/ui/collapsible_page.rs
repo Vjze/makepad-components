@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::COLLAPSIBLE_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -120,7 +121,7 @@ script_mod! {
         }
 
         collapsible_example_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadCollapsible{\n    title: \"Order #4189\"\n    is_open: true\n    body: View{\n        flow: Down\n        Label{text: \"Status: Shipped\"}\n    }\n}"
+            code: #(COLLAPSIBLE_PREVIEW_CODE)
         }
     }
 }

@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::BUTTON_GROUP_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -126,7 +127,7 @@ script_mod! {
         }
 
         button_group_example_snippet := GalleryCodeSnippet{
-            code: "View{\n    width: Fit\n    height: Fit\n    flow: Right\n    spacing: 10.0\n    ShadButtonIcon{text: \"←\"}\n    ShadButtonGroup{\n        ShadButtonGroupItem{text: \"Archive\"}\n        ShadButtonGroupSeparator{}\n        ShadButtonGroupItem{text: \"Report\"}\n    }\n    ShadButtonGroup{\n        ShadButtonGroupItem{text: \"Snooze\"}\n        ShadButtonGroupSeparator{}\n        ShadButtonGroupItemIcon{text: \"⋯\"}\n    }\n}"
+            code: #(BUTTON_GROUP_PREVIEW_CODE)
         }
     }
 }

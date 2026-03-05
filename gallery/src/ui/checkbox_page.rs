@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::CHECKBOX_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -72,7 +73,7 @@ script_mod! {
         }
 
         checkbox_example_snippet := GalleryCodeSnippet{
-            code: "ShadCheckbox{label: \"Accept terms and conditions\"}\nShadCheckbox{label: \"Pre-checked\" checked: true}"
+            code: #(CHECKBOX_PREVIEW_CODE)
         }
     }
 }

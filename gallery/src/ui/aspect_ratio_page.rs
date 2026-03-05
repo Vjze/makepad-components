@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::ASPECT_RATIO_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -149,7 +150,7 @@ script_mod! {
         }
 
         aspect_ratio_example_snippet := GalleryCodeSnippet{
-            code: "ShadAspectRatio{\n    width: Fill\n    ratio: 1.7777777778\n    RoundedView{\n        width: Fill\n        height: Fill\n        draw_bg.color: (shad_theme.color_secondary)\n    }\n}"
+            code: #(ASPECT_RATIO_PREVIEW_CODE)
         }
     }
 }

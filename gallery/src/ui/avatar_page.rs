@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::AVATAR_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -85,7 +86,7 @@ script_mod! {
         }
 
         avatar_example_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadAvatar{\n    fallback := mod.widgets.ShadAvatarFallback{text: \"CN\"}\n}\nmod.widgets.ShadAvatarSm{\n    fallback := mod.widgets.ShadAvatarFallback{text: \"SM\"}\n}\nmod.widgets.ShadAvatarLg{\n    fallback := mod.widgets.ShadAvatarFallback{text: \"LG\"}\n}"
+            code: #(AVATAR_PREVIEW_CODE)
         }
     }
 }

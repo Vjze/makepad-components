@@ -10,13 +10,14 @@ pub mod button_group_page;
 pub mod button_page;
 pub mod checkbox_page;
 pub mod collapsible_page;
-pub mod switch_page;
 pub mod content_flip;
 pub mod input_page;
 pub mod label_page;
 pub mod root;
 pub mod sidebar;
 pub mod sidebar_page;
+pub mod snippets;
+pub mod switch_page;
 pub mod themed_widgets;
 
 pub fn script_mod(vm: &mut ScriptVm) {

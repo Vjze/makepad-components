@@ -1,4 +1,5 @@
 use makepad_components::makepad_widgets::*;
+use crate::ui::snippets::ALERT_PREVIEW_CODE;
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -67,7 +68,7 @@ script_mod! {
         }
 
         alert_example_snippet := GalleryCodeSnippet{
-            code: "mod.widgets.ShadAlert{\n    width: Fill\n    icon := mod.widgets.ShadAlertIcon{text: \"ⓘ\"}\n    content := mod.widgets.ShadAlertContent{\n        title := mod.widgets.ShadAlertTitle{text: \"Heads up!\"}\n        description := mod.widgets.ShadAlertDescription{text: \"Action complete.\"}\n    }\n}"
+            code: #(ALERT_PREVIEW_CODE)
         }
     }
 }
