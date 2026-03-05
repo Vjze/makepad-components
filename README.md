@@ -166,12 +166,12 @@ script_mod! {
 - [ ] Select
 - [ ] Separator
 - [ ] Sheet
-- [ ] Sidebar
-- [ ] Skeleton
+- [x] Sidebar
+- [x] Skeleton
 - [ ] Slider
 - [ ] Sonner
 - [ ] Spinner
-- [ ] Switch
+- [x] Switch
 - [ ] Table
 - [ ] Tabs
 - [ ] Textarea
