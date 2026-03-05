@@ -43,6 +43,7 @@ script_mod! {
 
             sidebar_accordion := mod.widgets.GallerySidebarItem{text: "Accordion"}
             sidebar_button := mod.widgets.GallerySidebarItem{text: "Button"}
+            sidebar_alert := mod.widgets.GallerySidebarItem{text: "Alert"}
         }
     }
 }
