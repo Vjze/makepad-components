@@ -24,7 +24,7 @@ script_mod! {
             draw_text.text_style.font_size: 10
         }
 
-        Hr{}
+        GalleryHr{}
 
         Label{
             text: "Default"
