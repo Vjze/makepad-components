@@ -17,10 +17,7 @@ script_mod! {
         draw_bg.color_hover: (shad_theme.color_secondary_hover)
     }
 
-    mod.widgets.GalleryToggle = Toggle{
-        draw_text.color: (shad_theme.color_primary)
-        draw_text.text_style.font_size: 10
-    }
+    mod.widgets.GalleryToggle = mod.widgets.ShadSwitch
 
     mod.widgets.GalleryComponentPage = ScrollYView{
         width: Fill

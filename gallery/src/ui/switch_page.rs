@@ -83,9 +83,9 @@ script_mod! {
                     flow: Down
                     spacing: 12.0
 
-                    ShadSwitch{label: "Enable notifications"}
-                    ShadSwitch{label: "Dark mode" checked: true}
-                    ShadSwitch{label: "Use cellular data"}
+                    ShadSwitch{text: "Enable notifications"}
+                    ShadSwitch{text: "Dark mode"}
+                    ShadSwitch{text: "Use cellular data"}
                 }
 
                 GalleryHr{}
@@ -103,8 +103,8 @@ script_mod! {
                     spacing: 24.0
                     align: Align{y: 0.5}
 
-                    ShadSwitch{label: "Email alerts" checked: true}
-                    ShadSwitch{label: "SMS alerts"}
+                    ShadSwitch{text: "Email alerts"}
+                    ShadSwitch{text: "SMS alerts"}
                 }
 
                 GalleryHr{}
@@ -117,7 +117,7 @@ script_mod! {
                         spacing: 12.0
 
                         GalleryCodeSnippet{
-                            code: "ShadSwitch{label: \"Enable notifications\"}\nShadSwitch{label: \"Dark mode\" checked: true}"
+                            code: "ShadSwitch{text: \"Enable notifications\"}\nShadSwitch{text: \"Dark mode\"}"
                         }
                     }
                 }

@@ -34,12 +34,18 @@ script_mod! {
                         border_color: (shad_theme.color_outline_border)
                     }
 
-                    title_label := ShadAlertTitle{
-                        text: "Are you absolutely sure?"
-                    }
-
-                    description_label := ShadAlertDescription{
-                        text: "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                    dialog_body := View{
+                        width: Fill
+                        height: Fit
+                        flow: Down
+                        spacing: 12.0
+                        margin: Inset{left: 20, right: 20}
+                        title_label := ShadAlertTitle{
+                            text: "Are you absolutely sure?"
+                        }
+                        description_label := ShadAlertDescription{
+                            text: "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                        }
                     }
 
                     footer := View{
@@ -112,12 +118,18 @@ script_mod! {
                         border_color: (shad_theme.color_outline_border)
                     }
 
-                    title_label := ShadAlertTitle{
-                        text: "Are you absolutely sure?"
-                    }
-
-                    description_label := ShadAlertDescription{
-                        text: "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                    dialog_body := View{
+                        width: Fill
+                        height: Fit
+                        flow: Down
+                        spacing: 12.0
+                        margin: Inset{left: 20, right: 20}
+                        title_label := ShadAlertTitle{
+                            text: "Are you absolutely sure?"
+                        }
+                        description_label := ShadAlertDescription{
+                            text: "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
+                        }
                     }
 
                     footer := View{

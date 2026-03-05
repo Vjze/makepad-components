@@ -29,6 +29,7 @@ script_mod! {
             sidebar_breadcrumb := ShadSidebarItem{text: "Breadcrumb"}
             sidebar_button := ShadSidebarItem{text: "Button"}
             sidebar_button_group := ShadSidebarItem{text: "Button Group"}
+            sidebar_card := ShadSidebarItem{text: "Card"}
             sidebar_checkbox := ShadSidebarItem{text: "Checkbox"}
             sidebar_collapsible := ShadSidebarItem{text: "Collapsible"}
             sidebar_skeleton := ShadSidebarItem{text: "Skeleton"}

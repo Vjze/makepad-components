@@ -115,7 +115,7 @@ script_mod! {
                                 flow: Right
                                 spacing: 16
 
-                                GalleryToggle{text: "Switch"}
+                                ShadSwitch{text: "Switch"}
                                 GalleryCheckBox{text: "Or a CheckBox"}
                             }
                         }

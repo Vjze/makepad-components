@@ -128,6 +128,7 @@ impl MatchEvent for App {
             ids!(sidebar_button_group),
             live_id!(button_group_page),
         );
+        self.set_page(cx, actions, ids!(sidebar_card), live_id!(card_page));
         self.set_page(cx, actions, ids!(sidebar_checkbox), live_id!(checkbox_page));
         self.set_page(
             cx,
@@ -235,6 +236,16 @@ impl MatchEvent for App {
             ids!(button_group_preview_flip),
             ids!(button_group_demo_indicator),
             ids!(button_group_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(card_demo_tab),
+            ids!(card_code_tab),
+            ids!(card_preview_flip),
+            ids!(card_demo_indicator),
+            ids!(card_code_indicator),
         );
         Self::handle_preview_tabs(
             &self.ui,

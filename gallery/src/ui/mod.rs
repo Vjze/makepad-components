@@ -9,6 +9,7 @@ pub mod badge_page;
 pub mod breadcrumb_page;
 pub mod button_group_page;
 pub mod button_page;
+pub mod card_page;
 pub mod checkbox_page;
 pub mod collapsible_page;
 pub mod skeleton_page;
@@ -34,6 +35,7 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::breadcrumb_page::script_mod(vm);
     crate::ui::button_page::script_mod(vm);
     crate::ui::button_group_page::script_mod(vm);
+    crate::ui::card_page::script_mod(vm);
     crate::ui::checkbox_page::script_mod(vm);
     crate::ui::collapsible_page::script_mod(vm);
     crate::ui::skeleton_page::script_mod(vm);
