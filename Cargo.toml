@@ -1,0 +1,4 @@
+# [PROJECT_DIR]/Cargo.toml
+[workspace]
+members = ["gallery", "components"]
+resolver = "3"

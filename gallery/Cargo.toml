@@ -1,0 +1,10 @@
+[package]
+name = "makepad-example-component-gallery"
+version = "1.0.0"
+edition = "2021"
+description = "Makepad component gallery example"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+makepad-widgets = { git = "https://github.com/makepad/makepad.git", branch="dev", version = "2.0.0" }
+makepad-components = { path = "../components", version = "1.0.0" }
