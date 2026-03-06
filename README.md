@@ -64,8 +64,6 @@ cargo run -p makepad-example-component-gallery --release
 ```bash
 cargo install --git https://github.com/makepad/makepad.git --branch dev cargo-makepad --locked
 cargo makepad wasm install-toolchain
-wasm-opt --version   # from Binaryen
-brotli --version
 ./scripts/build_wasm.sh -p makepad-example-component-gallery --profile small --release --bindgen
 ```
 
