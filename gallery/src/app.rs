@@ -126,6 +126,7 @@ pub struct App {
     ui: WidgetRef,
     #[rust]
     hover_card_open: bool,
+    #[rust]
     is_small_screen: bool,
     #[rust]
     sidebar_open: bool,
@@ -150,7 +151,7 @@ impl MatchEvent for App {
             live_id!(accordion_page),
             &content_flip,
         );
-        self.set_page(cx, actions, ids!(sidebar_alert), live_id!(alert_page));
+        self.set_page(cx, actions, ids!(sidebar_alert), live_id!(alert_page), &content_flip);
         if let Some(mut carousel) = self
             .ui
             .widget_flood(cx, ids!(carousel_demo))
@@ -192,7 +193,7 @@ impl MatchEvent for App {
             live_id!(collapsible_page),
             &content_flip,
         );
-        self.set_page(cx, actions, ids!(sidebar_dialog), live_id!(dialog_page));
+        self.set_page(cx, actions, ids!(sidebar_dialog), live_id!(dialog_page), &content_flip);
         if self.ui.button(cx, ids!(open_dialog_btn)).clicked(actions) {
             if let Some(mut d) = self
                 .ui
@@ -226,7 +227,7 @@ impl MatchEvent for App {
                 d.set_open(false);
             }
         }
-        self.set_page(cx, actions, ids!(sidebar_drawer), live_id!(drawer_page));
+        self.set_page(cx, actions, ids!(sidebar_drawer), live_id!(drawer_page), &content_flip);
         if self.ui.button(cx, ids!(open_drawer_btn)).clicked(actions) {
             let drawer = self.ui.widget_flood(cx, ids!(drawer_demo));
             if let Some(mut d) = drawer.borrow_mut::<ShadDrawer>() {
@@ -239,50 +240,116 @@ impl MatchEvent for App {
             actions,
             ids!(sidebar_dropdown_menu),
             live_id!(dropdown_menu_page),
+            &content_flip,
         );
         self.set_page(
             cx,
             actions,
             ids!(sidebar_hover_card),
             live_id!(hover_card_page),
+            &content_flip,
         );
-        self.set_page(cx, actions, ids!(sidebar_input), live_id!(input_page));
+        self.set_page(cx, actions, ids!(sidebar_input), live_id!(input_page), &content_flip);
         self.set_page(
             cx,
             actions,
             ids!(sidebar_radio_group),
             live_id!(radio_group_page),
+            &content_flip,
         );
         self.set_page(
             cx,
             actions,
             ids!(sidebar_resizable),
             live_id!(resizable_page),
+            &content_flip,
         );
         self.set_page(
             cx,
             actions,
             ids!(sidebar_scroll_area),
             live_id!(scroll_area_page),
+            &content_flip,
         );
-        self.set_page(cx, actions, ids!(sidebar_select), live_id!(select_page));
+        self.set_page(cx, actions, ids!(sidebar_select), live_id!(select_page), &content_flip);
         self.set_page(
             cx,
             actions,
             ids!(sidebar_separator),
             live_id!(separator_page),
+            &content_flip,
         );
-        self.set_page(cx, actions, ids!(sidebar_sheet), live_id!(sheet_page));
-        self.set_page(cx, actions, ids!(sidebar_skeleton), live_id!(skeleton_page));
-        self.set_page(cx, actions, ids!(sidebar_switch), live_id!(switch_page));
-        self.set_page(cx, actions, ids!(sidebar_tabs), live_id!(tabs_page));
-        self.set_page(cx, actions, ids!(sidebar_tooltip), live_id!(tooltip_page));
-        self.set_page(cx, actions, ids!(sidebar_kbd), live_id!(kbd_page));
-        self.set_page(cx, actions, ids!(sidebar_label), live_id!(label_page));
-        self.set_page(cx, actions, ids!(sidebar_progress), live_id!(progress_page));
-        self.set_page(cx, actions, ids!(sidebar_sidebar), live_id!(sidebar_page));
-        self.set_page(cx, actions, ids!(sidebar_slider), live_id!(slider_page));
-        self.set_page(cx, actions, ids!(sidebar_sonner), live_id!(sonner_page));
+        self.set_page(cx, actions, ids!(sidebar_sheet), live_id!(sheet_page), &content_flip);
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_skeleton),
+            live_id!(skeleton_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_switch),
+            live_id!(switch_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_tabs),
+            live_id!(tabs_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_tooltip),
+            live_id!(tooltip_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_kbd),
+            live_id!(kbd_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_label),
+            live_id!(label_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_progress),
+            live_id!(progress_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_sidebar),
+            live_id!(sidebar_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_slider),
+            live_id!(slider_page),
+            &content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_sonner),
+            live_id!(sonner_page),
+            &content_flip,
+        );
         if self.ui.button(cx, ids!(toast_event_btn)).clicked(actions) {
             if let Some(mut s) = self
                 .ui
