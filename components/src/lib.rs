@@ -23,10 +23,15 @@ pub mod drawer;
 pub mod dropdown_menu;
 pub mod hover_card;
 pub mod hr;
+pub mod input;
 pub mod kbd;
 pub mod label;
 pub mod panel;
 pub mod progress;
+pub mod radio_group;
+pub mod resizable;
+pub mod select;
+pub mod sheet;
 pub mod scroll;
 pub mod sidebar;
 pub mod skeleton;
@@ -34,7 +39,9 @@ pub mod slider;
 pub mod sonner;
 pub mod spinner;
 pub mod switch;
+pub mod tabs;
 pub mod theme;
+pub mod tooltip;
 
 pub fn script_mod(vm: &mut ScriptVm) {
     makepad_icon::script_mod(vm);
@@ -59,13 +66,20 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::skeleton::script_mod(vm);
     crate::kbd::script_mod(vm);
     crate::hr::script_mod(vm);
+    crate::input::script_mod(vm);
     crate::label::script_mod(vm);
     crate::panel::script_mod(vm);
     crate::progress::script_mod(vm);
+    crate::radio_group::script_mod(vm);
+    crate::resizable::script_mod(vm);
+    crate::select::script_mod(vm);
+    crate::sheet::script_mod(vm);
     crate::scroll::script_mod(vm);
     crate::sidebar::script_mod(vm);
     crate::slider::script_mod(vm);
     crate::sonner::script_mod(vm);
     crate::spinner::script_mod(vm);
     crate::switch::script_mod(vm);
+    crate::tabs::script_mod(vm);
+    crate::tooltip::script_mod(vm);
 }

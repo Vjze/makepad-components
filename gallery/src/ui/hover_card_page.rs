@@ -70,22 +70,14 @@ script_mod! {
                     demo_page := View{
                         width: Fill
                         height: Fit
-                        flow: Overlay
-
-                        View{
-                            width: Fill
+                        flow: Down
+                        spacing: 24.0
+                        ShadSectionHeader{ text: "Default" }
+                        hover_card_demo_area := View{
+                            width: Fit
                             height: Fit
-                            flow: Down
-                            spacing: 24.0
-                            ShadSectionHeader{ text: "Default" }
-                            hover_card_demo_area := View{
-                                width: Fit
-                                height: Fit
-                                hover_card_trigger := mod.widgets.ShadButtonOutline{text: "Hover me"}
-                            }
+                            hover_card_trigger := mod.widgets.ShadButtonOutline{text: "Hover me"}
                         }
-
-                        hover_card_tooltip := CalloutTooltip{width: Fill height: Fill}
                     }
 
                     code_page := View{

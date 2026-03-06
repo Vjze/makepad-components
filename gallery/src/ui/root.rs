@@ -12,11 +12,17 @@ script_mod! {
             body +: {
                 width: Fill
                 height: Fill
-                flow: Right
+                flow: Overlay
                 draw_bg.color: (shad_theme.color_background)
 
-                sidebar := mod.widgets.GallerySidebar{}
-                content_flip := mod.widgets.GalleryContentFlip{}
+                View{
+                    width: Fill
+                    height: Fill
+                    flow: Right
+                    sidebar := mod.widgets.GallerySidebar{}
+                    content_flip := mod.widgets.GalleryContentFlip{}
+                }
+                hover_card_tooltip := CalloutTooltip{width: Fill height: Fill}
             }
         }
     }

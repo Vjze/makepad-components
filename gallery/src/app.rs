@@ -1,5 +1,6 @@
 use makepad_components::makepad_widgets::*;
 use makepad_components::drawer::ShadDrawer;
+use makepad_components::sheet::ShadSheet;
 use makepad_components::{ShadCarousel, ShadDialog, ShadSonner};
 
 app_main!(App);
@@ -186,14 +187,43 @@ impl MatchEvent for App {
             ids!(sidebar_dropdown_menu),
             live_id!(dropdown_menu_page),
         );
-                self.set_page(
+        self.set_page(
             cx,
             actions,
             ids!(sidebar_hover_card),
             live_id!(hover_card_page),
         );
+        self.set_page(cx, actions, ids!(sidebar_input), live_id!(input_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_radio_group),
+            live_id!(radio_group_page),
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_resizable),
+            live_id!(resizable_page),
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_scroll_area),
+            live_id!(scroll_area_page),
+        );
+        self.set_page(cx, actions, ids!(sidebar_select), live_id!(select_page));
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_separator),
+            live_id!(separator_page),
+        );
+        self.set_page(cx, actions, ids!(sidebar_sheet), live_id!(sheet_page));
         self.set_page(cx, actions, ids!(sidebar_skeleton), live_id!(skeleton_page));
         self.set_page(cx, actions, ids!(sidebar_switch), live_id!(switch_page));
+        self.set_page(cx, actions, ids!(sidebar_tabs), live_id!(tabs_page));
+        self.set_page(cx, actions, ids!(sidebar_tooltip), live_id!(tooltip_page));
         self.set_page(cx, actions, ids!(sidebar_kbd), live_id!(kbd_page));
         self.set_page(cx, actions, ids!(sidebar_label), live_id!(label_page));
         self.set_page(cx, actions, ids!(sidebar_progress), live_id!(progress_page));
@@ -220,7 +250,127 @@ impl MatchEvent for App {
         }
         self.set_page(cx, actions, ids!(sidebar_spinner), live_id!(spinner_page));
 
-                Self::handle_preview_tabs(
+        if self.ui.button(cx, ids!(tooltip_basic_btn)).clicked(actions) {
+            let trigger = self.ui.button(cx, ids!(tooltip_basic_btn));
+            let content_rect = self.ui.view(cx, ids!(content_flip)).area().rect(cx);
+            let trigger_rect = trigger.area().rect(cx);
+            let pos = Vec2d {
+                x: content_rect.pos.x + trigger_rect.pos.x,
+                y: content_rect.pos.y + trigger_rect.pos.y + trigger_rect.size.y + 8.0,
+            };
+            self.ui
+                .tooltip(cx, ids!(basic_tooltip))
+                .show_with_options(cx, pos, "Helpful context for a nearby action.");
+        }
+        if self.ui.button(cx, ids!(tooltip_callout_btn)).clicked(actions) {
+            let tooltip_ref = self.ui.widget_flood(cx, ids!(callout_tooltip));
+            if !tooltip_ref.is_empty() {
+                let trigger = self.ui.button(cx, ids!(tooltip_callout_btn));
+                let content_rect = self.ui.view(cx, ids!(content_flip)).area().rect(cx);
+                let trigger_rect = trigger.area().rect(cx);
+                let rect = Rect {
+                    pos: content_rect.pos + trigger_rect.pos,
+                    size: trigger_rect.size,
+                };
+                if let Some(mut ct) = tooltip_ref.borrow_mut::<CalloutTooltip>() {
+                    ct.show_with_options(
+                        cx,
+                        "Callout tooltips can point at the related control.",
+                        rect,
+                        CalloutTooltipOptions::default(),
+                        false,
+                    );
+                }
+            }
+        }
+
+        if self.ui.button(cx, ids!(tabs_overview_trigger)).clicked(actions) {
+            self.ui
+                .page_flip(cx, ids!(tabs_content_flip))
+                .set_active_page(cx, live_id!(overview_page));
+            self.ui
+                .view(cx, ids!(tabs_overview_indicator))
+                .set_visible(cx, true);
+            self.ui
+                .view(cx, ids!(tabs_usage_indicator))
+                .set_visible(cx, false);
+            self.ui
+                .view(cx, ids!(tabs_settings_indicator))
+                .set_visible(cx, false);
+        }
+        if self.ui.button(cx, ids!(tabs_usage_trigger)).clicked(actions) {
+            self.ui
+                .page_flip(cx, ids!(tabs_content_flip))
+                .set_active_page(cx, live_id!(usage_page));
+            self.ui
+                .view(cx, ids!(tabs_overview_indicator))
+                .set_visible(cx, false);
+            self.ui
+                .view(cx, ids!(tabs_usage_indicator))
+                .set_visible(cx, true);
+            self.ui
+                .view(cx, ids!(tabs_settings_indicator))
+                .set_visible(cx, false);
+        }
+        if self.ui.button(cx, ids!(tabs_settings_trigger)).clicked(actions) {
+            self.ui
+                .page_flip(cx, ids!(tabs_content_flip))
+                .set_active_page(cx, live_id!(settings_page));
+            self.ui
+                .view(cx, ids!(tabs_overview_indicator))
+                .set_visible(cx, false);
+            self.ui
+                .view(cx, ids!(tabs_usage_indicator))
+                .set_visible(cx, false);
+            self.ui
+                .view(cx, ids!(tabs_settings_indicator))
+                .set_visible(cx, true);
+        }
+
+        if self.ui.button(cx, ids!(open_right_sheet_btn)).clicked(actions) {
+            let sheet = self.ui.widget_flood(cx, ids!(right_sheet));
+            if let Some(mut s) = sheet.borrow_mut::<ShadSheet>() {
+                s.set_open(true);
+            }
+            sheet.redraw(cx);
+        }
+        if self.ui.button(cx, ids!(open_left_sheet_btn)).clicked(actions) {
+            let sheet = self.ui.widget_flood(cx, ids!(left_sheet));
+            if let Some(mut s) = sheet.borrow_mut::<ShadSheet>() {
+                s.set_open(true);
+            }
+            sheet.redraw(cx);
+        }
+        if self.ui.button(cx, ids!(open_top_sheet_btn)).clicked(actions) {
+            let sheet = self.ui.widget_flood(cx, ids!(top_sheet));
+            if let Some(mut s) = sheet.borrow_mut::<ShadSheet>() {
+                s.set_open(true);
+            }
+            sheet.redraw(cx);
+        }
+        if self.ui.button(cx, ids!(open_bottom_sheet_btn)).clicked(actions) {
+            let sheet = self.ui.widget_flood(cx, ids!(bottom_sheet));
+            if let Some(mut s) = sheet.borrow_mut::<ShadSheet>() {
+                s.set_open(true);
+            }
+            sheet.redraw(cx);
+        }
+        for (path, button) in [
+            (ids!(right_sheet), ids!(close_right_sheet_btn)),
+            (ids!(left_sheet), ids!(close_left_sheet_btn)),
+            (ids!(top_sheet), ids!(close_top_sheet_btn)),
+            (ids!(bottom_sheet), ids!(close_bottom_sheet_btn)),
+        ] {
+            if self.ui.button(cx, button).clicked(actions) {
+                let sheet = self.ui.widget_flood(cx, path);
+                if let Some(mut s) = sheet.borrow_mut::<ShadSheet>() {
+                    s.set_open(false);
+                }
+                sheet.redraw(cx);
+            }
+        }
+
+        Self::handle_preview_tabs(
             &self.ui,
             cx,
             actions,
@@ -230,13 +380,28 @@ impl MatchEvent for App {
             ids!(hover_card_demo_indicator),
             ids!(hover_card_code_indicator),
         );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(input_demo_tab),
+            ids!(input_code_tab),
+            ids!(input_preview_flip),
+            ids!(input_demo_indicator),
+            ids!(input_code_indicator),
+        );
         let tooltip_ref = self.ui.widget_flood(cx, ids!(hover_card_tooltip));
         if self.ui.button(cx, ids!(hover_card_trigger)).clicked(actions) && !tooltip_ref.is_empty() {
             self.hover_card_open = !self.hover_card_open;
             if let Some(mut ct) = tooltip_ref.borrow_mut::<CalloutTooltip>() {
                 if self.hover_card_open {
                     let trigger = self.ui.view(cx, ids!(hover_card_trigger));
-                    let rect = trigger.area().rect(cx);
+                    let content_rect = self.ui.view(cx, ids!(content_flip)).area().rect(cx);
+                    let trigger_rect = trigger.area().rect(cx);
+                    let rect = Rect {
+                        pos: content_rect.pos + trigger_rect.pos,
+                        size: trigger_rect.size,
+                    };
                     ct.show_with_options(
                         cx,
                         "Card-style tooltip shown on hover or click.",

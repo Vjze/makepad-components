@@ -35,8 +35,17 @@ script_mod! {
             sidebar_drawer := ShadSidebarItem{text: "Drawer"}
             sidebar_dropdown_menu := ShadSidebarItem{text: "Dropdown Menu"}
             sidebar_hover_card := ShadSidebarItem{text: "Hover Card"}
+            sidebar_input := ShadSidebarItem{text: "Input"}
+            sidebar_radio_group := ShadSidebarItem{text: "Radio Group"}
+            sidebar_resizable := ShadSidebarItem{text: "Resizable"}
+            sidebar_scroll_area := ShadSidebarItem{text: "Scroll Area"}
+            sidebar_select := ShadSidebarItem{text: "Select"}
+            sidebar_separator := ShadSidebarItem{text: "Separator"}
+            sidebar_sheet := ShadSidebarItem{text: "Sheet"}
             sidebar_skeleton := ShadSidebarItem{text: "Skeleton"}
             sidebar_switch := ShadSidebarItem{text: "Switch"}
+            sidebar_tabs := ShadSidebarItem{text: "Tabs"}
+            sidebar_tooltip := ShadSidebarItem{text: "Tooltip"}
             sidebar_kbd := ShadSidebarItem{text: "Kbd"}
             sidebar_progress := ShadSidebarItem{text: "Progress"}
             sidebar_label := ShadSidebarItem{text: "Label"}

@@ -25,8 +25,17 @@ script_mod! {
         drawer_page := mod.widgets.GalleryDrawerPage{}
         dropdown_menu_page := mod.widgets.GalleryDropdownMenuPage{}
         hover_card_page := mod.widgets.GalleryHoverCardPage{}
+        input_page := mod.widgets.GalleryInputPage{}
+        radio_group_page := mod.widgets.GalleryRadioGroupPage{}
+        resizable_page := mod.widgets.GalleryResizablePage{}
+        scroll_area_page := mod.widgets.GalleryScrollAreaPage{}
+        select_page := mod.widgets.GallerySelectPage{}
+        separator_page := mod.widgets.GallerySeparatorPage{}
+        sheet_page := mod.widgets.GallerySheetPage{}
         skeleton_page := mod.widgets.GallerySkeletonPage{}
         switch_page := mod.widgets.GallerySwitchPage{}
+        tabs_page := mod.widgets.GalleryTabsPage{}
+        tooltip_page := mod.widgets.GalleryTooltipPage{}
         kbd_page := mod.widgets.GalleryKbdPage{}
         label_page := mod.widgets.GalleryLabelPage{}
         progress_page := mod.widgets.GalleryProgressPage{}

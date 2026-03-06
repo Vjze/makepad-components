@@ -17,10 +17,17 @@ pub mod dialog_page;
 pub mod drawer_page;
 pub mod dropdown_menu_page;
 pub mod hover_card_page;
+pub mod input_page;
 pub mod kbd_page;
 pub mod label_page;
 pub mod progress_page;
+pub mod radio_group_page;
+pub mod resizable_page;
 pub mod root;
+pub mod scroll_area_page;
+pub mod select_page;
+pub mod separator_page;
+pub mod sheet_page;
 pub mod sidebar;
 pub mod sidebar_page;
 pub mod slider_page;
@@ -29,7 +36,9 @@ pub mod spinner_page;
 pub mod skeleton_page;
 pub mod snippets;
 pub mod switch_page;
+pub mod tabs_page;
 pub mod themed_widgets;
+pub mod tooltip_page;
 
 pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::themed_widgets::script_mod(vm);
@@ -50,9 +59,18 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::drawer_page::script_mod(vm);
     crate::ui::dropdown_menu_page::script_mod(vm);
     crate::ui::hover_card_page::script_mod(vm);
+    crate::ui::input_page::script_mod(vm);
 
+    crate::ui::radio_group_page::script_mod(vm);
+    crate::ui::resizable_page::script_mod(vm);
+    crate::ui::scroll_area_page::script_mod(vm);
+    crate::ui::select_page::script_mod(vm);
+    crate::ui::separator_page::script_mod(vm);
+    crate::ui::sheet_page::script_mod(vm);
     crate::ui::skeleton_page::script_mod(vm);
     crate::ui::switch_page::script_mod(vm);
+    crate::ui::tabs_page::script_mod(vm);
+    crate::ui::tooltip_page::script_mod(vm);
     crate::ui::kbd_page::script_mod(vm);
     crate::ui::label_page::script_mod(vm);
     crate::ui::progress_page::script_mod(vm);

@@ -64,7 +64,9 @@ cargo run -p makepad-example-component-gallery --release
 ```bash
 cargo install --git https://github.com/makepad/makepad.git --branch dev cargo-makepad --locked
 cargo makepad wasm install-toolchain
-cargo makepad wasm build --brotli --bindgen -p makepad-example-component-gallery --release --profile=small
+wasm-opt --version   # from Binaryen
+brotli --version
+./scripts/build_wasm.sh -p makepad-example-component-gallery --profile small --release --bindgen
 ```
 
 Expected output directory:
@@ -158,7 +160,7 @@ script_mod! {
 - [x] Drawer
 - [x] Dropdown Menu
 - [ ] Empty
-- [ ] Input & Field
+- [x] Input & Field
 - [x] Hover Card
 - [ ] Input OTP
 - [x] Kbd
@@ -169,12 +171,12 @@ script_mod! {
 - [ ] Pagination
 - [ ] Popover
 - [x] Progress
-- [ ] Radio Group
-- [ ] Resizable
-- [ ] Scroll Area
-- [ ] Select
-- [ ] Separator
-- [ ] Sheet
+- [x] Radio Group
+- [x] Resizable
+- [x] Scroll Area
+- [x] Select
+- [x] Separator
+- [x] Sheet
 - [x] Sidebar
 - [x] Skeleton
 - [x] Slider
@@ -182,12 +184,12 @@ script_mod! {
 - [x] Spinner
 - [x] Switch
 - [ ] Table
-- [ ] Tabs
+- [x] Tabs
 - [ ] Textarea
 - [ ] Toggle & Toggle Group
-- [ ] Tooltip
+- [x] Tooltip
 
-**Known limitation:** In the gallery app, the Dropdown Menu (and the base `DropDown` widget) may not open on click; this appears to be an interaction between the gallery’s layout (flow + PageFlip) and the platform’s hit/sweep handling. For a working dropdown example, see the splash app (`splash_app.md` or the makepad repo’s splash example), which uses a Dock-based layout.
+**Known limitation:** In the gallery app, popup-style selectors (`ShadDropdownMenu`, `ShadSelect`, and the base `DropDown` widget) may not open reliably on click; this appears to be an interaction between the gallery’s layout (flow + `PageFlip`) and the platform’s hit/sweep handling. For working popup interaction examples, see the splash app (`splash_app.md` or the makepad repo’s splash example), which uses a Dock-based layout.
 
 ### Buttons (`components/src/button.rs`)
 
@@ -226,6 +228,53 @@ script_mod! {
 - `ShadAlertDestructiveIcon`
 - `ShadAlertDestructiveTitle`
 
+### Input & Field (`components/src/input.rs`)
+
+- `ShadInput`
+- `ShadInputWithIcon`
+- `ShadField`
+- `ShadFieldLabel`
+- `ShadFieldDescription`
+- `ShadFieldMessage`
+
+Use `ShadField` as a layout wrapper around `ShadInput` or another form control. Validation/state stays in app code.
+
+### Separator (`components/src/hr.rs`)
+
+- `ShadSeparator`
+
+Compatibility alias: `ShadHr`.
+
+### Scroll Area (`components/src/scroll.rs`)
+
+- `ShadScrollArea` — vertical scroll container
+- `ShadScrollAreaX` — horizontal scroll container
+- `ShadScrollAreaXY` — two-axis scroll container
+
+Compatibility alias: `ShadScrollYView`.
+
+### Tooltip (`components/src/tooltip.rs`)
+
+- `ShadTooltip`
+- `ShadTooltipCallout`
+
+Thin wrappers over Makepad tooltip primitives. Drive them from hover/focus/click in app code via `show_with_options(...)`.
+
+### Radio Group (`components/src/radio_group.rs`)
+
+- `ShadRadioGroup`
+- `ShadRadioGroupInline`
+- `ShadRadioItem`
+
+Use Makepad `radio_button_set(...).selected(cx, actions)` to keep a single item active.
+
+### Select (`components/src/select.rs`)
+
+- `ShadSelect`
+- `ShadSelectItem`
+
+Single-select, non-searchable dropdown built on the popup menu stack.
+
 ### Dialog (`components/src/dialog.rs`)
 
 - `ShadDialog` — generic modal with customizable `body` content (closes on backdrop/Escape; wire your own Close button)
@@ -249,6 +298,29 @@ Use `ShadProgress66{}` for 66%. For custom values, extend `ShadProgressBase` wit
 - `ShadSlider` — shadcn-style range slider (extends makepad SliderRoundFlat)
 
 Props: `default`, `min`, `max`, `step`. Uses makepad Slider actions for value changes.
+
+### Tabs (`components/src/tabs.rs`)
+
+- `ShadTabs`
+- `ShadTabsList`
+- `ShadTabsTrigger`
+- `ShadTabsContent`
+
+This wave ships the canonical styling primitives; pair them with `PageFlip` or another app-level state holder.
+
+### Sheet (`components/src/sheet.rs`)
+
+- `ShadSheet`
+- `ShadSheetTitle`
+- `ShadSheetDescription`
+
+Props: `open` (bool). Script API: `set_open(bool)` and `is_open() -> bool`.
+
+### Resizable (`components/src/resizable.rs`)
+
+- `ShadResizable`
+
+Thin wrapper over Makepad `Splitter` for two-pane layouts.
 
 ### Sonner / Toast (`components/src/sonner.rs`)
 
