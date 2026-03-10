@@ -19,6 +19,7 @@ script_mod! {
     }
 
     mod.widgets.ShadButtonGroupItem = mod.widgets.ButtonFlat{
+        cursor: MouseCursor.Hand
         width: Fit
         height: 36
         padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
