@@ -185,7 +185,6 @@ script_mod! {
                         close_btn := mod.widgets.IconButtonX{
                             width: 24
                             height: 24
-                            cursor: MouseCursor.Hand
                             draw_bg +: {
                                 color: #0000
                                 color_hover: (shad_theme.color_ghost_hover)
