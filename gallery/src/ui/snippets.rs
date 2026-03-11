@@ -14,13 +14,17 @@ pub const KBD_PREVIEW_CODE: &str = "View{\n    width: Fit\n    height: Fit\n    
 pub const LABEL_PREVIEW_CODE: &str = "mod.widgets.ShadLabel{ text: \"Your email address\" }";
 pub const PROGRESS_PREVIEW_CODE: &str = "View{\n    width: Fill\n    height: Fit\n    flow: Down\n    spacing: 12.0\n    ShadProgress33{}\n    ShadProgress66{}\n    ShadProgressFull{}\n    ShadProgressIndeterminate{}\n}";
 pub const SLIDER_PREVIEW_CODE: &str = "View{\n    width: Fill\n    height: Fit\n    flow: Down\n    spacing: 16.0\n    ShadSlider{default: 0.5}\n    ShadSlider{default: 0.8}\n}";
-pub const SPINNER_PREVIEW_CODE: &str = "ShadSpinner{}\n\n// 24×24 circular loading indicator. Use for async/loading states.";
+pub const SPINNER_PREVIEW_CODE: &str =
+    "ShadSpinner{}\n\n// 24×24 circular loading indicator. Use for async/loading states.";
 pub const SONNER_PREVIEW_CODE: &str = "// Basic toast\nView{\n    flow: Right\n    spacing: 8.0\n    ShadButton{text: \"Event created\"}\n    ShadButton{text: \"Toast with description\"}\n}\nShadSonner{open: false}\nShadSonnerWithDescription{open: false}\n\n// Toast with check icon + close button\nShadButton{text: \"Show toast with close\"}\nShadSonnerWithClose{open: false}\n\n// In handle_actions: call set_open(true) when button clicked.\n// ShadSonnerWithClose also dismisses when its X button is clicked.";
 
 pub const DIALOG_PREVIEW_CODE: &str = "// Generic: ShadDialog with overlay +: { content +: { body +: { ... } } }\n// Alert: ShadDialogAlert{ open: false } — closes on Cancel/Confirm/backdrop\n// Destructive: ShadDialogAlertDestructive{ open: false }\n\nmod.widgets.ShadButton{text: \"Open dialog\"}\nmod.widgets.ShadDialog{ open: false }\nmod.widgets.ShadDialogAlert{ open: false }\nmod.widgets.ShadDialogAlertDestructive{ open: false }\n\n// In handle_actions: call set_open(true) when trigger clicked.";
 pub const DRAWER_PREVIEW_CODE: &str = "ShadButton{text: \"Open drawer\"}\nShadDrawer{open: false}\n\n// In handle_actions: call set_open(true) when trigger clicked.";
+#[allow(dead_code)]
 pub const DROPDOWN_MENU_PREVIEW_CODE: &str = "ShadDropdownMenu{labels: [\"Option A\" \"Option B\" \"Option C\"]}\n\n// Or DropDown{labels: [\"A\" \"B\" \"C\"]} for base styling.";
+#[allow(dead_code)]
 pub const EMPTY_PREVIEW_CODE: &str = "ShadEmpty{\n    ShadEmptyIconContainer{ ShadEmptyIcon{text: \"📁\"} }\n    ShadEmptyContent{\n        ShadEmptyTitle{text: \"No files yet\"}\n        ShadEmptyDescription{text: \"Upload or create a file to get started.\"}\n        ShadEmptyAction{ ShadButton{text: \"Upload file\"} }\n    }\n}";
+#[allow(dead_code)]
 pub const FIELD_PREVIEW_CODE: &str = "ShadField{\n    ShadFieldLabel{text: \"Email\"}\n    TextInput{empty_text: \"you@example.com\"}\n    ShadFieldDescription{text: \"We'll never share your email.\"}\n}";
 pub const HOVER_CARD_PREVIEW_CODE: &str = "View{\n    flow: Down\n    hover_card_trigger := ShadButtonOutline{text: \"Hover me\"}\n    hover_card_tooltip := CalloutTooltip{}\n}\n\n// In handle_actions: on trigger.finger_hover_in(actions), call\n// tooltip.show_with_options(cx, text, trigger.area().rect(cx), CalloutTooltipOptions::default());\n// on finger_hover_out, call tooltip.hide(cx).";
 pub const INPUT_PREVIEW_CODE: &str = "ShadField{\n    ShadFieldLabel{text: \"Email\"}\n    ShadInput{empty_text: \"you@example.com\"}\n    ShadFieldDescription{text: \"We'll never share your email.\"}\n}\n\nShadInputWithIcon{}";

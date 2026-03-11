@@ -446,7 +446,13 @@ impl MatchEvent for App {
                 s.set_open(true);
             }
         }
-        self.set_page(cx, actions, ids!(sidebar_spinner), live_id!(spinner_page), &content_flip);
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_spinner),
+            live_id!(spinner_page),
+            &content_flip,
+        );
 
         if self.ui.button(cx, ids!(tooltip_basic_btn)).clicked(actions) {
             let trigger = self.ui.button(cx, ids!(tooltip_basic_btn));
