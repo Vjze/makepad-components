@@ -90,6 +90,7 @@ script_mod! {
                         cancel := ButtonFlat{
                             text: "Cancel"
                             height: 36
+                            cursor: MouseCursor.Hand
                             padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
                             draw_bg +: {
                                 color: #0000
@@ -106,6 +107,7 @@ script_mod! {
                         confirm := ButtonFlat{
                             text: "Continue"
                             height: 36
+                            cursor: MouseCursor.Hand
                             padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
                             draw_bg +: {
                                 color: (shad_theme.color_primary_foreground)
@@ -174,6 +176,7 @@ script_mod! {
                         cancel := ButtonFlat{
                             text: "Cancel"
                             height: 36
+                            cursor: MouseCursor.Hand
                             padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
                             draw_bg +: {
                                 color: #0000
@@ -190,6 +193,7 @@ script_mod! {
                         confirm := ButtonFlat{
                             text: "Delete"
                             height: 36
+                            cursor: MouseCursor.Hand
                             padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
                             draw_bg +: {
                                 color: (shad_theme.color_destructive)
