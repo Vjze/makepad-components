@@ -23,7 +23,8 @@ script_mod! {
 
             skeleton_tabs_row := View{
                 width: Fit
-                height: Fit
+                visible: false
+                height: 0
                 flow: Right
                 spacing: 20.0
                 margin: Inset{top: 4, bottom: 12}
@@ -106,14 +107,14 @@ script_mod! {
 
                     code_page +: {
                         body +: {
-                        width: Fill
-                        height: Fit
-                        flow: Down
-                        spacing: 12.0
+                            width: Fill
+                            height: Fit
+                            flow: Down
+                            spacing: 12.0
 
-                        GalleryCodeSnippet{
-                            code: "View{\n    width: Fill\n    height: Fit\n    flow: Right\n    spacing: 12.0\n    align: Align{x: 0.0, y: 0.5}\n\n    ShadSkeleton{\n        width: 48\n        height: 48\n        draw_bg.border_radius: 24.0\n    }\n\n    View{\n        width: Fit\n        height: Fit\n        flow: Down\n        spacing: 8.0\n\n        ShadSkeleton{\n            width: 200\n            height: 16\n        }\n        ShadSkeleton{\n            width: 150\n            height: 16\n        }\n    }\n}"
-                        }
+                            GalleryCodeSnippet{
+                                code_view +: { text: "View{\n    width: Fill\n    height: Fit\n    flow: Right\n    spacing: 12.0\n    align: Align{x: 0.0, y: 0.5}\n\n    ShadSkeleton{\n        width: 48\n        height: 48\n        draw_bg.border_radius: 24.0\n    }\n\n    View{\n        width: Fit\n        height: Fit\n        flow: Down\n        spacing: 8.0\n\n        ShadSkeleton{\n            width: 200\n            height: 16\n        }\n        ShadSkeleton{\n            width: 150\n            height: 16\n        }\n    }\n}" }
+                            }
                         }
                     }
                 }

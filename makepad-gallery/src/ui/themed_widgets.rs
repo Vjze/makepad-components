@@ -4,27 +4,27 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GalleryCodeSnippetBase = #(GalleryCodeSnippet::register_widget(vm))
-
-    mod.widgets.GalleryCodeSnippet = set_type_default() do mod.widgets.GalleryCodeSnippetBase{
+    mod.widgets.GalleryCodeSnippet = SolidView{
         width: Fill
         height: Fit
-        code: ""
-        code_container := SolidView{
-            width: Fill
-            height: Fit
-            padding: Inset{top: 12, right: 12, bottom: 12, left: 12}
-            draw_bg +: {
-                color: (shad_theme.color_muted)
-                border_radius: (shad_theme.radius)
-            }
+        padding: Inset{top: 12, right: 12, bottom: 12, left: 12}
+        draw_bg +: {
+            color: (shad_theme.color_muted)
+            border_radius: (shad_theme.radius)
+        }
 
-            code_label := Label{
+        code_view := CodeView{
+            text: ""
+            editor +: {
                 width: Fill
                 height: Fit
-                padding: 0
+                pad_left_top: vec2(0.0, 0.0)
+                empty_page_at_end: false
+                show_gutter: false
+                draw_bg +: {
+                    color: #0000
+                }
                 draw_text +: {
-                    color: (shad_theme.color_primary)
                     text_style: theme.font_code{
                         font_size: theme.font_size_code
                         line_spacing: theme.font_longform_line_spacing
@@ -34,10 +34,15 @@ script_mod! {
         }
     }
 
-    mod.widgets.GalleryPreviewStackNavigation = mod.widgets.PageFlip{
+    mod.widgets.GalleryPreviewStackNavigation = View{
         width: Fill
         height: Fit
-        active_page: @root_view
+        flow: Down
+        spacing: 16.0
+
+        preview_title := ShadSectionHeader{
+            text: "Preview"
+        }
 
         root_view := View{
             width: Fill
@@ -49,6 +54,12 @@ script_mod! {
         code_page := View{
             width: Fill
             height: Fit
+            flow: Down
+            spacing: 12.0
+
+            code_title := ShadSectionHeader{
+                text: "Code"
+            }
 
             body := View{
                 width: Fill
@@ -65,8 +76,9 @@ script_mod! {
         flow: Down
 
         tabs_row := View{
+            visible: false
+            height: 0
             width: Fit
-            height: Fit
             flow: Right
             spacing: 20.0
             margin: Inset{top: 4, bottom: 12}
@@ -110,54 +122,10 @@ script_mod! {
 
                 code_page +: {
                     body +: {
-                        code_snippet := GalleryCodeSnippet{
-                            code: ""
-                        }
+                        code_snippet := mod.widgets.GalleryCodeSnippet{}
                     }
                 }
             }
         }
-    }
-
-}
-
-#[derive(Script, ScriptHook, Widget)]
-pub struct GalleryCodeSnippet {
-    #[source]
-    source: ScriptObjectRef,
-    #[deref]
-    view: View,
-    #[live]
-    code: ArcStringMut,
-    #[rust]
-    last_code: String,
-}
-
-impl GalleryCodeSnippet {
-    fn sync_code(&mut self, cx: &mut Cx) {
-        let current_raw = self.code.as_ref();
-        if current_raw == self.last_code.as_str() {
-            return;
-        }
-
-        let label = self.view.widget(cx, ids!(code_label));
-        if label.is_empty() {
-            return;
-        }
-
-        label.set_text(cx, current_raw.trim());
-        self.last_code = current_raw.to_string();
-    }
-}
-
-impl Widget for GalleryCodeSnippet {
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        self.sync_code(cx);
-        self.view.handle_event(cx, event, scope);
-    }
-
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.sync_code(cx);
-        self.view.draw_walk(cx, scope, walk)
     }
 }

@@ -23,7 +23,8 @@ script_mod! {
 
             sidebar_tabs_row := View{
                 width: Fit
-                height: Fit
+                visible: false
+                height: 0
                 flow: Right
                 spacing: 20.0
                 margin: Inset{top: 4, bottom: 12}
@@ -104,14 +105,14 @@ script_mod! {
 
                     code_page +: {
                         body +: {
-                        width: Fill
-                        height: Fit
-                        flow: Down
-                        spacing: 12.0
+                            width: Fill
+                            height: Fit
+                            flow: Down
+                            spacing: 12.0
 
-                        GalleryCodeSnippet{
-                            code: "mod.widgets.ShadSidebar{\n    width: 300\n    Label{text: \"Acme Inc\"}\n    ShadSidebarSectionLabel{text: \"Platform\"}\n    ShadSidebarItem{text: \"Playground\"}\n    ShadSidebarItem{text: \"History\"}\n}"
-                        }
+                            GalleryCodeSnippet{
+                                code_view +: { text: "mod.widgets.ShadSidebar{\n    width: 300\n    Label{text: \"Acme Inc\"}\n    ShadSidebarSectionLabel{text: \"Platform\"}\n    ShadSidebarItem{text: \"Playground\"}\n    ShadSidebarItem{text: \"History\"}\n}" }
+                            }
                         }
                     }
                 }

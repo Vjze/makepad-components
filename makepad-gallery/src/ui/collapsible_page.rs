@@ -24,7 +24,8 @@ script_mod! {
 
             collapsible_tabs_row := View{
                 width: Fit
-                height: Fit
+                visible: false
+                height: 0
                 flow: Right
                 spacing: 20.0
                 margin: Inset{top: 4, bottom: 12}
@@ -155,7 +156,7 @@ script_mod! {
                         spacing: 12.0
 
                         GalleryCodeSnippet{
-                            code: #(COLLAPSIBLE_PREVIEW_CODE)
+                            code_view +: { text: #(COLLAPSIBLE_PREVIEW_CODE) }
                         }
                         }
                     }

@@ -23,7 +23,8 @@ script_mod! {
 
             badge_tabs_row := View{
                 width: Fit
-                height: Fit
+                visible: false
+                height: 0
                 flow: Right
                 spacing: 20.0
                 margin: Inset{top: 4, bottom: 12}
@@ -106,7 +107,7 @@ script_mod! {
                         spacing: 12.0
 
                         GalleryCodeSnippet{
-                            code: #(BADGE_PREVIEW_CODE)
+                            code_view +: { text: #(BADGE_PREVIEW_CODE) }
                         }
                         }
                     }
