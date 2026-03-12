@@ -9,7 +9,7 @@ on:
       package:
         description: Cargo package/profile name for `cargo makepad wasm build -p`
         required: false
-        default: makepad-example-component-gallery
+        default: makepad-gallery
 
 permissions:
   contents: read
@@ -42,7 +42,7 @@ jobs:
         run: |
           APP_PACKAGE="${{ github.event.inputs.package }}"
           if [ -z "${APP_PACKAGE}" ]; then
-            APP_PACKAGE="makepad-example-component-gallery"
+            APP_PACKAGE="makepad-gallery"
           fi
           echo "APP_PACKAGE=${APP_PACKAGE}" >> "${GITHUB_ENV}"
           echo "WASM_OUTPUT_ROOT=target/makepad-wasm-app/small" >> "${GITHUB_ENV}"
