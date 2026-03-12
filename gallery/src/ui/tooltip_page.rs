@@ -107,7 +107,7 @@ script_mod! {
                             flow: Down
                             spacing: 12.0
 
-                            GalleryCodeSnippetSimple{
+                            GalleryCodeSnippet{
                                 code: #(TOOLTIP_PREVIEW_CODE)
                             }
                         }

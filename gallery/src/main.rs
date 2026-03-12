@@ -313,13 +313,6 @@ impl MatchEvent for App {
         self.set_page(
             cx,
             actions,
-            ids!(sidebar_dropdown_menu),
-            live_id!(dropdown_menu_page),
-            content_flip,
-        );
-        self.set_page(
-            cx,
-            actions,
             ids!(sidebar_input),
             live_id!(input_page),
             content_flip,
@@ -702,16 +695,6 @@ impl MatchEvent for App {
             ids!(dialog_preview_flip),
             ids!(dialog_demo_indicator),
             ids!(dialog_code_indicator),
-        );
-        Self::handle_preview_tabs(
-            &self.ui,
-            cx,
-            actions,
-            ids!(dropdown_demo_tab),
-            ids!(dropdown_code_tab),
-            ids!(dropdown_preview_flip),
-            ids!(dropdown_demo_indicator),
-            ids!(dropdown_code_indicator),
         );
         Self::handle_preview_tabs(
             &self.ui,

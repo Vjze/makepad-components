@@ -149,7 +149,7 @@ script_mod! {
                         flow: Down
                         spacing: 12.0
 
-                        GalleryCodeSnippetSimple{
+                        GalleryCodeSnippet{
                             code: #(RESIZABLE_PREVIEW_CODE)
                         }
                     }

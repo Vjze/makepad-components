@@ -98,7 +98,7 @@ script_mod! {
                         flow: Down
                         spacing: 12.0
 
-                        GalleryCodeSnippetSimple{
+                        GalleryCodeSnippet{
                             code: #(SEPARATOR_PREVIEW_CODE)
                         }
                     }

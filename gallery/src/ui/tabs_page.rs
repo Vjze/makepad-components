@@ -148,7 +148,7 @@ script_mod! {
                         flow: Down
                         spacing: 12.0
 
-                        GalleryCodeSnippetSimple{
+                        GalleryCodeSnippet{
                             code: #(TABS_PREVIEW_CODE)
                         }
                     }

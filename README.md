@@ -156,7 +156,6 @@ script_mod! {
 - [ ] Date Picker
 - [x] Dialog
 - [x] Drawer
-- [x] Dropdown Menu
 - [ ] Empty
 - [x] Input & Field
 - [x] Hover Card
@@ -187,7 +186,7 @@ script_mod! {
 - [ ] Toggle & Toggle Group
 - [x] Tooltip
 
-**Known limitation:** In the gallery app, popup-style selectors (`ShadDropdownMenu`, `ShadSelect`, and the base `DropDown` widget) may not open reliably on click; this appears to be an interaction between the gallery’s layout (flow + `PageFlip`) and the platform’s hit/sweep handling. For working popup interaction examples, see the splash app (`splash_app.md` or the makepad repo’s splash example), which uses a Dock-based layout.
+**Known limitation:** In the gallery app, popup-style selectors (`ShadSelect` and the base `DropDown` widget) may not open reliably on click; this appears to be an interaction between the gallery’s layout (flow + `PageFlip`) and the platform’s hit/sweep handling. For working popup interaction examples, see the splash app (`splash_app.md` or the makepad repo’s splash example), which uses a Dock-based layout.
 
 ### Buttons (`components/src/button.rs`)
 

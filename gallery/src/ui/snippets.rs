@@ -19,8 +19,6 @@ pub const SONNER_PREVIEW_CODE: &str = "// Basic toast\nView{\n    flow: Right\n 
 
 pub const DIALOG_PREVIEW_CODE: &str = "// Generic: ShadDialog with overlay +: { content +: { body +: { ... } } }\n// Alert: ShadDialogAlert{ open: false } — closes on Cancel/Confirm/backdrop\n// Destructive: ShadDialogAlertDestructive{ open: false }\n\nmod.widgets.ShadButton{text: \"Open dialog\"}\nmod.widgets.ShadDialog{ open: false }\nmod.widgets.ShadDialogAlert{ open: false }\nmod.widgets.ShadDialogAlertDestructive{ open: false }\n\n// In handle_actions: call set_open(true) when trigger clicked.";
 #[allow(dead_code)]
-pub const DROPDOWN_MENU_PREVIEW_CODE: &str = "ShadDropdownMenu{\n    labels: [\"Option A\" \"Option B\" \"Option C\"]\n}\n\n// Uses the shared popup-menu skin so the trigger and opened menu match.";
-#[allow(dead_code)]
 pub const EMPTY_PREVIEW_CODE: &str = "ShadEmpty{\n    ShadEmptyIconContainer{ ShadEmptyIcon{text: \"📁\"} }\n    ShadEmptyContent{\n        ShadEmptyTitle{text: \"No files yet\"}\n        ShadEmptyDescription{text: \"Upload or create a file to get started.\"}\n        ShadEmptyAction{ ShadButton{text: \"Upload file\"} }\n    }\n}";
 #[allow(dead_code)]
 pub const FIELD_PREVIEW_CODE: &str = "ShadField{\n    ShadFieldLabel{text: \"Email\"}\n    TextInput{empty_text: \"you@example.com\"}\n    ShadFieldDescription{text: \"We'll never share your email.\"}\n}";

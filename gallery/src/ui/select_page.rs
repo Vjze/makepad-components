@@ -11,7 +11,7 @@ script_mod! {
         }
 
         ShadPageSubtitle{
-            text: "Single-choice, non-searchable selection built on the same popup stack as Dropdown Menu."
+            text: "Single-choice, non-searchable selection built on the shared popup-menu stack."
         }
 
         ShadSeparator{}
@@ -102,7 +102,7 @@ script_mod! {
                         flow: Down
                         spacing: 12.0
 
-                        GalleryCodeSnippetSimple{
+                        GalleryCodeSnippet{
                             code: #(SELECT_PREVIEW_CODE)
                         }
                     }
