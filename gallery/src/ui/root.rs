@@ -22,7 +22,6 @@ script_mod! {
         checkbox_page := mod.widgets.GalleryCheckboxPage{}
         collapsible_page := mod.widgets.GalleryCollapsiblePage{}
         dialog_page := mod.widgets.GalleryDialogPage{}
-        drawer_page := mod.widgets.GalleryDrawerPage{}
         dropdown_menu_page := mod.widgets.GalleryDropdownMenuPage{}
         hover_card_page := mod.widgets.GalleryHoverCardPage{}
         input_page := mod.widgets.GalleryInputPage{}

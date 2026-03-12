@@ -32,7 +32,6 @@ script_mod! {
             sidebar_checkbox := ShadSidebarItem{text: "Checkbox"}
             sidebar_collapsible := ShadSidebarItem{text: "Collapsible"}
             sidebar_dialog := ShadSidebarItem{text: "Dialog"}
-            sidebar_drawer := ShadSidebarItem{text: "Drawer"}
             sidebar_dropdown_menu := ShadSidebarItem{text: "Dropdown Menu"}
             sidebar_hover_card := ShadSidebarItem{text: "Hover Card"}
             sidebar_input := ShadSidebarItem{text: "Input"}

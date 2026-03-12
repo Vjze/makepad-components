@@ -19,7 +19,6 @@ pub mod carousel;
 pub use carousel::ShadCarousel;
 pub mod checkbox;
 pub mod collapsible;
-pub mod drawer;
 pub mod dropdown_menu;
 pub mod hover_card;
 pub mod hr;
@@ -59,7 +58,6 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::checkbox::script_mod(vm);
     crate::collapsible::script_mod(vm);
     crate::dialog::script_mod(vm);
-    crate::drawer::script_mod(vm);
     crate::dropdown_menu::script_mod(vm);
     crate::hover_card::script_mod(vm);
 

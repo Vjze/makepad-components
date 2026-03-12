@@ -14,7 +14,6 @@ pub mod checkbox_page;
 pub mod collapsible_page;
 pub mod content_flip;
 pub mod dialog_page;
-pub mod drawer_page;
 pub mod dropdown_menu_page;
 pub mod hover_card_page;
 pub mod input_page;
@@ -57,7 +56,6 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::checkbox_page::script_mod(vm);
     crate::ui::collapsible_page::script_mod(vm);
     crate::ui::dialog_page::script_mod(vm);
-    crate::ui::drawer_page::script_mod(vm);
     crate::ui::dropdown_menu_page::script_mod(vm);
     crate::ui::hover_card_page::script_mod(vm);
     crate::ui::input_page::script_mod(vm);

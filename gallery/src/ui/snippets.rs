@@ -18,7 +18,6 @@ pub const SPINNER_PREVIEW_CODE: &str = "ShadSpinner{}\n\n// 24×24 circular load
 pub const SONNER_PREVIEW_CODE: &str = "// Basic toast\nView{\n    flow: Right\n    spacing: 8.0\n    ShadButton{text: \"Event created\"}\n    ShadButton{text: \"Toast with description\"}\n}\nShadSonner{open: false}\nShadSonnerWithDescription{open: false}\n\n// Toast with check icon + close button\nShadButton{text: \"Show toast with close\"}\nShadSonnerWithClose{open: false}\n\n// In handle_actions: call set_open(true) when button clicked.\n// ShadSonnerWithClose also dismisses when its X button is clicked.";
 
 pub const DIALOG_PREVIEW_CODE: &str = "// Generic: ShadDialog with overlay +: { content +: { body +: { ... } } }\n// Alert: ShadDialogAlert{ open: false } — closes on Cancel/Confirm/backdrop\n// Destructive: ShadDialogAlertDestructive{ open: false }\n\nmod.widgets.ShadButton{text: \"Open dialog\"}\nmod.widgets.ShadDialog{ open: false }\nmod.widgets.ShadDialogAlert{ open: false }\nmod.widgets.ShadDialogAlertDestructive{ open: false }\n\n// In handle_actions: call set_open(true) when trigger clicked.";
-pub const DRAWER_PREVIEW_CODE: &str = "ShadButton{text: \"Open drawer\"}\nShadDrawer{open: false}\n\n// In handle_actions: call set_open(true) when trigger clicked.";
 #[allow(dead_code)]
 pub const DROPDOWN_MENU_PREVIEW_CODE: &str = "ShadDropdownMenu{\n    labels: [\"Option A\" \"Option B\" \"Option C\"]\n}\n\n// Uses the shared popup-menu skin so the trigger and opened menu match.";
 #[allow(dead_code)]

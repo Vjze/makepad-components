@@ -2,7 +2,6 @@ pub use makepad_widgets;
 
 mod ui;
 
-use makepad_components::drawer::ShadDrawer;
 use makepad_components::makepad_widgets::*;
 use makepad_components::sheet::ShadSheet;
 use makepad_components::{ShadCarousel, ShadDialog, ShadSonner};
@@ -307,20 +306,6 @@ impl MatchEvent for App {
             if let Some(mut d) = dialog_ref.borrow_mut::<ShadDialog>() {
                 d.set_open(false);
             }
-        }
-        self.set_page(
-            cx,
-            actions,
-            ids!(sidebar_drawer),
-            live_id!(drawer_page),
-            content_flip,
-        );
-        if self.ui.button(cx, ids!(open_drawer_btn)).clicked(actions) {
-            let drawer = self.ui.widget_flood(cx, ids!(drawer_demo));
-            if let Some(mut d) = drawer.borrow_mut::<ShadDrawer>() {
-                d.set_open(true);
-            }
-            drawer.redraw(cx);
         }
         self.set_page(
             cx,
@@ -721,16 +706,6 @@ impl MatchEvent for App {
             ids!(dialog_preview_flip),
             ids!(dialog_demo_indicator),
             ids!(dialog_code_indicator),
-        );
-        Self::handle_preview_tabs(
-            &self.ui,
-            cx,
-            actions,
-            ids!(drawer_demo_tab),
-            ids!(drawer_code_tab),
-            ids!(drawer_preview_flip),
-            ids!(drawer_demo_indicator),
-            ids!(drawer_code_indicator),
         );
         Self::handle_preview_tabs(
             &self.ui,
