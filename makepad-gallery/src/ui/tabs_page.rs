@@ -61,12 +61,11 @@ script_mod! {
             }
 
             tabs_preview_panel := mod.widgets.ShadPanel{
-                tabs_preview_flip := PageFlip{
+                tabs_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -119,7 +118,7 @@ script_mod! {
                                 }
                             }
 
-                            tabs_content_flip := PageFlip{
+                            tabs_content_flip := mod.widgets.GalleryPageFlip{
                                 width: Fill
                                 height: Fit
                                 active_page: @overview_page
@@ -142,7 +141,8 @@ script_mod! {
                         }
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -150,6 +150,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: #(TABS_PREVIEW_CODE)
+                        }
                         }
                     }
                 }

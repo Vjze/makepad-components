@@ -19,8 +19,10 @@ pub mod carousel;
 pub use carousel::ShadCarousel;
 pub mod checkbox;
 pub mod collapsible;
+pub mod context_menu;
 pub mod hr;
 pub mod input;
+pub mod input_otp;
 pub mod kbd;
 pub mod label;
 pub mod panel;
@@ -37,7 +39,9 @@ pub mod sonner;
 pub mod spinner;
 pub mod switch;
 pub mod tabs;
+pub mod textarea;
 pub mod theme;
+pub mod toggle;
 
 pub fn script_mod(vm: &mut ScriptVm) {
     makepad_icon::script_mod(vm);
@@ -48,18 +52,21 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::avatar::script_mod(vm);
     crate::badge::script_mod(vm);
     crate::breadcrumb::script_mod(vm);
+    crate::tabs::script_mod(vm);
     crate::button::script_mod(vm);
     crate::button_group::script_mod(vm);
     crate::card::script_mod(vm);
     crate::carousel::script_mod(vm);
     crate::checkbox::script_mod(vm);
     crate::collapsible::script_mod(vm);
+    crate::context_menu::script_mod(vm);
     crate::dialog::script_mod(vm);
 
     crate::skeleton::script_mod(vm);
     crate::kbd::script_mod(vm);
     crate::hr::script_mod(vm);
     crate::input::script_mod(vm);
+    crate::input_otp::script_mod(vm);
     crate::label::script_mod(vm);
     crate::panel::script_mod(vm);
     crate::progress::script_mod(vm);
@@ -73,5 +80,6 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::sonner::script_mod(vm);
     crate::spinner::script_mod(vm);
     crate::switch::script_mod(vm);
-    crate::tabs::script_mod(vm);
+    crate::textarea::script_mod(vm);
+    crate::toggle::script_mod(vm);
 }

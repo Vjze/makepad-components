@@ -21,9 +21,9 @@ This workspace contains:
 
 ## Workspace Layout
 
-- `components/` → `makepad-components` library
+- `makepad-components/` → `makepad-components` library
 - `makepad-icon/` → `makepad-icon` library
-- `gallery/` → `makepad-example-component-gallery` app
+- `makepad-gallery/` → `makepad-example-component-gallery` app
 - `.github/workflows/wasm-pages.yml` → GitHub Pages WASM build + deploy
 
 ## Architecture & naming conventions
@@ -36,8 +36,8 @@ This workspace contains:
   - **`Shad*` widgets** live in the `components` crate and are intended for reuse in any Makepad app (for example `ShadButton`, `ShadAccordionItem`, `ShadSidebar`).
   - **`Gallery*` widgets** live in the `gallery` crate and are only for the docs/gallery experience (for example the code snippet widget). Layout wrappers and preview panels use `Shad*` components from the components crate.
 - **File placement**:
-  - New reusable components belong under `components/src/*.rs` and should be registered from `components::script_mod(vm)` into the `mod.widgets.*` namespace.
-  - Gallery-only layout and helper widgets belong under `gallery/src/ui/*.rs` (for example `themed_widgets.rs`) and are registered from `gallery::ui::script_mod(vm)`.
+  - New reusable components belong under `makepad-components/src/*.rs` and should be registered from `makepad_components::script_mod(vm)` into the `mod.widgets.*` namespace.
+  - Gallery-only layout and helper widgets belong under `makepad-gallery/src/ui/*.rs` (for example `themed_widgets.rs`) and are registered from the gallery UI module.
 
 ## Prerequisites
 
@@ -150,20 +150,15 @@ script_mod! {
 - [ ] Chart
 - [x] Checkbox
 - [x] Collapsible
-- [ ] Combobox
-- [ ] Command
-- [ ] Context Menu
+- [x] Command
+- [x] Context Menu
 - [ ] Date Picker
 - [x] Dialog
-- [x] Drawer
-- [ ] Empty
 - [x] Input & Field
-- [x] Hover Card
-- [ ] Input OTP
+- [x] Input OTP
 - [x] Kbd
 - [x] Label
 - [ ] Menubar
-- [ ] Native Select
 - [ ] Navigation Menu
 - [ ] Pagination
 - [ ] Popover
@@ -182,12 +177,12 @@ script_mod! {
 - [x] Switch
 - [ ] Table
 - [x] Tabs
-- [ ] Textarea
-- [ ] Toggle & Toggle Group
+- [x] Textarea
+- [x] Toggle & Toggle Group
 
 **Known limitation:** In the gallery app, popup-style selectors (`ShadSelect` and the base `DropDown` widget) may not open reliably on click; this appears to be an interaction between the gallery’s layout (flow + `PageFlip`) and the platform’s hit/sweep handling. For working popup interaction examples, see the splash app (`splash_app.md` or the makepad repo’s splash example), which uses a Dock-based layout.
 
-### Buttons (`components/src/button.rs`)
+### Buttons (`makepad-components/src/button.rs`)
 
 - `ShadButton`
 - `ShadButtonDestructive`
@@ -199,11 +194,11 @@ script_mod! {
 - `ShadButtonLg`
 - `ShadButtonIcon`
 
-### Aspect Ratio (`components/src/aspect_ratio.rs`)
+### Aspect Ratio (`makepad-components/src/aspect_ratio.rs`)
 
 - `ShadAspectRatio`
 
-### Accordion (`components/src/accordion.rs`)
+### Accordion (`makepad-components/src/accordion.rs`)
 
 - `Accordion` (container `View` preset)
 - `AccordionItem` (custom widget)
@@ -213,7 +208,7 @@ script_mod! {
 - script calls: `set_is_open(bool)` and `is_open() -> bool`
 - `on_toggle` callback hook
 
-### Alerts (`components/src/alert.rs`)
+### Alerts (`makepad-components/src/alert.rs`)
 
 - `ShadAlert`
 - `ShadAlertIcon`
@@ -224,7 +219,7 @@ script_mod! {
 - `ShadAlertDestructiveIcon`
 - `ShadAlertDestructiveTitle`
 
-### Input & Field (`components/src/input.rs`)
+### Input & Field (`makepad-components/src/input.rs`)
 
 - `ShadInput`
 - `ShadInputWithIcon`
@@ -235,13 +230,13 @@ script_mod! {
 
 Use `ShadField` as a layout wrapper around `ShadInput` or another form control. Validation/state stays in app code.
 
-### Separator (`components/src/hr.rs`)
+### Separator (`makepad-components/src/hr.rs`)
 
 - `ShadSeparator`
 
 Compatibility alias: `ShadHr`.
 
-### Scroll Area (`components/src/scroll.rs`)
+### Scroll Area (`makepad-components/src/scroll.rs`)
 
 - `ShadScrollArea` — vertical scroll container
 - `ShadScrollAreaX` — horizontal scroll container
@@ -249,7 +244,7 @@ Compatibility alias: `ShadHr`.
 
 Compatibility alias: `ShadScrollYView`.
 
-### Radio Group (`components/src/radio_group.rs`)
+### Radio Group (`makepad-components/src/radio_group.rs`)
 
 - `ShadRadioGroup`
 - `ShadRadioGroupInline`
@@ -257,14 +252,14 @@ Compatibility alias: `ShadScrollYView`.
 
 Use Makepad `radio_button_set(...).selected(cx, actions)` to keep a single item active.
 
-### Select (`components/src/select.rs`)
+### Select (`makepad-components/src/select.rs`)
 
 - `ShadSelect`
 - `ShadSelectItem`
 
 Single-select, non-searchable dropdown built on the popup menu stack.
 
-### Dialog (`components/src/dialog.rs`)
+### Dialog (`makepad-components/src/dialog.rs`)
 
 - `ShadDialog` — generic modal with customizable `body` content (closes on backdrop/Escape; wire your own Close button)
 - `ShadDialogAlert` — preset with title, description, Cancel/Continue (closes on Cancel, Confirm, or backdrop)
@@ -274,7 +269,7 @@ Props: `open` (bool). For generic: put content in `overlay +: { content +: { bod
 
 Script API: `set_open(bool)` and `is_open() -> bool`.
 
-### Progress (`components/src/progress.rs`)
+### Progress (`makepad-components/src/progress.rs`)
 
 - `ShadProgress` — default 50%
 - `ShadProgress33`, `ShadProgress66`, `ShadProgressFull` — 33%, 66%, 100%
@@ -282,13 +277,13 @@ Script API: `set_open(bool)` and `is_open() -> bool`.
 
 Use `ShadProgress66{}` for 66%. For custom values, extend `ShadProgressBase` with `draw_bg +: { progress: instance(0.42) }`.
 
-### Slider (`components/src/slider.rs`)
+### Slider (`makepad-components/src/slider.rs`)
 
 - `ShadSlider` — shadcn-style range slider (extends makepad SliderRoundFlat)
 
 Props: `default`, `min`, `max`, `step`. Uses makepad Slider actions for value changes.
 
-### Tabs (`components/src/tabs.rs`)
+### Tabs (`makepad-components/src/tabs.rs`)
 
 - `ShadTabs`
 - `ShadTabsList`
@@ -297,7 +292,7 @@ Props: `default`, `min`, `max`, `step`. Uses makepad Slider actions for value ch
 
 This wave ships the canonical styling primitives; pair them with `PageFlip` or another app-level state holder.
 
-### Sheet (`components/src/sheet.rs`)
+### Sheet (`makepad-components/src/sheet.rs`)
 
 - `ShadSheet`
 - `ShadSheetTitle`
@@ -305,13 +300,13 @@ This wave ships the canonical styling primitives; pair them with `PageFlip` or a
 
 Props: `open` (bool). Script API: `set_open(bool)` and `is_open() -> bool`.
 
-### Resizable (`components/src/resizable.rs`)
+### Resizable (`makepad-components/src/resizable.rs`)
 
 - `ShadResizable`
 
 Thin wrapper over Makepad `Splitter` for two-pane layouts.
 
-### Sonner / Toast (`components/src/sonner.rs`)
+### Sonner / Toast (`makepad-components/src/sonner.rs`)
 
 - `ShadToast` — toast notification card container
 - `ShadToastTitle` — title text
@@ -319,13 +314,13 @@ Thin wrapper over Makepad `Splitter` for two-pane layouts.
 
 Use: `ShadToast{ title := ShadToastTitle{text: "Event created"} }` or add `description := ShadToastDescription{text: "..."}`.
 
-### Spinner (`components/src/spinner.rs`)
+### Spinner (`makepad-components/src/spinner.rs`)
 
 - `ShadSpinner` — circular loading indicator (24×24, animated arc)
 
 Use for async operations and loading states.
 
-### Kbd (`components/src/kbd.rs`)
+### Kbd (`makepad-components/src/kbd.rs`)
 
 - `ShadKbd` — key cap container (dark grey rounded rect, subtle border)
 - `ShadKbdLabel` — text/symbol inside a key (e.g. ⌘, ⇧, Ctrl, B)
@@ -333,13 +328,13 @@ Use for async operations and loading states.
 
 Use with a horizontal layout: `ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }` and `ShadKbdSeparator{}` for shortcuts like "Ctrl + B".
 
-### Sidebar (`components/src/sidebar.rs`)
+### Sidebar (`makepad-components/src/sidebar.rs`)
 
 - `ShadSidebar`
 - `ShadSidebarSectionLabel`
 - `ShadSidebarItem`
 
-### Theme (`components/src/theme.rs`)
+### Theme (`makepad-components/src/theme.rs`)
 
 Exports `mod.widgets.shad_theme` with tokens such as:
 - `color_primary`, `color_secondary`, `color_background`
@@ -390,7 +385,7 @@ Backed by SVG assets in:
 
 ## Gallery App
 
-The gallery (`gallery/src/app.rs`) includes:
+The gallery (`makepad-gallery/src/main.rs`) includes:
 - Sidebar navigation between component pages
 - Accordion showcase with custom header/body content
 - Button variant and size matrix
@@ -403,14 +398,14 @@ Run it to validate behavior and styling changes quickly.
 ### Adding a new component + docs page
 
 - **Library component (`Shad*`)**
-  - Add or extend a module under `components/src/` (for example `button.rs`, `accordion.rs`).
-  - Register the widget in `components::script_mod(vm)` with a `Shad*` name in the `mod.widgets.*` namespace.
+  - Add or extend a module under `makepad-components/src/` (for example `button.rs`, `accordion.rs`).
+  - Register the widget in `makepad_components::script_mod(vm)` with a `Shad*` name in the `mod.widgets.*` namespace.
   - Use `shad_theme` tokens for colors, radii, and spacing instead of hardcoded values.
 - **Gallery docs page (`Gallery*`)**
-  - Create a new page script under `gallery/src/ui/` that uses `ShadScrollYView`, `ShadPageTitle`, and `ShadPageSubtitle`.
-  - Add a snippet constant to `gallery/src/ui/snippets.rs` and reference it from `GalleryCodeSnippet` on the page.
+  - Create a new page script under `makepad-gallery/src/ui/` that uses `ShadScrollYView`, `ShadPageTitle`, and `ShadPageSubtitle`.
+  - Add a snippet constant to `makepad-gallery/src/ui/snippets.rs` and reference it from `GalleryCodeSnippet` on the page.
   - Add a `ShadSidebarItem` entry in `GallerySidebar` and a matching page in `GalleryContentFlip`.
-  - Wire the sidebar item to the page in `gallery/src/app.rs` using a `set_page` call in `handle_actions`.
+  - Wire the sidebar item to the page in `makepad-gallery/src/main.rs` using a `set_page` call in `handle_actions`.
 
 ## CI/CD
 
@@ -440,9 +435,9 @@ Workspace defines a size-optimized profile:
 - The project uses Makepad v2 script syntax (`script_mod!`) and `Name: value` style.
 - Component registration order matters: register base widgets, then component modules, then app UI.
 - If extending this library, mirror existing patterns in:
-  - `components/src/lib.rs`
-  - `components/src/button.rs`
-  - `components/src/accordion.rs`
+  - `makepad-components/src/lib.rs`
+  - `makepad-components/src/button.rs`
+  - `makepad-components/src/accordion.rs`
 
 ## License
 

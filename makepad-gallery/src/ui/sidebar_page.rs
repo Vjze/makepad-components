@@ -61,12 +61,11 @@ script_mod! {
             }
 
             sidebar_preview_panel := mod.widgets.ShadPanel{
-                sidebar_preview_flip := PageFlip{
+                sidebar_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -103,7 +102,8 @@ script_mod! {
                 }
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -111,6 +111,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: "mod.widgets.ShadSidebar{\n    width: 300\n    Label{text: \"Acme Inc\"}\n    ShadSidebarSectionLabel{text: \"Platform\"}\n    ShadSidebarItem{text: \"Playground\"}\n    ShadSidebarItem{text: \"History\"}\n}"
+                        }
                         }
                     }
                 }

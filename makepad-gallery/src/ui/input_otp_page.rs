@@ -1,57 +1,58 @@
-use crate::ui::snippets::RADIO_GROUP_PREVIEW_CODE;
+use crate::ui::snippets::INPUT_OTP_PREVIEW_CODE;
 use makepad_components::makepad_widgets::*;
 
 script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.GalleryRadioGroupPage = ShadScrollArea{
+    mod.widgets.GalleryInputOtpPage = ShadScrollYView{
         ShadPageTitle{
-            text: "Radio Group"
+            text: "Input OTP"
         }
 
         ShadPageSubtitle{
-            text: "Single-choice groups styled around Makepad radio buttons."
+            text: "Segmented one-time passcode entry with numeric filtering and paste support."
         }
 
-        ShadSeparator{}
+        ShadHr{}
 
-        radio_group_preview_section := View{
+        input_otp_preview_section := View{
             width: Fill
             height: Fit
             flow: Down
+            spacing: 12.0
 
-            radio_group_tabs_row := View{
+            input_otp_tabs_row := View{
                 width: Fit
                 height: Fit
                 flow: Right
                 spacing: 20.0
                 margin: Inset{top: 4, bottom: 12}
 
-                radio_group_demo_tab_group := View{
+                input_otp_demo_tab_group := View{
                     width: Fit
                     height: Fit
                     flow: Down
                     spacing: 6.0
 
-                    radio_group_demo_tab := mod.widgets.ShadPreviewTab{text: "DEMO"}
+                    input_otp_demo_tab := mod.widgets.ShadPreviewTab{text: "DEMO"}
 
-                    radio_group_demo_indicator := SolidView{
+                    input_otp_demo_indicator := SolidView{
                         width: Fill
                         height: 2
                         draw_bg.color: (shad_theme.color_primary)
                     }
                 }
 
-                radio_group_code_tab_group := View{
+                input_otp_code_tab_group := View{
                     width: Fit
                     height: Fit
                     flow: Down
                     spacing: 6.0
 
-                    radio_group_code_tab := mod.widgets.ShadPreviewTab{text: "CODE"}
+                    input_otp_code_tab := mod.widgets.ShadPreviewTab{text: "CODE"}
 
-                    radio_group_code_indicator := SolidView{
+                    input_otp_code_indicator := SolidView{
                         width: Fill
                         height: 2
                         visible: false
@@ -60,8 +61,8 @@ script_mod! {
                 }
             }
 
-            radio_group_preview_panel := mod.widgets.ShadPanel{
-                radio_group_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
+            input_otp_preview_panel := mod.widgets.ShadPanel{
+                input_otp_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
 
@@ -71,21 +72,18 @@ script_mod! {
                         flow: Down
                         spacing: 12.0
 
-                        ShadSectionHeader{ text: "Stacked options" }
-                        ShadPanel{
-                            ShadRadioGroup{
-                                ShadRadioItem{text: "Starter"}
-                                ShadRadioItem{text: "Pro"}
-                                ShadRadioItem{text: "Enterprise"}
-                            }
-                        }
+                        ShadSectionHeader{ text: "Verification code" }
 
-                        ShadSectionHeader{ text: "Inline options" }
-                        ShadPanel{
-                            ShadRadioGroupInline{
-                                ShadRadioItem{text: "Weekly"}
-                                ShadRadioItem{text: "Monthly"}
-                                ShadRadioItem{text: "Yearly"}
+                        View{
+                            width: Fit
+                            height: Fit
+                            flow: Down
+                            spacing: 8.0
+
+                            ShadLabel{text: "Enter the 6-digit code"}
+                            otp_demo := ShadInputOtp{}
+                            otp_status := ShadFieldDescription{
+                                text: "Waiting for input."
                             }
                         }
                     }
@@ -98,7 +96,7 @@ script_mod! {
                         spacing: 12.0
 
                         GalleryCodeSnippet{
-                            code: #(RADIO_GROUP_PREVIEW_CODE)
+                            code: #(INPUT_OTP_PREVIEW_CODE)
                         }
                         }
                     }

@@ -61,12 +61,11 @@ script_mod! {
             }
 
             progress_preview_panel := mod.widgets.ShadPanel{
-                progress_preview_flip := PageFlip{
+                progress_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -83,7 +82,8 @@ script_mod! {
                         ShadProgressIndeterminate{}
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -91,6 +91,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: #(PROGRESS_PREVIEW_CODE)
+                        }
                         }
                     }
                 }

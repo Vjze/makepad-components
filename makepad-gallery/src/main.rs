@@ -2,7 +2,10 @@ pub use makepad_widgets;
 
 mod ui;
 
+use crate::ui::command_palette::GalleryCommandPalette;
 use crate::ui::content_flip::GalleryPageFlip;
+use makepad_components::context_menu::ShadContextMenu;
+use makepad_components::input_otp::ShadInputOtp;
 use makepad_components::makepad_widgets::*;
 use makepad_components::sheet::ShadSheet;
 use makepad_components::{ShadCarousel, ShadDialog, ShadSonner};
@@ -20,6 +23,46 @@ script_mod! {
 
 impl App {
     const SMALL_SCREEN_WIDTH: f64 = 900.0;
+
+    fn try_focus_app_shell(&mut self, cx: &mut Cx) -> bool {
+        let app_shell = self.ui.widget_flood(cx, ids!(app_shell));
+        if app_shell.area() != Area::Empty {
+            app_shell.set_key_focus(cx);
+            true
+        } else {
+            false
+        }
+    }
+
+    fn set_current_page(&mut self, cx: &mut Cx, page: LiveId) {
+        let nav = self.ui.stack_navigation(cx, ids!(content_flip));
+        nav.pop_to_root(cx);
+        nav.push(cx, page);
+        if self.is_small_screen {
+            self.sidebar_open = false;
+            self.apply_responsive_visibility(cx);
+        }
+    }
+
+    fn toggle_command_palette(&mut self, cx: &mut Cx) {
+        if let Some(mut palette) = self
+            .ui
+            .widget_flood(cx, ids!(command_palette))
+            .borrow_mut::<GalleryCommandPalette>()
+        {
+            palette.toggle(cx);
+        }
+    }
+
+    fn open_command_palette(&mut self, cx: &mut Cx) {
+        if let Some(mut palette) = self
+            .ui
+            .widget_flood(cx, ids!(command_palette))
+            .borrow_mut::<GalleryCommandPalette>()
+        {
+            palette.open(cx);
+        }
+    }
 
     fn sync_mobile_sidebar_button(&self, cx: &mut Cx) {
         self.ui.button(cx, ids!(mobile_sidebar_button)).set_text(
@@ -39,6 +82,9 @@ impl App {
         self.ui
             .view(cx, ids!(sidebar))
             .set_visible(cx, !self.is_small_screen || self.sidebar_open);
+        self.ui
+            .view(cx, ids!(main_content))
+            .set_visible(cx, !self.is_small_screen || !self.sidebar_open);
         self.sync_mobile_sidebar_button(cx);
     }
 
@@ -60,43 +106,38 @@ impl App {
         content_flip: &[LiveId],
     ) {
         if self.ui.button(cx, sidebar_button).clicked(actions) {
-            Self::set_flip_page(&self.ui, cx, content_flip, page);
-            if self.is_small_screen {
-                self.sidebar_open = false;
-                self.apply_responsive_visibility(cx);
-            }
+            let _ = content_flip;
+            self.set_current_page(cx, page);
         }
     }
 
     fn set_preview_mode(
         ui: &WidgetRef,
         cx: &mut Cx,
-        flip: &[LiveId],
+        preview_flip: &[LiveId],
         demo_indicator: &[LiveId],
         code_indicator: &[LiveId],
         show_code: bool,
     ) {
-        Self::set_flip_page(
+        Self::set_gallery_flip_page(
             ui,
             cx,
-            flip,
+            preview_flip,
             if show_code {
                 live_id!(code_page)
             } else {
-                live_id!(demo_page)
+                live_id!(root_view)
             },
         );
         ui.view(cx, demo_indicator).set_visible(cx, !show_code);
         ui.view(cx, code_indicator).set_visible(cx, show_code);
     }
 
-    fn set_flip_page(ui: &WidgetRef, cx: &mut Cx, flip: &[LiveId], page: LiveId) {
+    fn set_gallery_flip_page(ui: &WidgetRef, cx: &mut Cx, flip: &[LiveId], page: LiveId) {
         let widget = ui.widget_flood(cx, flip);
         if let Some(mut gallery_flip) = widget.borrow_mut::<GalleryPageFlip>() {
             gallery_flip.set_active_page(cx, page);
-            return;
-        }
-        ui.page_flip(cx, flip).set_active_page(cx, page);
+        };
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -128,11 +169,23 @@ pub struct App {
     is_small_screen: bool,
     #[rust]
     sidebar_open: bool,
+    #[rust]
+    focus_shell_next_frame: NextFrame,
 }
 
 impl MatchEvent for App {
     fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
         let content_flip = ids!(content_flip);
+        let palette = self.ui.widget_flood(cx, ids!(command_palette));
+        if let Some(page) = actions
+            .find_widget_action(palette.widget_uid())
+            .and_then(|action| match action.cast() {
+                ui::command_palette::GalleryCommandPaletteAction::Selected(page) => Some(page),
+                _ => None,
+            })
+        {
+            self.set_current_page(cx, page);
+        }
         if self
             .ui
             .button(cx, ids!(mobile_sidebar_button))
@@ -237,6 +290,27 @@ impl MatchEvent for App {
         self.set_page(
             cx,
             actions,
+            ids!(sidebar_command_palette),
+            live_id!(command_palette_page),
+            content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_context_menu),
+            live_id!(context_menu_page),
+            content_flip,
+        );
+        if self
+            .ui
+            .button(cx, ids!(open_command_palette_btn))
+            .clicked(actions)
+        {
+            self.open_command_palette(cx);
+        }
+        self.set_page(
+            cx,
+            actions,
             ids!(sidebar_dialog),
             live_id!(dialog_page),
             content_flip,
@@ -283,6 +357,13 @@ impl MatchEvent for App {
             actions,
             ids!(sidebar_input),
             live_id!(input_page),
+            content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_input_otp),
+            live_id!(input_otp_page),
             content_flip,
         );
         self.set_page(
@@ -346,6 +427,20 @@ impl MatchEvent for App {
             actions,
             ids!(sidebar_tabs),
             live_id!(tabs_page),
+            content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_textarea),
+            live_id!(textarea_page),
+            content_flip,
+        );
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_toggle),
+            live_id!(toggle_page),
             content_flip,
         );
         self.set_page(
@@ -417,14 +512,61 @@ impl MatchEvent for App {
                 s.set_open(true);
             }
         }
-        self.set_page(cx, actions, ids!(sidebar_spinner), live_id!(spinner_page), content_flip);
+        if let Some(index) = self
+            .ui
+            .widget_flood(cx, ids!(context_menu_basic))
+            .borrow::<ShadContextMenu>()
+            .and_then(|inner| inner.selected(actions))
+        {
+            let label = match index {
+                0 => "Open",
+                1 => "Duplicate",
+                2 => "Share",
+                3 => "Delete",
+                _ => "Unknown",
+            };
+            self.ui
+                .label(cx, ids!(context_menu_status))
+                .set_text(cx, &format!("Selected: {}", label));
+        }
+        if let Some(value) = self
+            .ui
+            .widget_flood(cx, ids!(otp_demo))
+            .borrow::<ShadInputOtp>()
+            .and_then(|inner| inner.completed(actions))
+        {
+            self.ui
+                .label(cx, ids!(otp_status))
+                .set_text(cx, &format!("Completed: {}", value));
+        } else if let Some(value) = self
+            .ui
+            .widget_flood(cx, ids!(otp_demo))
+            .borrow::<ShadInputOtp>()
+            .and_then(|inner| inner.changed(actions))
+        {
+            self.ui
+                .label(cx, ids!(otp_status))
+                .set_text(cx, &format!("Current value: {}", value));
+        }
+        self.set_page(
+            cx,
+            actions,
+            ids!(sidebar_spinner),
+            live_id!(spinner_page),
+            content_flip,
+        );
 
         if self
             .ui
             .button(cx, ids!(tabs_overview_trigger))
             .clicked(actions)
         {
-            Self::set_flip_page(&self.ui, cx, ids!(tabs_content_flip), live_id!(overview_page));
+            Self::set_gallery_flip_page(
+                &self.ui,
+                cx,
+                ids!(tabs_content_flip),
+                live_id!(overview_page),
+            );
             self.ui
                 .view(cx, ids!(tabs_overview_indicator))
                 .set_visible(cx, true);
@@ -440,7 +582,12 @@ impl MatchEvent for App {
             .button(cx, ids!(tabs_usage_trigger))
             .clicked(actions)
         {
-            Self::set_flip_page(&self.ui, cx, ids!(tabs_content_flip), live_id!(usage_page));
+            Self::set_gallery_flip_page(
+                &self.ui,
+                cx,
+                ids!(tabs_content_flip),
+                live_id!(usage_page),
+            );
             self.ui
                 .view(cx, ids!(tabs_overview_indicator))
                 .set_visible(cx, false);
@@ -456,7 +603,12 @@ impl MatchEvent for App {
             .button(cx, ids!(tabs_settings_trigger))
             .clicked(actions)
         {
-            Self::set_flip_page(&self.ui, cx, ids!(tabs_content_flip), live_id!(settings_page));
+            Self::set_gallery_flip_page(
+                &self.ui,
+                cx,
+                ids!(tabs_content_flip),
+                live_id!(settings_page),
+            );
             self.ui
                 .view(cx, ids!(tabs_overview_indicator))
                 .set_visible(cx, false);
@@ -651,6 +803,26 @@ impl MatchEvent for App {
             &self.ui,
             cx,
             actions,
+            ids!(command_palette_demo_tab),
+            ids!(command_palette_code_tab),
+            ids!(command_palette_preview_flip),
+            ids!(command_palette_demo_indicator),
+            ids!(command_palette_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(context_menu_demo_tab),
+            ids!(context_menu_code_tab),
+            ids!(context_menu_preview_flip),
+            ids!(context_menu_demo_indicator),
+            ids!(context_menu_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
             ids!(dialog_demo_tab),
             ids!(dialog_code_tab),
             ids!(dialog_preview_flip),
@@ -666,6 +838,16 @@ impl MatchEvent for App {
             ids!(input_preview_flip),
             ids!(input_demo_indicator),
             ids!(input_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(input_otp_demo_tab),
+            ids!(input_otp_code_tab),
+            ids!(input_otp_preview_flip),
+            ids!(input_otp_demo_indicator),
+            ids!(input_otp_code_indicator),
         );
         Self::handle_preview_tabs(
             &self.ui,
@@ -827,6 +1009,26 @@ impl MatchEvent for App {
             ids!(tabs_demo_indicator),
             ids!(tabs_code_indicator),
         );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(textarea_demo_tab),
+            ids!(textarea_code_tab),
+            ids!(textarea_preview_flip),
+            ids!(textarea_demo_indicator),
+            ids!(textarea_code_indicator),
+        );
+        Self::handle_preview_tabs(
+            &self.ui,
+            cx,
+            actions,
+            ids!(toggle_demo_tab),
+            ids!(toggle_code_tab),
+            ids!(toggle_preview_flip),
+            ids!(toggle_demo_indicator),
+            ids!(toggle_code_indicator),
+        );
     }
 }
 
@@ -840,18 +1042,42 @@ impl AppMain for App {
     }
 
     fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
+        if self.focus_shell_next_frame.is_event(event).is_some() {
+            if !self.try_focus_app_shell(cx) {
+                self.focus_shell_next_frame = cx.new_next_frame();
+            }
+        }
+
         match event {
             Event::Startup => {
                 self.sidebar_open = true;
                 self.apply_responsive_visibility(cx);
+                self.set_current_page(cx, live_id!(accordion_page));
+                self.focus_shell_next_frame = cx.new_next_frame();
+            }
+            Event::MacosMenuCommand(command) => {
+                if *command == live_id!(command_palette_menu) {
+                    self.open_command_palette(cx);
+                    return;
+                }
+            }
+            Event::WindowGotFocus(_) => {
+                self.focus_shell_next_frame = cx.new_next_frame();
             }
             Event::WindowGeomChange(geom) => {
                 self.update_screen_mode(cx, geom.new_geom.inner_size.x)
+            }
+            Event::KeyDown(key_event) => {
+                if key_event.key_code == KeyCode::KeyK
+                    && (key_event.modifiers.logo || key_event.modifiers.control)
+                {
+                    self.toggle_command_palette(cx);
+                    return;
+                }
             }
             _ => {}
         }
         self.match_event(cx, event);
         self.ui.handle_event(cx, event, &mut Scope::empty());
-
     }
 }

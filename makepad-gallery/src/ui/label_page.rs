@@ -62,12 +62,11 @@ script_mod! {
             }
 
             label_preview_panel := mod.widgets.ShadPanel{
-                label_preview_flip := PageFlip{
+                label_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -78,7 +77,8 @@ script_mod! {
                         ShadLabel{ text: "Your email address" }
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -86,6 +86,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: #(LABEL_PREVIEW_CODE)
+                        }
                         }
                     }
                 }

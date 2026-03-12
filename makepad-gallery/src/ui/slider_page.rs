@@ -61,12 +61,11 @@ script_mod! {
             }
 
             slider_preview_panel := mod.widgets.ShadPanel{
-                slider_preview_flip := PageFlip{
+                slider_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -76,7 +75,8 @@ script_mod! {
                         ShadSlider{default: 0.8}
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -84,6 +84,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: #(SLIDER_PREVIEW_CODE)
+                        }
                         }
                     }
                 }

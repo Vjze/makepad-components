@@ -31,8 +31,11 @@ script_mod! {
             sidebar_carousel := ShadSidebarItem{text: "Carousel"}
             sidebar_checkbox := ShadSidebarItem{text: "Checkbox"}
             sidebar_collapsible := ShadSidebarItem{text: "Collapsible"}
+            sidebar_command_palette := ShadSidebarItem{text: "Command Palette"}
+            sidebar_context_menu := ShadSidebarItem{text: "Context Menu"}
             sidebar_dialog := ShadSidebarItem{text: "Dialog"}
             sidebar_input := ShadSidebarItem{text: "Input"}
+            sidebar_input_otp := ShadSidebarItem{text: "Input OTP"}
             sidebar_radio_group := ShadSidebarItem{text: "Radio Group"}
             sidebar_resizable := ShadSidebarItem{text: "Resizable"}
             sidebar_scroll_area := ShadSidebarItem{text: "Scroll Area"}
@@ -42,6 +45,8 @@ script_mod! {
             sidebar_skeleton := ShadSidebarItem{text: "Skeleton"}
             sidebar_switch := ShadSidebarItem{text: "Switch"}
             sidebar_tabs := ShadSidebarItem{text: "Tabs"}
+            sidebar_textarea := ShadSidebarItem{text: "Textarea"}
+            sidebar_toggle := ShadSidebarItem{text: "Toggle"}
             sidebar_kbd := ShadSidebarItem{text: "Kbd"}
             sidebar_progress := ShadSidebarItem{text: "Progress"}
             sidebar_label := ShadSidebarItem{text: "Label"}

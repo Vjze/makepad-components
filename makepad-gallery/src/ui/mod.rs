@@ -12,8 +12,12 @@ pub mod card_page;
 pub mod carousel_page;
 pub mod checkbox_page;
 pub mod collapsible_page;
+pub mod command_palette;
+pub mod command_palette_page;
 pub mod content_flip;
+pub mod context_menu_page;
 pub mod dialog_page;
+pub mod input_otp_page;
 pub mod input_page;
 pub mod kbd_page;
 pub mod label_page;
@@ -34,12 +38,16 @@ pub mod sonner_page;
 pub mod spinner_page;
 pub mod switch_page;
 pub mod tabs_page;
+pub mod textarea_page;
 pub mod themed_widgets;
+pub mod toggle_page;
 
 pub fn script_mod(vm: &mut ScriptVm) {
+    crate::ui::content_flip::script_mod(vm);
     crate::ui::themed_widgets::script_mod(vm);
     crate::ui::sidebar::script_mod(vm);
-    crate::ui::content_flip::script_mod(vm);
+    crate::ui::command_palette::script_mod(vm);
+    crate::ui::command_palette_page::script_mod(vm);
     crate::ui::accordion_page::script_mod(vm);
     crate::ui::alert_page::script_mod(vm);
     crate::ui::aspect_ratio_page::script_mod(vm);
@@ -52,8 +60,10 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::carousel_page::script_mod(vm);
     crate::ui::checkbox_page::script_mod(vm);
     crate::ui::collapsible_page::script_mod(vm);
+    crate::ui::context_menu_page::script_mod(vm);
     crate::ui::dialog_page::script_mod(vm);
     crate::ui::input_page::script_mod(vm);
+    crate::ui::input_otp_page::script_mod(vm);
 
     crate::ui::radio_group_page::script_mod(vm);
     crate::ui::resizable_page::script_mod(vm);
@@ -64,6 +74,8 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::ui::skeleton_page::script_mod(vm);
     crate::ui::switch_page::script_mod(vm);
     crate::ui::tabs_page::script_mod(vm);
+    crate::ui::textarea_page::script_mod(vm);
+    crate::ui::toggle_page::script_mod(vm);
     crate::ui::kbd_page::script_mod(vm);
     crate::ui::label_page::script_mod(vm);
     crate::ui::progress_page::script_mod(vm);

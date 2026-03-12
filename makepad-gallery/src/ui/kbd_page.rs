@@ -61,12 +61,11 @@ script_mod! {
             }
 
             kbd_preview_panel := mod.widgets.ShadPanel{
-                kbd_preview_flip := PageFlip{
+                kbd_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -81,10 +80,10 @@ script_mod! {
                             spacing: 6.0
                             align: Align{y: 0.5}
 
-                            ShadKbd{ label := IconCommand{ icon_walk: Walk{width: 12 height: 12} draw_icon.color: (shad_theme.color_kbd_foreground) } }
-                            ShadKbd{ label := IconShift{ icon_walk: Walk{width: 12 height: 12} draw_icon.color: (shad_theme.color_kbd_foreground) } }
-                            ShadKbd{ label := IconOption{ icon_walk: Walk{width: 12 height: 12} draw_icon.color: (shad_theme.color_kbd_foreground) } }
-                            ShadKbd{ label := IconControl{ icon_walk: Walk{width: 12 height: 12} draw_icon.color: (shad_theme.color_kbd_foreground) } }
+                            ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
+                            ShadKbd{ label := ShadKbdLabel{text: "Shift"} }
+                            ShadKbd{ label := ShadKbdLabel{text: "Option"} }
+                            ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
                         }
 
                         ShadSectionHeader{ text: "Shortcut" }
@@ -102,7 +101,8 @@ script_mod! {
                         }
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -110,6 +110,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: #(KBD_PREVIEW_CODE)
+                        }
                         }
                     }
                 }

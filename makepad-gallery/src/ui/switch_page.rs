@@ -61,12 +61,11 @@ script_mod! {
             }
 
             switch_preview_panel := mod.widgets.ShadPanel{
-                switch_preview_flip := PageFlip{
+                switch_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -103,7 +102,8 @@ script_mod! {
                 ShadHr{}
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -111,6 +111,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: "ShadSwitch{text: \"Enable notifications\"}\nShadSwitch{text: \"Dark mode\"}"
+                        }
                         }
                     }
                 }

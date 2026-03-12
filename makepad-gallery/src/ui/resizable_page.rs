@@ -61,12 +61,11 @@ script_mod! {
             }
 
             resizable_preview_panel := mod.widgets.ShadPanel{
-                resizable_preview_flip := PageFlip{
+                resizable_preview_flip := mod.widgets.GalleryPreviewStackNavigation{
                     width: Fill
                     height: Fit
-                    active_page: @demo_page
 
-                    demo_page := View{
+                    root_view +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -143,7 +142,8 @@ script_mod! {
                         }
                     }
 
-                    code_page := View{
+                    code_page +: {
+                        body +: {
                         width: Fill
                         height: Fit
                         flow: Down
@@ -151,6 +151,7 @@ script_mod! {
 
                         GalleryCodeSnippet{
                             code: #(RESIZABLE_PREVIEW_CODE)
+                        }
                         }
                     }
                 }

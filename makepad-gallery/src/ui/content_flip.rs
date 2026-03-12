@@ -7,6 +7,7 @@ script_mod! {
     use mod.widgets.*
 
     mod.widgets.GalleryPageFlipBase = #(GalleryPageFlip::register_widget(vm))
+    mod.widgets.GalleryPageFlip = mod.widgets.GalleryPageFlipBase{}
 }
 
 #[derive(Script, WidgetRef, WidgetSet, WidgetRegister)]
@@ -59,7 +60,8 @@ impl ScriptHook for GalleryPageFlip {
                     for kv in vec {
                         if let Some(id) = kv.key.as_id() {
                             if let Some(template_obj) = kv.value.as_object() {
-                                self.templates.insert(id, vm.bx.heap.new_object_ref(template_obj));
+                                self.templates
+                                    .insert(id, vm.bx.heap.new_object_ref(template_obj));
                             }
 
                             if let Some(page) = self.pages.get_mut(&id) {
