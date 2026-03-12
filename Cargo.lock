@@ -301,15 +301,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "makepad-example-component-gallery"
-version = "1.0.0"
-dependencies = [
- "makepad-code-editor",
- "makepad-components",
- "makepad-widgets",
-]
-
-[[package]]
 name = "makepad-filesystem-watcher"
 version = "0.1.0"
 source = "git+https://github.com/makepad/makepad.git?branch=dev#ffbeadc1739f9e3e05b7dbaef5f6da2b44178531"
@@ -323,6 +314,15 @@ source = "git+https://github.com/makepad/makepad.git?branch=dev#ffbeadc1739f9e3e
 name = "makepad-futures-legacy"
 version = "1.0.0"
 source = "git+https://github.com/makepad/makepad.git?branch=dev#ffbeadc1739f9e3e05b7dbaef5f6da2b44178531"
+
+[[package]]
+name = "makepad-gallery"
+version = "1.0.0"
+dependencies = [
+ "makepad-code-editor",
+ "makepad-components",
+ "makepad-widgets",
+]
 
 [[package]]
 name = "makepad-html"

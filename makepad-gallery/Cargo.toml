@@ -1,5 +1,5 @@
 [package]
-name = "makepad-example-component-gallery"
+name = "makepad-gallery"
 version = "1.0.0"
 edition = "2021"
 description = "Makepad component gallery example"
