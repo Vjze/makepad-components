@@ -28,6 +28,7 @@ script_mod! {
         default_route: @accordion_page
         not_found_route: @accordion_page
         sync_browser_url: true
+        browser_base_path: "/makepad-components"
 
         accordion_page := RouterRoute{
             route_pattern: "/"

@@ -1,4 +1,4 @@
-use crate::router::RouterAction;
+use crate::{router::RouterAction, url::RouterUrl};
 use makepad_widgets::*;
 
 use super::{BrowserUrlMode, RouterWidget};
@@ -15,20 +15,162 @@ impl RouterWidget {
         self.sync_browser_url && cx.os_type().is_web()
     }
 
-    fn browser_url_from_os(&self, cx: &Cx) -> Option<String> {
+    fn normalized_browser_base_path(base_path: &str) -> String {
+        let trimmed = base_path.trim();
+        if trimmed.is_empty() || trimmed == "/" {
+            return String::new();
+        }
+
+        let mut normalized = trimmed.to_string();
+        if !normalized.starts_with('/') {
+            normalized.insert(0, '/');
+        }
+        while normalized.len() > 1 && normalized.ends_with('/') {
+            normalized.pop();
+        }
+
+        if normalized == "/" {
+            String::new()
+        } else {
+            normalized
+        }
+    }
+
+    fn normalized_browser_path(pathname: &str) -> String {
+        let trimmed = pathname.trim();
+        if trimmed.is_empty() {
+            "/".to_string()
+        } else if trimmed.starts_with('/') {
+            trimmed.to_string()
+        } else {
+            format!("/{}", trimmed)
+        }
+    }
+
+    fn strip_browser_base_path(pathname: &str, base_path: &str) -> String {
+        let normalized_path = Self::normalized_browser_path(pathname);
+        let normalized_base = Self::normalized_browser_base_path(base_path);
+
+        if normalized_base.is_empty() {
+            return normalized_path;
+        }
+
+        if normalized_path == normalized_base || normalized_path == format!("{}/", normalized_base)
+        {
+            return "/".to_string();
+        }
+
+        if let Some(stripped) = normalized_path.strip_prefix(&(normalized_base.clone() + "/")) {
+            return format!("/{}", stripped.trim_start_matches('/'));
+        }
+
+        normalized_path
+    }
+
+    fn prefix_clean_browser_base_path(route_url: &str, base_path: &str) -> String {
+        let normalized_base = Self::normalized_browser_base_path(base_path);
+        if normalized_base.is_empty() {
+            return route_url.to_string();
+        }
+
+        let parsed = RouterUrl::parse(route_url);
+        let path = if parsed.path == "/" {
+            format!("{}/", normalized_base)
+        } else {
+            format!("{}{}", normalized_base, parsed.path)
+        };
+
+        format!("{}{}{}", path, parsed.query, parsed.hash)
+    }
+
+    fn prefix_hash_browser_base_path(route_url: &str, base_path: &str) -> String {
+        let route_url = route_url.trim();
+        let route_url = if route_url.is_empty() { "/" } else { route_url };
+        let normalized_base = Self::normalized_browser_base_path(base_path);
+
+        if normalized_base.is_empty() {
+            format!("/#{}", route_url)
+        } else {
+            format!("{}/#{}", normalized_base, route_url)
+        }
+    }
+
+    fn configured_browser_base_path(&self) -> String {
+        Self::normalized_browser_base_path(self.browser_base_path.as_ref())
+    }
+
+    fn effective_browser_base_path(&self) -> &str {
+        if self.browser_base_path.as_ref().trim().is_empty() {
+            self.inferred_browser_base_path.as_str()
+        } else {
+            self.browser_base_path.as_ref()
+        }
+    }
+
+    fn has_real_route_match(&mut self, path: &str) -> bool {
+        let parsed = self.parse_url_cached(path);
+        let normalized_path = parsed.path;
+
+        self.router
+            .route_registry
+            .resolve_path(&normalized_path)
+            .is_some_and(|route| self.routes.templates.contains_key(&route.id))
+            || self
+                .resolve_nested_prefix(&normalized_path)
+                .is_some_and(|(route_id, _, _, _)| self.routes.templates.contains_key(&route_id))
+    }
+
+    fn infer_browser_base_path(&mut self, pathname: &str) -> String {
+        let normalized_path = Self::normalized_browser_path(pathname);
+        if self.has_real_route_match(&normalized_path) {
+            return String::new();
+        }
+
+        let trimmed = normalized_path.trim_start_matches('/');
+        if trimmed.is_empty() {
+            return String::new();
+        }
+
+        let mut candidate = String::new();
+        for segment in trimmed.split('/') {
+            if segment.is_empty() {
+                continue;
+            }
+            candidate.push('/');
+            candidate.push_str(segment);
+
+            let stripped = Self::strip_browser_base_path(&normalized_path, &candidate);
+            if self.has_real_route_match(&stripped) {
+                return candidate;
+            }
+        }
+
+        String::new()
+    }
+
+    fn refresh_inferred_browser_base_path(&mut self, pathname: &str) {
+        if !self.configured_browser_base_path().is_empty() {
+            self.inferred_browser_base_path.clear();
+            return;
+        }
+
+        self.inferred_browser_base_path = self.infer_browser_base_path(pathname);
+    }
+
+    fn browser_url_from_os(&mut self, cx: &Cx) -> Option<String> {
         let OsType::Web(params) = cx.os_type() else {
             return None;
         };
 
-        let mut pathname = params.pathname.trim().to_string();
-        if pathname.is_empty() {
-            pathname = "/".to_string();
-        } else if !pathname.starts_with('/') {
-            pathname.insert(0, '/');
-        }
+        let pathname = Self::normalized_browser_path(&params.pathname);
+        self.refresh_inferred_browser_base_path(&pathname);
 
         match self.browser_url_mode {
-            BrowserUrlMode::CleanPath => Some(format!("{}{}{}", pathname, params.search, params.hash)),
+            BrowserUrlMode::CleanPath => {
+                let route_path =
+                    Self::strip_browser_base_path(&pathname, self.effective_browser_base_path());
+                Some(format!("{}{}{}", route_path, params.search, params.hash))
+            }
             BrowserUrlMode::HashPath => {
                 let hash = params.hash.trim();
                 if hash.is_empty() || hash == "#" {
@@ -47,27 +189,17 @@ impl RouterWidget {
 
     fn route_url_to_browser_url(&self, route_url: &str) -> String {
         match self.browser_url_mode {
-            BrowserUrlMode::CleanPath => route_url.to_string(),
+            BrowserUrlMode::CleanPath => {
+                Self::prefix_clean_browser_base_path(route_url, self.effective_browser_base_path())
+            }
             BrowserUrlMode::HashPath => {
-                let route_url = route_url.trim();
-                let route_url = if route_url.is_empty() { "/" } else { route_url };
-                format!("/#{}", route_url)
+                Self::prefix_hash_browser_base_path(route_url, self.effective_browser_base_path())
             }
         }
     }
 
     fn browser_sync_url(&self) -> String {
         self.route_url_to_browser_url(&self.current_url())
-    }
-
-    fn preview_back_browser_url(&self) -> Option<String> {
-        self.preview_back_url()
-            .map(|route_url| self.route_url_to_browser_url(&route_url))
-    }
-
-    fn preview_forward_browser_url(&self) -> Option<String> {
-        self.preview_forward_url()
-            .map(|route_url| self.route_url_to_browser_url(&route_url))
     }
 
     fn sync_browser(&mut self, cx: &mut Cx, sync: BrowserSync) {
@@ -115,17 +247,17 @@ impl RouterWidget {
             return;
         }
 
-        let Some(browser_url) = self.browser_url_from_os(cx) else {
+        let Some(route_url) = self.browser_url_from_os(cx) else {
             return;
         };
 
-        if browser_url == self.current_url() {
+        if route_url == self.current_url() {
             return;
         }
 
         self.browser_sync_inbound = true;
         self.browser_sync_suppress_once = true;
-        let changed = self.replace_by_path_internal(cx, &browser_url, true);
+        let changed = self.replace_by_path_internal(cx, &route_url, true);
         self.browser_sync_inbound = false;
 
         if !changed {
@@ -139,22 +271,22 @@ impl RouterWidget {
             return;
         }
 
-        let Some(browser_url) = self.browser_url_from_os(cx) else {
+        let Some(route_url) = self.browser_url_from_os(cx) else {
             return;
         };
 
-        if browser_url == self.current_url() {
+        if route_url == self.current_url() {
             return;
         }
 
         self.browser_sync_inbound = true;
         self.browser_sync_suppress_once = true;
-        let handled = if self.preview_back_browser_url().as_deref() == Some(browser_url.as_str()) {
+        let handled = if self.preview_back_url().as_deref() == Some(route_url.as_str()) {
             self.back(cx)
-        } else if self.preview_forward_browser_url().as_deref() == Some(browser_url.as_str()) {
+        } else if self.preview_forward_url().as_deref() == Some(route_url.as_str()) {
             self.forward(cx)
         } else {
-            self.replace_by_path_internal(cx, &browser_url, true)
+            self.replace_by_path_internal(cx, &route_url, true)
         };
         self.browser_sync_inbound = false;
 
@@ -191,5 +323,62 @@ impl RouterWidget {
         if saw_route_change {
             self.sync_browser(cx, BrowserSync::Replace);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RouterWidget;
+
+    #[test]
+    fn normalizes_browser_base_path() {
+        assert_eq!(RouterWidget::normalized_browser_base_path(""), "");
+        assert_eq!(RouterWidget::normalized_browser_base_path("/"), "");
+        assert_eq!(
+            RouterWidget::normalized_browser_base_path("makepad-components/"),
+            "/makepad-components"
+        );
+    }
+
+    #[test]
+    fn strips_browser_base_path_from_clean_urls() {
+        assert_eq!(
+            RouterWidget::strip_browser_base_path(
+                "/makepad-components/alert",
+                "/makepad-components"
+            ),
+            "/alert"
+        );
+        assert_eq!(
+            RouterWidget::strip_browser_base_path("/makepad-components/", "/makepad-components"),
+            "/"
+        );
+    }
+
+    #[test]
+    fn prefixes_clean_urls_with_base_path() {
+        assert_eq!(
+            RouterWidget::prefix_clean_browser_base_path("/", "/makepad-components"),
+            "/makepad-components/"
+        );
+        assert_eq!(
+            RouterWidget::prefix_clean_browser_base_path(
+                "/alert?tab=api#hash",
+                "/makepad-components"
+            ),
+            "/makepad-components/alert?tab=api#hash"
+        );
+    }
+
+    #[test]
+    fn prefixes_hash_urls_with_base_path() {
+        assert_eq!(
+            RouterWidget::prefix_hash_browser_base_path("/", "/makepad-components"),
+            "/makepad-components/#/"
+        );
+        assert_eq!(
+            RouterWidget::prefix_hash_browser_base_path("/alert", "/makepad-components"),
+            "/makepad-components/#/alert"
+        );
     }
 }

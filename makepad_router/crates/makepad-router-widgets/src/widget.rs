@@ -48,6 +48,9 @@ script_mod! {
     use mod.prelude.widgets_internal.*
     use mod.widgets.*
 
+    let BrowserUrlMode = set_type_default() do #(BrowserUrlMode::script_api(vm))
+    mod.widgets.BrowserUrlMode = BrowserUrlMode
+
     set_type_default() do #(DrawInspectorRect::script_shader(vm)){
         ..mod.draw.DrawQuad
     }
@@ -83,6 +86,7 @@ script_mod! {
         cap_persistence: false
         sync_browser_url: false
         browser_url_mode: BrowserUrlMode.CleanPath
+        browser_base_path: ""
     }
 
     mod.widgets.RouterWidget = mod.widgets.RouterWidgetBase {
@@ -96,8 +100,6 @@ script_mod! {
     }
 
     mod.widgets.RouterRoute = mod.widgets.RouterRouteBase {}
-
-    mod.widgets.BrowserUrlMode = BrowserUrlMode
 }
 
 #[derive(Script, ScriptHook, Clone, Copy, Debug, PartialEq, Eq)]
@@ -246,6 +248,8 @@ pub struct RouterWidget {
     sync_browser_url: bool,
     #[live]
     browser_url_mode: BrowserUrlMode,
+    #[live]
+    browser_base_path: ArcStringMut,
     #[rust]
     router: Router,
     #[rust]
@@ -268,6 +272,8 @@ pub struct RouterWidget {
     browser_sync_inbound: bool,
     #[rust]
     browser_sync_suppress_once: bool,
+    #[rust]
+    inferred_browser_base_path: String,
     #[rust]
     url_path_override: Option<String>,
     #[rust]

@@ -85,7 +85,9 @@ impl RouterWidget {
     }
 
     pub(super) fn preview_back_url(&self) -> Option<String> {
-        self.router.preview_back_route().map(|route| self.url_for_route(route))
+        self.router
+            .preview_back_route()
+            .map(|route| self.url_for_route(route))
     }
 
     pub(super) fn preview_forward_url(&self) -> Option<String> {

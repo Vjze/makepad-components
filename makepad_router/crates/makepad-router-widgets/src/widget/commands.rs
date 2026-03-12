@@ -42,6 +42,7 @@ pub struct RouterConfig {
     pub not_found_route: LiveId,
     pub default_transition: LiveId,
     pub persist_state: bool,
+    pub browser_base_path: Option<String>,
 }
 
 impl Default for RouterConfig {
@@ -52,6 +53,7 @@ impl Default for RouterConfig {
             not_found_route: LiveId(0),
             default_transition: LiveId(0),
             persist_state: false,
+            browser_base_path: None,
         }
     }
 }

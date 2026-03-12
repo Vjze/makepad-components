@@ -286,8 +286,14 @@ impl MatchEvent for App {
             self.sidebar_open = !self.sidebar_open;
             self.apply_responsive_visibility(cx);
         }
-        if self.ui.button(cx, ids!(sidebar_theme_toggle)).clicked(actions)
-            || self.ui.button(cx, ids!(mobile_theme_toggle)).clicked(actions)
+        if self
+            .ui
+            .button(cx, ids!(sidebar_theme_toggle))
+            .clicked(actions)
+            || self
+                .ui
+                .button(cx, ids!(mobile_theme_toggle))
+                .clicked(actions)
         {
             self.set_theme(cx, !self.is_light_theme);
         }

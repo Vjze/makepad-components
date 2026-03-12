@@ -28,6 +28,12 @@ impl RouterWidget {
         }
 
         self.persist_state = config.persist_state;
+        if let Some(browser_base_path) = config.browser_base_path {
+            self.browser_base_path
+                .as_mut_empty()
+                .push_str(&browser_base_path);
+            self.inferred_browser_base_path.clear();
+        }
     }
 
     fn primary_action_for_command(
