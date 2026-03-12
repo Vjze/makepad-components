@@ -43,9 +43,8 @@ pub mod textarea;
 pub mod theme;
 pub mod toggle;
 
-pub fn script_mod(vm: &mut ScriptVm) {
+pub fn script_mod_without_theme(vm: &mut ScriptVm) {
     makepad_icon::script_mod(vm);
-    crate::theme::script_mod(vm);
     crate::accordion::script_mod(vm);
     crate::alert::script_mod(vm);
     crate::aspect_ratio::script_mod(vm);
@@ -82,4 +81,9 @@ pub fn script_mod(vm: &mut ScriptVm) {
     crate::switch::script_mod(vm);
     crate::textarea::script_mod(vm);
     crate::toggle::script_mod(vm);
+}
+
+pub fn script_mod(vm: &mut ScriptVm) {
+    crate::theme::script_mod(vm);
+    crate::script_mod_without_theme(vm);
 }

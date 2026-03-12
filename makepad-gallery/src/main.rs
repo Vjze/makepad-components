@@ -65,6 +65,24 @@ script_mod! {
 impl App {
     const SMALL_SCREEN_WIDTH: f64 = 900.0;
 
+    fn build_script_mod(vm: &mut ScriptVm, is_light_theme: bool) -> ScriptValue {
+        crate::makepad_widgets::script_mod(vm);
+        makepad_components::theme::script_mod(vm);
+        if is_light_theme {
+            script_eval!(vm, {
+                mod.widgets.shad_theme = mod.widgets.shad_themes.light
+            });
+        } else {
+            script_eval!(vm, {
+                mod.widgets.shad_theme = mod.widgets.shad_themes.dark
+            });
+        }
+        makepad_components::script_mod_without_theme(vm);
+        makepad_router::script_mod(vm);
+        crate::ui::script_mod(vm);
+        self::script_mod(vm)
+    }
+
     fn widget_button_clicked(ui: &WidgetRef, cx: &Cx, actions: &Actions, path: &[LiveId]) -> bool {
         let widget = ui.widget_flood(cx, path);
         actions
@@ -73,6 +91,7 @@ impl App {
     }
 
     fn set_current_page(&mut self, cx: &mut Cx, page: LiveId) {
+        self.current_page = page;
         self.ui
             .router_widget(cx, ids!(content_flip))
             .go_to_route(cx, page);
@@ -111,6 +130,42 @@ impl App {
                 "☰"
             },
         );
+    }
+
+    fn sync_theme_toggle_labels(&self, cx: &mut Cx) {
+        let button_text = if self.is_light_theme {
+            "Dark mode"
+        } else {
+            "Light mode"
+        };
+        self.ui
+            .button(cx, ids!(sidebar_theme_toggle))
+            .set_text(cx, button_text);
+        self.ui
+            .button(cx, ids!(mobile_theme_toggle))
+            .set_text(cx, button_text);
+    }
+
+    fn reload_ui_for_theme(&mut self, cx: &mut Cx) {
+        cx.with_vm(|vm| {
+            let value = Self::build_script_mod(vm, self.is_light_theme);
+            <Self as ScriptApply>::script_apply(
+                self,
+                vm,
+                &Apply::Reload,
+                &mut Scope::empty(),
+                value,
+            );
+        });
+        self.sync_theme_toggle_labels(cx);
+        self.apply_responsive_visibility(cx);
+        self.set_current_page(cx, self.current_page);
+        self.ui.redraw(cx);
+    }
+
+    fn set_theme(&mut self, cx: &mut Cx, is_light_theme: bool) {
+        self.is_light_theme = is_light_theme;
+        self.reload_ui_for_theme(cx);
     }
 
     fn apply_responsive_visibility(&mut self, cx: &mut Cx) {
@@ -204,6 +259,10 @@ pub struct App {
     is_small_screen: bool,
     #[rust]
     sidebar_open: bool,
+    #[rust]
+    is_light_theme: bool,
+    #[rust]
+    current_page: LiveId,
 }
 
 impl MatchEvent for App {
@@ -226,6 +285,11 @@ impl MatchEvent for App {
         {
             self.sidebar_open = !self.sidebar_open;
             self.apply_responsive_visibility(cx);
+        }
+        if self.ui.button(cx, ids!(sidebar_theme_toggle)).clicked(actions)
+            || self.ui.button(cx, ids!(mobile_theme_toggle)).clicked(actions)
+        {
+            self.set_theme(cx, !self.is_light_theme);
         }
 
         self.handle_sidebar_navigation(cx, actions);
@@ -825,19 +889,18 @@ impl MatchEvent for App {
 
 impl AppMain for App {
     fn script_mod(vm: &mut ScriptVm) -> ScriptValue {
-        crate::makepad_widgets::script_mod(vm);
-        makepad_components::script_mod(vm);
-        makepad_router::script_mod(vm);
-        crate::ui::script_mod(vm);
-        self::script_mod(vm)
+        Self::build_script_mod(vm, false)
     }
 
     fn handle_event(&mut self, cx: &mut Cx, event: &Event) {
         match event {
             Event::Startup => {
                 self.sidebar_open = true;
+                self.current_page = live_id!(accordion_page);
+                self.is_light_theme = false;
+                self.sync_theme_toggle_labels(cx);
                 self.apply_responsive_visibility(cx);
-                self.set_current_page(cx, live_id!(accordion_page));
+                self.set_current_page(cx, self.current_page);
             }
             Event::MacosMenuCommand(command) => {
                 if *command == live_id!(command_palette_menu) {

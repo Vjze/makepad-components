@@ -172,6 +172,57 @@ script_mod! {
         }
     }
 
+    mod.widgets.GalleryMobileHeader = View{
+        width: Fill
+        height: Fit
+        visible: false
+        flow: Right
+        align: Align{y: 0.5}
+        padding: Inset{left: 16, right: 16, top: 12, bottom: 12}
+        spacing: 12.0
+        draw_bg.color: (shad_theme.color_background)
+
+        mobile_sidebar_button := ShadButtonGhost{
+            width: 36
+            height: 36
+            padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
+            text: "☰"
+            draw_text.text_style.font_size: 16
+        }
+
+        ShadLabel{
+            text: "Components"
+            draw_text.text_style.font_size: 11
+            draw_text.color: (shad_theme.color_muted_foreground)
+        }
+
+        View{
+            width: Fill
+            height: Fit
+        }
+
+        mobile_theme_toggle := ShadButtonOutline{
+            text: "Light mode"
+        }
+    }
+
+    mod.widgets.GalleryMainContent = View{
+        width: Fill
+        height: Fill
+        flow: Down
+
+        mobile_header := mod.widgets.GalleryMobileHeader{}
+        content_flip := mod.widgets.GalleryContentFlip{}
+    }
+
+    mod.widgets.GalleryAppShell = View{
+        width: Fill
+        height: Fill
+        flow: Right
+        sidebar := mod.widgets.GallerySidebar{}
+        main_content := mod.widgets.GalleryMainContent{}
+    }
+
     mod.widgets.GalleryAppUi = Root{
         main_window := Window{
             window.inner_size: vec2(1400 900)
@@ -194,45 +245,7 @@ script_mod! {
                 flow: Overlay
                 draw_bg.color: (shad_theme.color_background)
 
-                app_shell := View{
-                    width: Fill
-                    height: Fill
-                    flow: Right
-                    sidebar := mod.widgets.GallerySidebar{}
-                    main_content := View{
-                        width: Fill
-                        height: Fill
-                        flow: Down
-
-                        mobile_header := View{
-                            width: Fill
-                            height: Fit
-                            visible: false
-                            flow: Right
-                            align: Align{y: 0.5}
-                            padding: Inset{left: 16, right: 16, top: 12, bottom: 12}
-                            spacing: 12.0
-                            draw_bg.color: (shad_theme.color_background)
-
-                            mobile_sidebar_button := ShadButtonGhost{
-                                width: 36
-                                height: 36
-                                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
-                                text: "☰"
-                                draw_text.text_style.font_size: 16
-                            }
-
-                            ShadLabel{
-                                text: "Components"
-                                draw_text.text_style.font_size: 11
-                                draw_text.color: (shad_theme.color_muted_foreground)
-                            }
-                        }
-
-                        content_flip := mod.widgets.GalleryContentFlip{}
-                    }
-                }
-
+                app_shell := mod.widgets.GalleryAppShell{}
                 command_palette := mod.widgets.GalleryCommandPalette{}
             }
         }

@@ -14,7 +14,7 @@ This workspace contains:
 - **Accordion**: a composable accordion item widget with open/close state and script-call support (`set_is_open`, `is_open`).
 - **Alerts**: shadcn-inspired alert layouts with default and destructive variants.
 - **Dialog**: modal with variants — generic (custom body), alert (title + Cancel/Confirm), destructive; `set_open(bool)` / `is_open()` API.
-- **Theme tokens**: centralized `shad_theme` color + radius tokens in script space.
+- **Theme tokens**: centralized `shad_theme` color + radius tokens in script space, with built-in `light` and `dark` variants.
 - **Icons**: SVG-based icon widgets (`IconCheck`, `IconX`, `IconSearch`).
 - **Kbd**: keyboard shortcut key caps (`ShadKbd`, `ShadKbdLabel`, `ShadKbdSeparator`) for displaying shortcuts (e.g. ⌘ ⇧ ⌥ ⌃ or Ctrl + B).
 - **Gallery app**: a live catalog demonstrating component usage and styling.
@@ -336,11 +336,26 @@ Use with a horizontal layout: `ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }` a
 
 ### Theme (`makepad-components/src/theme.rs`)
 
-Exports `mod.widgets.shad_theme` with tokens such as:
+Exports `mod.widgets.shad_themes.light`, `mod.widgets.shad_themes.dark`, and the active `mod.widgets.shad_theme` object with tokens such as:
 - `color_primary`, `color_secondary`, `color_background`
 - `color_destructive*`, `color_outline_border*`
 - `color_muted*`, `color_ghost*`
 - `radius`
+
+Switch themes by reassigning `mod.widgets.shad_theme`:
+
+```rust
+script_eval!(cx, {
+    if mod.state.is_light_theme {
+        mod.state.is_light_theme = false
+        mod.widgets.shad_theme = mod.widgets.shad_themes.dark
+    }
+    else {
+        mod.state.is_light_theme = true
+        mod.widgets.shad_theme = mod.widgets.shad_themes.light
+    }
+});
+```
 
 ## Using `makepad-icon`
 
