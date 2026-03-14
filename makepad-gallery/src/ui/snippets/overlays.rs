@@ -31,23 +31,71 @@ pub const CONTEXT_MENU_PREVIEW_CODE: &str = r#"ShadContextMenu{
 //         _ => {}
 //     }
 // }"#;
-pub const DIALOG_PREVIEW_CODE: &str = r#"// Generic: ShadDialog with overlay +: { content +: { body +: { ... } } }
-// Alert: ShadDialogAlert{ open: false } — closes on Cancel/Confirm/backdrop
-// Destructive: ShadDialogAlertDestructive{ open: false }
+pub const DIALOG_PREVIEW_CODE: &str = r#"open_rename_dialog_btn := ShadButton{
+    text: "Rename project"
+}
 
-mod.widgets.ShadButton{text: "Open dialog"}
-mod.widgets.ShadDialog{ open: false }
-mod.widgets.ShadDialogAlert{ open: false }
-mod.widgets.ShadDialogAlertDestructive{ open: false }
+rename_dialog := ShadDialog{
+    overlay +: {
+        content +: {
+            body +: {
+                dialog_header := ShadDialogHeader{
+                    title := ShadDialogTitle{text: "Rename project"}
+                    description := ShadDialogDescription{
+                        text: "Update the project name shown across navigation and shares."
+                    }
+                }
+
+                dialog_content := ShadDialogContent{
+                    ShadField{
+                        ShadFieldLabel{text: "Project name"}
+                        ShadInput{empty_text: "Northwind Revamp"}
+                    }
+
+                    ShadFieldDescription{
+                        text: "Keep it concise. Changes apply immediately."
+                    }
+                }
+
+                dialog_footer := ShadDialogFooter{
+                    rename_cancel_btn := ShadButtonOutline{text: "Cancel"}
+                    rename_save_btn := ShadButton{text: "Save changes"}
+                }
+            }
+        }
+    }
+}
+
+publish_dialog := ShadDialogAlert{
+    overlay +: {
+        content +: {
+            dialog_panel +: {
+                dialog_body +: {
+                    title_label +: {text: "Publish changes?"}
+                    description_label +: {
+                        text: "Push the latest updates live for every workspace."
+                    }
+                }
+
+                footer +: {
+                    cancel +: {text: "Keep editing"}
+                    confirm +: {text: "Publish now"}
+                }
+            }
+        }
+    }
+}
 
 // Controller example (Rust):
-// let dialog = self.ui.shad_dialog(cx, ids!(default_dialog));
+// let dialog = self.ui.shad_dialog(cx, ids!(rename_dialog));
 //
-// if self.ui.button(cx, ids!(open_dialog_btn)).clicked(actions) {
+// if self.ui.button(cx, ids!(open_rename_dialog_btn)).clicked(actions) {
 //     dialog.open(cx);
 // }
 //
-// if self.ui.button(cx, ids!(close_btn)).clicked(actions) {
+// if self.ui.button(cx, ids!(rename_cancel_btn)).clicked(actions)
+//     || self.ui.button(cx, ids!(rename_save_btn)).clicked(actions)
+// {
 //     dialog.close(cx);
 // }
 //
@@ -100,8 +148,42 @@ pub const POPOVER_PREVIEW_CODE: &str = r#"profile_popover := ShadPopover{
 // if let Some(is_open) = popover.open_changed(actions) {
 //     log!("Popover open: {}", is_open);
 // }"#;
-pub const SHEET_PREVIEW_CODE: &str = r#"ShadButton{text: "Open sheet"}
-ShadSheet{open: false}
+pub const SHEET_PREVIEW_CODE: &str = r#"open_right_sheet_btn := ShadButton{
+    text: "Open editor"
+}
+
+right_sheet := ShadSheet{
+    side: "right"
+    sheet_size: 360.0
+
+    overlay +: {
+        content +: {
+            sheet_frame +: {
+                header +: {
+                    title +: {text: "Edit workspace"}
+                    description +: {text: "Keep editing in context without leaving the current dashboard."}
+                }
+
+                body +: {
+                    ShadField{
+                        ShadFieldLabel{text: "Workspace name"}
+                        ShadInput{empty_text: "Northwind"}
+                    }
+
+                    ShadField{
+                        ShadFieldLabel{text: "Default team"}
+                        ShadSelect{labels: ["Design" "Engineering" "Ops"]}
+                    }
+                }
+
+                footer +: {
+                    close_right_sheet_btn := ShadButtonOutline{text: "Cancel"}
+                    save_right_sheet_btn := ShadButton{text: "Save changes"}
+                }
+            }
+        }
+    }
+}
 
 // Controller example (Rust):
 // let sheet = self.ui.shad_sheet(cx, ids!(right_sheet));
@@ -110,7 +192,9 @@ ShadSheet{open: false}
 //     sheet.open(cx);
 // }
 //
-// if self.ui.button(cx, ids!(close_right_sheet_btn)).clicked(actions) {
+// if self.ui.button(cx, ids!(close_right_sheet_btn)).clicked(actions)
+//     || self.ui.button(cx, ids!(save_right_sheet_btn)).clicked(actions)
+// {
 //     sheet.close(cx);
 // }
 //
@@ -118,4 +202,5 @@ ShadSheet{open: false}
 //     log!("Sheet open: {}", is_open);
 // }
 //
-// Override overlay.content.sheet_frame align/size for left/top/bottom variants."#;
+// side and sheet_size are declarative configuration.
+// The page opens and closes the sheet; backdrop dismissal and Escape stay inside ShadSheet."#;

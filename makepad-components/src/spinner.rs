@@ -4,7 +4,7 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.ShadSpinner = mod.widgets.RoundedView{
+    let SpinnerBase = mod.widgets.RoundedView{
         width: 24
         height: 24
 
@@ -32,7 +32,6 @@ script_mod! {
                 return sdf.fill(self.color)
             }
         }
-
         animator: Animator{
             time: {
                 default: @on
@@ -42,6 +41,24 @@ script_mod! {
                     apply: {}
                 }
             }
+        }
+    }
+
+    mod.widgets.ShadSpinner = SpinnerBase{}
+
+    mod.widgets.ShadSpinnerSm = SpinnerBase{
+        width: 16
+        height: 16
+        draw_bg +: {
+            stroke_width: uniform(2.0)
+        }
+    }
+
+    mod.widgets.ShadSpinnerLg = SpinnerBase{
+        width: 32
+        height: 32
+        draw_bg +: {
+            stroke_width: uniform(3.0)
         }
     }
 }

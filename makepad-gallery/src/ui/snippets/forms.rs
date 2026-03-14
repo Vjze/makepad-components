@@ -56,8 +56,161 @@ pub const DATE_PICKER_PREVIEW_CODE: &str = r#"deadline_picker := ShadDatePicker{
 //
 // picker.set_value(cx, Some(ShadDate{year: 2026, month: 4, day: 1}));
 // picker.clear(cx);"#;
-pub const KBD_PREVIEW_CODE: &str = "View{\n    width: Fit\n    height: Fit\n    flow: Down\n    spacing: 12.0\n    View{\n        flow: Right\n        spacing: 6.0\n        align: Align{y: 0.5}\n        ShadKbd{ label := ShadKbdLabel{text: \"Cmd\"} }\n        ShadKbd{ label := ShadKbdLabel{text: \"Shift\"} }\n        ShadKbd{ label := ShadKbdLabel{text: \"Option\"} }\n        ShadKbd{ label := ShadKbdLabel{text: \"Ctrl\"} }\n    }\n    View{\n        flow: Right\n        spacing: 6.0\n        align: Align{y: 0.5}\n        ShadKbd{ label := ShadKbdLabel{text: \"Ctrl\"} }\n        ShadKbdSeparator{}\n        ShadKbd{ label := ShadKbdLabel{text: \"B\"} }\n    }\n}";
-pub const LABEL_PREVIEW_CODE: &str = "mod.widgets.ShadLabel{ text: \"Your email address\" }";
+pub const KBD_PREVIEW_CODE: &str = r#"View{
+    width: Fill
+    height: Fit
+    flow: Down
+    spacing: 14.0
+
+    ShadFieldDescription{
+        width: Fill
+        text: "Use Kbd chips as shortcut copy in menus, dialogs, or onboarding hints."
+    }
+
+    View{
+        width: Fit
+        height: Fit
+        flow: Right
+        spacing: 6.0
+        align: Align{y: 0.5}
+
+        ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
+        ShadKbd{ label := ShadKbdLabel{text: "Shift"} }
+        ShadKbd{ label := ShadKbdLabel{text: "Option"} }
+        ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
+    }
+
+    View{
+        width: Fill
+        height: Fit
+        flow: Right
+        spacing: 16.0
+        align: Align{y: 0.5}
+
+        ShadLabel{
+            width: 180
+            text: "Open command palette"
+        }
+
+        View{
+            width: Fit
+            height: Fit
+            flow: Right
+            spacing: 6.0
+            align: Align{y: 0.5}
+
+            ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
+            ShadKbdSeparator{}
+            ShadKbd{ label := ShadKbdLabel{text: "K"} }
+        }
+
+        View{
+            width: Fit
+            height: Fit
+            flow: Right
+            spacing: 6.0
+            align: Align{y: 0.5}
+
+            ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
+            ShadKbdSeparator{}
+            ShadKbd{ label := ShadKbdLabel{text: "K"} }
+        }
+    }
+
+    View{
+        width: Fill
+        height: Fit
+        flow: Right
+        spacing: 16.0
+        align: Align{y: 0.5}
+
+        ShadLabel{
+            width: 180
+            text: "Duplicate current row"
+        }
+
+        View{
+            width: Fit
+            height: Fit
+            flow: Right
+            spacing: 6.0
+            align: Align{y: 0.5}
+
+            ShadKbd{ label := ShadKbdLabel{text: "Shift"} }
+            ShadKbdSeparator{}
+            ShadKbd{ label := ShadKbdLabel{text: "Alt"} }
+            ShadKbdSeparator{}
+            ShadKbd{ label := ShadKbdLabel{text: "Down"} }
+        }
+    }
+}
+
+// Usage notes:
+// 1. Treat Kbd as presentational copy, not as the keyboard handler.
+// 2. Render one ShadKbd per key and place ShadKbdSeparator between keys in a combo.
+// 3. Keep the actual shortcut behavior in the surrounding page or app shell."#;
+pub const LABEL_PREVIEW_CODE: &str = r#"View{
+    width: Fill
+    height: Fit
+    flow: Down
+    spacing: 14.0
+
+    ShadFieldDescription{
+        width: Fill
+        text: "Use ShadLabel for nearby UI copy, summaries, and status text."
+    }
+
+    View{
+        width: Fill
+        height: Fit
+        flow: Right
+        spacing: 12.0
+
+        RoundedView{
+            width: 248
+            height: Fit
+            flow: Down
+            spacing: 6.0
+            padding: Inset{left: 14, right: 14, top: 14, bottom: 14}
+
+            ShadLabel{text: "Current plan"}
+            ShadFieldDescription{text: "Pro workspace with annual billing."}
+        }
+
+        RoundedView{
+            width: 248
+            height: Fit
+            flow: Down
+            spacing: 6.0
+            padding: Inset{left: 14, right: 14, top: 14, bottom: 14}
+
+            ShadLabel{text: "Environment"}
+            ShadFieldDescription{text: "Production API connected."}
+        }
+    }
+
+    View{
+        width: Fill
+        height: Fit
+        flow: Down
+        spacing: 10.0
+
+        sync_status := ShadLabel{
+            text: "Last synced 2 minutes ago"
+        }
+
+        results_count := ShadLabel{
+            text: "Showing 24 of 120 results"
+        }
+    }
+}
+
+// Runtime update example (Rust):
+// self.view.label(cx, ids!(sync_status)).set_text(cx, "Last synced just now");
+// self.view.label(cx, ids!(results_count)).set_text(cx, "Showing 36 of 120 results");
+//
+// Use ShadFieldLabel inside ShadField when the text belongs to an input stack,
+// instead of reusing ShadLabel as a form caption."#;
 pub const SLIDER_PREVIEW_CODE: &str = r#"View{
     width: Fill
     height: Fit

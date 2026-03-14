@@ -6,7 +6,7 @@ gallery_stateful_page_shell! {
     widget: GallerySonnerPage,
     page: sonner_page,
     title: "Sonner / Toast",
-    subtitle: "Toast notifications with Modal overlay. Use ShadSonnerRef::open/close and `open_changed(actions)` when a page or app shell triggers toasts.",
+    subtitle: "Toast notifications in a non-blocking overlay. Sonner variants share one global queue, so `ShadSonner`, `ShadSonnerWithDescription`, and `ShadSonnerWithClose` all append into the same stack.",
     divider: { ShadHr{} },
     preview_spacing: 16.0,
     preview: {
@@ -61,10 +61,10 @@ gallery_stateful_page_shell! {
         }
     },
     action_flow: {
-        mod.widgets.GalleryActionFlowStep{text: "1. Keep one ShadSonnerRef per toast variant the page can trigger."}
-        mod.widgets.GalleryActionFlowStep{text: "2. Call open(cx) from buttons, async completions, or other semantic page events."}
+        mod.widgets.GalleryActionFlowStep{text: "1. Sonner variants share a single global queue; keep whichever variant refs match the triggers you want to expose."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Call open(cx) on any variant ref and it appends its own toast kind into that shared stack."}
         mod.widgets.GalleryActionFlowStep{text: "3. Use `open_changed(actions)` when the page or shell reacts to toast lifecycle."}
-        mod.widgets.GalleryActionFlowStep{text: "4. Close buttons and modal dismissal remain component-owned, so the page just triggers and observes."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Close buttons remain component-owned, so the page just triggers variant refs and observes the shared host state."}
     },
 }
 

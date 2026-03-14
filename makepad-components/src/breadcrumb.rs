@@ -9,15 +9,28 @@ script_mod! {
         height: Fit
         flow: Right
         align: Align{y: 0.5}
-        spacing: 6.0
+        spacing: 4.0
     }
 
     mod.widgets.ShadBreadcrumbLink = mod.widgets.LinkLabel{
         width: Fit
         height: Fit
-        draw_text.color: (shad_theme.color_muted_foreground)
-        draw_text.text_style.font_size: 11
-        draw_text.color_hover: (shad_theme.color_primary)
+        margin: Inset{}
+        draw_text +: {
+            color: (shad_theme.color_muted_foreground)
+            color_hover: (shad_theme.color_primary)
+            color_down: (shad_theme.color_primary)
+            color_focus: (shad_theme.color_primary)
+            color_disabled: (shad_theme.color_disabled_foreground)
+            text_style.font_size: 11
+        }
+        draw_bg +: {
+            color: #0000
+            color_hover: #0000
+            color_down: #0000
+            color_focus: #0000
+            color_disabled: #0000
+        }
     }
 
     mod.widgets.ShadBreadcrumbPage = mod.widgets.Label{
@@ -28,14 +41,14 @@ script_mod! {
     }
 
     mod.widgets.ShadBreadcrumbSeparator = mod.widgets.IconChevronRight{
-        icon_walk: Walk{width: 12, height: 12}
-        draw_icon.color: (shad_theme.color_muted_foreground)
+        icon_walk: Walk{width: 10, height: 10}
+        draw_icon.color: (shad_theme.color_outline_border_hover)
     }
 
     mod.widgets.ShadBreadcrumbEllipsis = mod.widgets.Label{
         width: Fit
         height: Fit
-        draw_text.color: (shad_theme.color_primary)
+        draw_text.color: (shad_theme.color_muted_foreground)
         draw_text.text_style.font_size: 11
         text: "..."
     }

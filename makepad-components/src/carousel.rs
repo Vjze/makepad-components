@@ -8,20 +8,20 @@ script_mod! {
 
     mod.widgets.ShadCarouselDotsBase = #(ShadCarouselDots::register_widget(vm))
     mod.widgets.ShadCarouselDots = set_type_default() do mod.widgets.ShadCarouselDotsBase{
-        width: 40
+        width: 36
         height: 8
         draw_bg +: {
             color_active: uniform(shad_theme.color_primary)
-            color_inactive: uniform(shad_theme.color_muted_foreground)
+            color_inactive: uniform(shad_theme.color_outline_border_hover)
             dot_0: instance(1.0)
             dot_1: instance(0.0)
             dot_2: instance(0.0)
             pixel: fn() {
                 let sdf = Sdf2d.viewport(self.pos * self.rect_size)
-                let r = 4.0
+                let r = 3.0
                 let cx0 = 4.0
-                let cx1 = 16.0
-                let cx2 = 28.0
+                let cx1 = 18.0
+                let cx2 = 32.0
                 let cy = 4.0
                 let c0 = mix(self.color_inactive, self.color_active, self.dot_0)
                 let c1 = mix(self.color_inactive, self.color_active, self.dot_1)
@@ -62,13 +62,13 @@ script_mod! {
 
     // Named nav button types for prev/next, sharing the same outline styling.
     mod.widgets.ShadCarouselPrevBtn = mod.widgets.IconButtonChevronLeft{
-        width: 36
-        height: 36
+        width: 32
+        height: 32
         draw_bg +: {
-            color: #0000
-            color_hover: (shad_theme.color_ghost_hover)
-            color_down: (shad_theme.color_ghost_down)
-            color_focus: (shad_theme.color_ghost_hover)
+            color: (shad_theme.color_background)
+            color_hover: (shad_theme.color_secondary)
+            color_down: (shad_theme.color_secondary_hover)
+            color_focus: (shad_theme.color_secondary)
             border_size: 1.0
             border_radius: (shad_theme.radius)
             border_color: (shad_theme.color_outline_border)
@@ -80,13 +80,13 @@ script_mod! {
     }
 
     mod.widgets.ShadCarouselNextBtn = mod.widgets.IconButtonChevronRight{
-        width: 36
-        height: 36
+        width: 32
+        height: 32
         draw_bg +: {
-            color: #0000
-            color_hover: (shad_theme.color_ghost_hover)
-            color_down: (shad_theme.color_ghost_down)
-            color_focus: (shad_theme.color_ghost_hover)
+            color: (shad_theme.color_background)
+            color_hover: (shad_theme.color_secondary)
+            color_down: (shad_theme.color_secondary_hover)
+            color_focus: (shad_theme.color_secondary)
             border_size: 1.0
             border_radius: (shad_theme.radius)
             border_color: (shad_theme.color_outline_border)
@@ -101,7 +101,7 @@ script_mod! {
         width: Fill
         height: Fit
         flow: Down
-        spacing: 12.0
+        spacing: 10.0
 
         content_wrap := View{
             width: Fill
@@ -116,63 +116,213 @@ script_mod! {
 
                 slide_0 := View{
                     width: Fill
-                    height: Fit
-                    flow: Down
-                    align: Align{x: 0.5, y: 0.5}
-                    RoundedView{
+                    height: 280
+                    flow: Overlay
+                    surface := RoundedView{
                         width: Fill
-                        height: Fit
-                        padding: Inset{left: 24, right: 24, top: 24, bottom: 24}
+                        height: Fill
+                        flow: Right
+                        spacing: 18.0
+                        padding: Inset{left: 20, right: 20, top: 20, bottom: 20}
                         draw_bg +: {
-                            color: (shad_theme.color_secondary)
+                            color: (shad_theme.color_muted)
                             border_radius: (shad_theme.radius)
+                            border_size: 1.0
+                            border_color: (shad_theme.color_outline_border)
                         }
-                        Label{
-                            text: "Slide 1"
-                            draw_text.color: (shad_theme.color_primary)
-                            draw_text.text_style.font_size: 14
+
+                        text_col := View{
+                            width: Fill
+                            height: Fill
+                            flow: Down
+                            spacing: 10.0
+
+                            eyebrow := ShadBadge{
+                                label := ShadBadgeLabel{text: "Realtime"}
+                            }
+
+                            title := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_primary)
+                                draw_text.text_style.font_size: 18
+                                text: "Ship webhook updates without polling"
+                            }
+
+                            description := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_muted_foreground)
+                                draw_text.text_style.font_size: 11
+                                text: "Stream product events, retries, and delivery status into one reliable handoff for the whole team."
+                            }
+
+                            meta := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_muted_foreground)
+                                draw_text.text_style.font_size: 10
+                                text: "Delivery timelines stay visible across launch week."
+                            }
+                        }
+
+                        media := RoundedView{
+                            width: 240
+                            height: Fill
+                            clip_x: true
+                            clip_y: true
+                            draw_bg +: {
+                                color: (shad_theme.color_secondary)
+                                border_radius: (shad_theme.radius)
+                                border_size: 1.0
+                                border_color: (shad_theme.color_outline_border)
+                            }
+
+                            image := Image{
+                                width: Fill
+                                height: Fill
+                                fit: ImageFit.Biggest
+                                src: crate_resource("self://resources/carousel/highlight-a.jpg")
+                            }
                         }
                     }
                 }
 
                 slide_1 := View{
                     width: Fill
-                    height: Fit
-                    flow: Down
-                    align: Align{x: 0.5, y: 0.5}
-                    RoundedView{
+                    height: 280
+                    flow: Overlay
+                    surface := RoundedView{
                         width: Fill
-                        height: Fit
-                        padding: Inset{left: 24, right: 24, top: 24, bottom: 24}
+                        height: Fill
+                        flow: Right
+                        spacing: 18.0
+                        padding: Inset{left: 20, right: 20, top: 20, bottom: 20}
                         draw_bg +: {
-                            color: (shad_theme.color_secondary)
+                            color: (shad_theme.color_muted)
                             border_radius: (shad_theme.radius)
+                            border_size: 1.0
+                            border_color: (shad_theme.color_outline_border)
                         }
-                        Label{
-                            text: "Slide 2"
-                            draw_text.color: (shad_theme.color_primary)
-                            draw_text.text_style.font_size: 14
+
+                        text_col := View{
+                            width: Fill
+                            height: Fill
+                            flow: Down
+                            spacing: 10.0
+
+                            eyebrow := ShadBadgeSecondary{
+                                label := ShadBadgeSecondaryLabel{text: "Automation"}
+                            }
+
+                            title := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_primary)
+                                draw_text.text_style.font_size: 18
+                                text: "Stage approval flows with fewer manual steps"
+                            }
+
+                            description := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_muted_foreground)
+                                draw_text.text_style.font_size: 11
+                                text: "Bundle rules, ownership, and fallback logic into one sequence that support and ops can review together."
+                            }
+
+                            meta := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_muted_foreground)
+                                draw_text.text_style.font_size: 10
+                                text: "Reduce repetitive handoffs between rollout, support, and billing."
+                            }
+                        }
+
+                        media := RoundedView{
+                            width: 240
+                            height: Fill
+                            clip_x: true
+                            clip_y: true
+                            draw_bg +: {
+                                color: (shad_theme.color_secondary)
+                                border_radius: (shad_theme.radius)
+                                border_size: 1.0
+                                border_color: (shad_theme.color_outline_border)
+                            }
+
+                            image := Image{
+                                width: Fill
+                                height: Fill
+                                fit: ImageFit.Biggest
+                                src: crate_resource("self://resources/carousel/highlight-b.jpg")
+                            }
                         }
                     }
                 }
 
                 slide_2 := View{
                     width: Fill
-                    height: Fit
-                    flow: Down
-                    align: Align{x: 0.5, y: 0.5}
-                    RoundedView{
+                    height: 280
+                    flow: Overlay
+                    surface := RoundedView{
                         width: Fill
-                        height: Fit
-                        padding: Inset{left: 24, right: 24, top: 24, bottom: 24}
+                        height: Fill
+                        flow: Right
+                        spacing: 18.0
+                        padding: Inset{left: 20, right: 20, top: 20, bottom: 20}
                         draw_bg +: {
-                            color: (shad_theme.color_secondary)
+                            color: (shad_theme.color_muted)
                             border_radius: (shad_theme.radius)
+                            border_size: 1.0
+                            border_color: (shad_theme.color_outline_border)
                         }
-                        Label{
-                            text: "Slide 3"
-                            draw_text.color: (shad_theme.color_primary)
-                            draw_text.text_style.font_size: 14
+
+                        text_col := View{
+                            width: Fill
+                            height: Fill
+                            flow: Down
+                            spacing: 10.0
+
+                            eyebrow := ShadBadgeOutline{
+                                label := ShadBadgeOutlineLabel{text: "Insights"}
+                            }
+
+                            title := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_primary)
+                                draw_text.text_style.font_size: 18
+                                text: "Track adoption with one story per release"
+                            }
+
+                            description := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_muted_foreground)
+                                draw_text.text_style.font_size: 11
+                                text: "Pair highlights, metrics, and rollout context so teams can review outcomes without jumping between dashboards."
+                            }
+
+                            meta := Label{
+                                width: Fill
+                                draw_text.color: (shad_theme.color_muted_foreground)
+                                draw_text.text_style.font_size: 10
+                                text: "Reuse the same carousel for onboarding, launches, or feature recaps."
+                            }
+                        }
+
+                        media := RoundedView{
+                            width: 240
+                            height: Fill
+                            clip_x: true
+                            clip_y: true
+                            draw_bg +: {
+                                color: (shad_theme.color_secondary)
+                                border_radius: (shad_theme.radius)
+                                border_size: 1.0
+                                border_color: (shad_theme.color_outline_border)
+                            }
+
+                            image := Image{
+                                width: Fill
+                                height: Fill
+                                fit: ImageFit.Biggest
+                                src: crate_resource("self://resources/carousel/highlight-c.jpg")
+                            }
                         }
                     }
                 }
@@ -183,7 +333,7 @@ script_mod! {
             width: Fill
             height: Fit
             flow: Right
-            spacing: 12.0
+            spacing: 10.0
             align: Align{x: 0.5, y: 0.5}
 
             prev_btn := mod.widgets.ShadCarouselPrevBtn{}
@@ -239,7 +389,7 @@ pub struct ShadCarouselDots {
 
 impl ShadCarouselDots {
     const DOT_W: f32 = 12.0;
-    const DOTS_W: f32 = 40.0;
+    const DOTS_W: f32 = 36.0;
 
     pub fn set_active(&mut self, cx: &mut Cx, index: usize) {
         if self.active_index == index {

@@ -26,6 +26,11 @@ script_mod! {
             color_destructive_down: #991b1b
             color_destructive_foreground: #fafafa
 
+            color_success: #22c55e
+            color_warning: #fbbf24
+            color_success_subtle: #052e16
+            color_warning_subtle: #451a03
+
             color_ghost_hover: #27272a
             color_ghost_down: #3f3f46
 
@@ -64,6 +69,11 @@ script_mod! {
             color_destructive_hover: #b91c1c
             color_destructive_down: #991b1b
             color_destructive_foreground: #fafafa
+
+            color_success: #16a34a
+            color_warning: #b45309
+            color_success_subtle: #dcfce7
+            color_warning_subtle: #fef3c7
 
             color_ghost_hover: #f4f4f5
             color_ghost_down: #e4e4e7

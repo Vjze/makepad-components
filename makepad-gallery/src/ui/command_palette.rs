@@ -26,7 +26,10 @@ script_mod! {
         row := RoundedView{
             width: Fill
             height: 44
-            flow: Overlay
+            flow: Right
+            align: Align{y: 0.5}
+            padding: Inset{left: 14, right: 12, top: 0, bottom: 0}
+            spacing: 12.0
             draw_bg +: {
                 color: #0000
                 border_radius: 10.0
@@ -34,8 +37,8 @@ script_mod! {
 
             button := ShadButtonGhost{
                 width: Fill
-                height: Fill
-                padding: Inset{left: 14, right: 80, top: 0, bottom: 0}
+                height: 36
+                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
                 align: Align{x: 0.0, y: 0.5}
                 text: "Command"
                 draw_bg +: {
@@ -47,17 +50,11 @@ script_mod! {
                 draw_text.text_style.font_size: 13
             }
 
-            shortcut_wrap := View{
-                width: Fill
-                height: Fill
-                align: Align{x: 1.0, y: 0.5}
-                padding: Inset{right: 12}
-
-                shortcut := Label{
-                    draw_text.color: (shad_theme.color_muted_foreground)
-                    draw_text.text_style.font_size: 10
-                    text: ""
-                }
+            shortcut := Label{
+                width: Fit
+                draw_text.color: (shad_theme.color_muted_foreground)
+                draw_text.text_style.font_size: 10
+                text: ""
             }
         }
     }
@@ -468,6 +465,10 @@ impl Widget for GalleryCommandPalette {
 
         if !self.open {
             return DrawStep::done();
+        }
+
+        if self.query.is_empty() && self.filtered_indices.is_empty() {
+            self.refresh_results(cx);
         }
 
         self.sync_empty_state(cx);

@@ -9,10 +9,10 @@ script_mod! {
         height: Fit
         flow: Right
         align: Align{x: 0.5, y: 0.5}
-        padding: Inset{left: 10, right: 10, top: 2, bottom: 2}
+        padding: Inset{left: 8, right: 8, top: 3, bottom: 3}
         draw_bg +: {
             color: (shad_theme.color_primary)
-            border_radius: 8.0
+            border_radius: 5.0
             border_size: 0.0
             border_color: #0000
         }
@@ -46,15 +46,39 @@ script_mod! {
         draw_text.color: (shad_theme.color_destructive_foreground)
     }
 
+    mod.widgets.ShadBadgeSuccess = mod.widgets.ShadBadge{
+        draw_bg +: {
+            color: (shad_theme.color_success_subtle)
+            border_size: 1.0
+            border_color: #0000
+        }
+    }
+
+    mod.widgets.ShadBadgeSuccessLabel = mod.widgets.ShadBadgeLabel{
+        draw_text.color: (shad_theme.color_success)
+    }
+
+    mod.widgets.ShadBadgeWarning = mod.widgets.ShadBadge{
+        draw_bg +: {
+            color: (shad_theme.color_warning_subtle)
+            border_size: 1.0
+            border_color: #0000
+        }
+    }
+
+    mod.widgets.ShadBadgeWarningLabel = mod.widgets.ShadBadgeLabel{
+        draw_text.color: (shad_theme.color_warning)
+    }
+
     mod.widgets.ShadBadgeOutline = mod.widgets.ShadBadge{
         draw_bg +: {
             color: #0000
             border_size: 1.0
-            border_color: (shad_theme.color_outline_border)
+            border_color: (shad_theme.color_outline_border_hover)
         }
     }
 
     mod.widgets.ShadBadgeOutlineLabel = mod.widgets.ShadBadgeLabel{
-        draw_text.color: (shad_theme.color_primary)
+        draw_text.color: (shad_theme.color_muted_foreground)
     }
 }

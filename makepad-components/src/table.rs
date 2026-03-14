@@ -423,12 +423,6 @@ impl ShadTable {
         script_apply_eval!(cx, content, {
             width: #(self.total_width)
         });
-        let mut empty = self
-            .view
-            .view(cx, ids!(table_view.scroll.content.list.Empty));
-        script_apply_eval!(cx, empty, {
-            width: #(self.total_width)
-        });
     }
 
     fn empty_fill_rows(list: &PortalList, cx: &Cx2d, used_rows: usize) -> usize {

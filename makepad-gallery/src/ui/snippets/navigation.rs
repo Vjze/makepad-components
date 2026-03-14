@@ -1,4 +1,41 @@
-pub const BREADCRUMB_PREVIEW_CODE: &str = "mod.widgets.ShadBreadcrumb{\n    mod.widgets.ShadBreadcrumbLink{ text: \"Home\" }\n    mod.widgets.ShadBreadcrumbSeparator{}\n    mod.widgets.ShadBreadcrumbLink{ text: \"Components\" }\n    mod.widgets.ShadBreadcrumbSeparator{}\n    mod.widgets.ShadBreadcrumbPage{ text: \"Breadcrumb\" }\n}";
+pub const BREADCRUMB_PREVIEW_CODE: &str = r#"// Keep the breadcrumb close to the page title it describes.
+RoundedView{
+    width: 360
+    height: Fit
+    flow: Down
+    spacing: 10.0
+    padding: Inset{top: 16, right: 16, bottom: 16, left: 16}
+    draw_bg +: {
+        color: (shad_theme.color_muted)
+        border_radius: (shad_theme.radius)
+        border_size: 1.0
+        border_color: (shad_theme.color_outline_border)
+    }
+
+    mod.widgets.ShadBreadcrumb{
+        mod.widgets.ShadBreadcrumbLink{ text: "Workspace" }
+        mod.widgets.ShadBreadcrumbSeparator{}
+        mod.widgets.ShadBreadcrumbLink{ text: "Settings" }
+        mod.widgets.ShadBreadcrumbSeparator{}
+        mod.widgets.ShadBreadcrumbPage{ text: "Billing" }
+    }
+
+    View{
+        width: Fill
+        height: Fit
+        flow: Down
+        spacing: 4.0
+
+        Label{
+            draw_text.color: (shad_theme.color_primary)
+            draw_text.text_style.font_size: 16
+            text: "Billing Settings"
+        }
+        mod.widgets.ShadFieldDescription{
+            text: "Manage invoices, tax details, and workspace-level billing contacts."
+        }
+    }
+}"#;
 pub const COMMAND_PALETTE_PREVIEW_CODE: &str = r#"mod.widgets.ShadButton{text: "Open Command Palette"}
 
 // The gallery listens for Cmd/Ctrl + K globally.
