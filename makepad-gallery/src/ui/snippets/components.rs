@@ -34,8 +34,68 @@ pub const ACCORDION_PREVIEW_CODE: &str = r#"mod.widgets.ShadAccordion{
 // if let Some(progress) = faq.animation_progress(actions) {
 //     log!("Accordion animation progress: {}", progress);
 // }"#;
-pub const AVATAR_PREVIEW_CODE: &str = "View{\n    width: Fit\n    height: Fit\n    flow: Right\n    align: Align{y: 0.5}\n    spacing: 12.0\n    mod.widgets.ShadAvatarSm{\n        fallback := mod.widgets.ShadAvatarFallback{text: \"SM\"}\n    }\n    mod.widgets.ShadAvatar{\n        fallback := mod.widgets.ShadAvatarFallback{text: \"CN\"}\n    }\n    mod.widgets.ShadAvatarLg{\n        fallback := mod.widgets.ShadAvatarFallback{text: \"LG\"}\n    }\n}";
-pub const BADGE_PREVIEW_CODE: &str = "View{\n    width: Fit\n    height: Fit\n    flow: Right\n    spacing: 8.0\n    mod.widgets.ShadBadge{\n        label := mod.widgets.ShadBadgeLabel{text: \"Default\"}\n    }\n    mod.widgets.ShadBadgeSecondary{\n        label := mod.widgets.ShadBadgeSecondaryLabel{text: \"Secondary\"}\n    }\n    mod.widgets.ShadBadgeDestructive{\n        label := mod.widgets.ShadBadgeDestructiveLabel{text: \"Destructive\"}\n    }\n    mod.widgets.ShadBadgeOutline{\n        label := mod.widgets.ShadBadgeOutlineLabel{text: \"Outline\"}\n    }\n}";
+pub const AVATAR_PREVIEW_CODE: &str = r#"// Keep fallback text in the avatar, then let the image cover it when present.
+View{
+    width: Fit
+    height: Fit
+    flow: Right
+    align: Align{y: 0.5}
+    spacing: 12.0
+
+    mod.widgets.ShadAvatar{
+        fallback := mod.widgets.ShadAvatarFallback{text: "ML"}
+        image := mod.widgets.ShadAvatarImage{
+            src: crate_resource("self://resources/avatar/portrait-a.jpg")
+        }
+        status := mod.widgets.ShadAvatarStatusOnline{}
+    }
+
+    mod.widgets.ShadAvatar{
+        fallback := mod.widgets.ShadAvatarFallback{text: "JD"}
+    }
+
+    mod.widgets.ShadAvatarLg{
+        fallback := mod.widgets.ShadAvatarFallback{text: "AB"}
+        image := mod.widgets.ShadAvatarImage{
+            src: crate_resource("self://resources/avatar/portrait-b.jpg")
+        }
+        status := mod.widgets.ShadAvatarStatusBusy{}
+    }
+}"#;
+pub const BADGE_PREVIEW_CODE: &str = r#"// Put badges beside the content they annotate.
+RoundedView{
+    width: 320
+    height: Fit
+    padding: Inset{top: 16, right: 16, bottom: 16, left: 16}
+    draw_bg +: {
+        color: (shad_theme.color_muted)
+        border_radius: (shad_theme.radius)
+        border_size: 1.0
+        border_color: (shad_theme.color_outline_border)
+    }
+
+    View{
+        width: Fill
+        height: Fit
+        flow: Right
+        align: Align{y: 0.5}
+        spacing: 12.0
+
+        View{
+            width: Fill
+            height: Fit
+            flow: Down
+            spacing: 2.0
+
+            mod.widgets.ShadFieldLabel{text: "Realtime API"}
+            mod.widgets.ShadFieldDescription{text: "Production webhook delivery is enabled."}
+        }
+
+        mod.widgets.ShadBadgeSuccess{
+            label := mod.widgets.ShadBadgeSuccessLabel{text: "Live"}
+        }
+    }
+}"#;
 pub const BUTTON_GROUP_PREVIEW_CODE: &str = r#"ShadButtonGroup{
     archive_btn := ShadButtonGroupItem{text: "Archive"}
     ShadButtonGroupSeparator{}
@@ -74,26 +134,69 @@ pub const BUTTON_PREVIEW_CODE: &str = r#"View{
 //
 // Buttons stay intentionally small: give the button an id, then listen for
 // clicked(actions) in the page or feature controller."#;
-pub const CARD_PREVIEW_CODE: &str = "mod.widgets.ShadCard{\n    header := mod.widgets.ShadCardHeader{\n        title := mod.widgets.ShadCardTitle{text: \"Card title\"}\n        description := mod.widgets.ShadCardDescription{text: \"Card description goes here.\"}\n    }\n    content := mod.widgets.ShadCardContent{\n        Label{text: \"Card content area. Put any widgets here.\" draw_text.color: (shad_theme.color_muted_foreground) draw_text.text_style.font_size: 14}\n    }\n    footer := mod.widgets.ShadCardFooter{\n        mod.widgets.ShadButton{text: \"Cancel\"}\n        mod.widgets.ShadButton{text: \"Save\"}\n    }\n}";
-pub const CAROUSEL_PREVIEW_CODE: &str = r#"mod.widgets.ShadCarousel{}
+pub const CARD_PREVIEW_CODE: &str = r#"mod.widgets.ShadCard{
+    width: 380
 
-// Default: 3 slides with prev/next icon buttons (chevron-left/right)
-// and dot indicators. Override slide_0, slide_1, slide_2 in
-// content_wrap.carousel_flip to customize.
+    header := mod.widgets.ShadCardHeader{
+        title := mod.widgets.ShadCardTitle{text: "Team Access"}
+        description := mod.widgets.ShadCardDescription{text: "Review seats, pending invites, and billing impact before applying changes."}
+    }
+
+    content := mod.widgets.ShadCardContent{
+        View{
+            width: Fill
+            height: Fit
+            flow: Right
+            align: Align{y: 0.5}
+            spacing: 12.0
+
+            View{
+                width: Fill
+                height: Fit
+                flow: Down
+                spacing: 2.0
+
+                mod.widgets.ShadFieldLabel{text: "Current plan"}
+                mod.widgets.ShadFieldDescription{text: "Pro workspace with advanced sharing controls."}
+            }
+
+            mod.widgets.ShadBadgeSecondary{
+                label := mod.widgets.ShadBadgeSecondaryLabel{text: "Pro"}
+            }
+        }
+
+        mod.widgets.ShadHr{}
+
+        mod.widgets.ShadFieldDescription{text: "Seats in use: 18 of 25"}
+        mod.widgets.ShadFieldDescription{text: "Pending invites: 3 awaiting acceptance"}
+    }
+
+    footer := mod.widgets.ShadCardFooter{
+        mod.widgets.ShadButtonGhost{text: "Cancel"}
+        mod.widgets.ShadButton{text: "Review changes"}
+    }
+}"#;
+pub const CAROUSEL_PREVIEW_CODE: &str = r#"featured_carousel := mod.widgets.ShadCarousel{
+    width: 720
+}
+
+// The current carousel ships with 3 named slides and matching dots.
+// Override slide_0, slide_1, and slide_2 inside content_wrap.carousel_flip
+// when you need custom highlight content.
 //
 // Controller example (Rust):
-// let carousel = self.ui.shad_carousel(cx, ids!(carousel_demo));
+// let carousel = self.ui.shad_carousel(cx, ids!(featured_carousel));
 //
-// if self.ui.button(cx, ids!(next_slide_btn)).clicked(actions) {
+// if self.ui.button(cx, ids!(open_next_highlight_btn)).clicked(actions) {
 //     carousel.next(cx);
 // }
 //
-// if self.ui.button(cx, ids!(jump_to_first_btn)).clicked(actions) {
+// if self.ui.button(cx, ids!(jump_to_first_highlight_btn)).clicked(actions) {
 //     carousel.go_to(cx, 0);
 // }
 //
 // if let Some(index) = carousel.changed(actions) {
-//     log!("Active slide changed to {}", index);
+//     log!("Active highlight changed to {}", index);
 // }"#;
 pub const COLLAPSIBLE_PREVIEW_CODE: &str = r#"mod.widgets.ShadCollapsible{
     title: "Order #4189"

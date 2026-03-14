@@ -5,42 +5,68 @@ gallery_static_page! {
     widget: GalleryAspectRatioPage,
     page: aspect_ratio_page,
     title: "Aspect Ratio",
-    subtitle: "Displays content within a desired ratio.",
+    subtitle: "Ratio-constrained frames for photos, video, and media surfaces. Let the shell own the shape, then let the child content fill it.",
     divider: { ShadHr{} },
-    preview_spacing: 12.0,
+    preview_spacing: 16.0,
     preview: {
-        ShadSectionHeader{ text: "16:9 Preview" }
+        ShadSectionHeader{ text: "Anatomy" }
 
-        RoundedView{
+        View{
             width: Fill
             height: Fit
-            padding: Inset{left: 16, right: 16, top: 16, bottom: 16}
-            draw_bg +: {
-                color: #0000
-                border_size: 1.0
-                border_radius: (shad_theme.radius)
-                border_color: (shad_theme.color_outline_border)
-            }
+            flow: Down
+            spacing: 6.0
+
+            ShadFieldDescription{text: "ShadAspectRatio owns the frame dimensions. Give it a width or height and a ratio, then let the child fill that frame."}
+            ShadFieldDescription{text: "For media, wrap the child in a clipped rounded container and let the Image use an explicit fit mode. ImageFit.Biggest gives you a cover-style crop."}
+            ShadFieldDescription{text: "Bound larger demos with a deliberate width. A fill-width hero technically works, but it overwhelms the page and weakens the component story."}
+        }
+
+        ShadHr{}
+
+        ShadSectionHeader{ text: "16:9 Hero" }
+
+        View{
+            width: Fill
+            height: Fit
+            flow: Down
+            align: Align{x: 0.5, y: 0.0}
+            spacing: 10.0
 
             ShadAspectRatio{
-                width: Fill
+                width: 720
                 ratio: 1.7777777778
 
                 RoundedView{
                     width: Fill
                     height: Fill
                     flow: Overlay
-                    align: Align{x: 0.5, y: 0.5}
+                    clip_x: true
+                    clip_y: true
                     draw_bg +: {
                         color: (shad_theme.color_secondary)
                         border_radius: (shad_theme.radius)
+                        border_size: 1.0
+                        border_color: (shad_theme.color_outline_border)
                     }
 
-                    ShadSectionHeader{
-                        text: "16:9"
-                        draw_text.text_style.font_size: 11
+                    Image{
+                        width: Fill
+                        height: Fill
+                        fit: ImageFit.Biggest
+                        src: crate_resource("self://resources/aspect-ratio/royal-esplanade.jpg")
                     }
                 }
+            }
+
+            View{
+                width: 720
+                height: Fit
+                flow: Down
+                spacing: 4.0
+
+                ShadFieldLabel{text: "16:9 cover crop"}
+                ShadFieldDescription{text: "A bounded hero keeps the ratio demonstration readable while the photo fills the frame edge to edge."}
             }
         }
 
@@ -50,58 +76,145 @@ gallery_static_page! {
             width: Fill
             height: Fit
             flow: Right
-            spacing: 12.0
+            spacing: 16.0
 
-            ShadAspectRatio{
-                width: 180
-                ratio: 1.0
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
 
-                RoundedView{
-                    width: Fill
-                    height: Fill
-                    flow: Overlay
-                    align: Align{x: 0.5, y: 0.5}
-                    draw_bg +: {
-                        color: (shad_theme.color_secondary)
-                        border_radius: (shad_theme.radius)
+                ShadAspectRatio{
+                    width: 180
+                    ratio: 1.0
+
+                    RoundedView{
+                        width: Fill
+                        height: Fill
+                        flow: Overlay
+                        clip_x: true
+                        clip_y: true
+                        draw_bg +: {
+                            color: (shad_theme.color_secondary)
+                            border_radius: (shad_theme.radius)
+                            border_size: 1.0
+                            border_color: (shad_theme.color_outline_border)
+                        }
+
+                        Image{
+                            width: Fill
+                            height: Fill
+                            fit: ImageFit.Biggest
+                            src: crate_resource("self://resources/aspect-ratio/portrait.jpg")
+                        }
                     }
-                    ShadSectionHeader{ text: "1:1" }
+                }
+
+                ShadFieldLabel{text: "1:1"}
+                ShadFieldDescription{
+                    width: 180
+                    text: "Square avatar or gallery crop."
                 }
             }
 
-            ShadAspectRatio{
-                width: 180
-                ratio: 1.3333333333
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
 
-                RoundedView{
-                    width: Fill
-                    height: Fill
-                    flow: Overlay
-                    align: Align{x: 0.5, y: 0.5}
-                    draw_bg +: {
-                        color: (shad_theme.color_secondary)
-                        border_radius: (shad_theme.radius)
+                ShadAspectRatio{
+                    width: 220
+                    ratio: 1.3333333333
+
+                    RoundedView{
+                        width: Fill
+                        height: Fill
+                        flow: Overlay
+                        clip_x: true
+                        clip_y: true
+                        draw_bg +: {
+                            color: (shad_theme.color_secondary)
+                            border_radius: (shad_theme.radius)
+                            border_size: 1.0
+                            border_color: (shad_theme.color_outline_border)
+                        }
+
+                        Image{
+                            width: Fill
+                            height: Fill
+                            fit: ImageFit.Biggest
+                            src: crate_resource("self://resources/aspect-ratio/royal-esplanade.jpg")
+                        }
                     }
-                    ShadSectionHeader{ text: "4:3" }
+                }
+
+                ShadFieldLabel{text: "4:3"}
+                ShadFieldDescription{
+                    width: 220
+                    text: "Editorial image or embedded document frame."
                 }
             }
 
-            ShadAspectRatio{
-                width: 180
-                ratio: 0.5625
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
 
-                RoundedView{
-                    width: Fill
-                    height: Fill
-                    flow: Overlay
-                    align: Align{x: 0.5, y: 0.5}
-                    draw_bg +: {
-                        color: (shad_theme.color_secondary)
-                        border_radius: (shad_theme.radius)
+                ShadAspectRatio{
+                    width: 132
+                    ratio: 0.5625
+
+                    RoundedView{
+                        width: Fill
+                        height: Fill
+                        flow: Overlay
+                        clip_x: true
+                        clip_y: true
+                        draw_bg +: {
+                            color: (shad_theme.color_secondary)
+                            border_radius: (shad_theme.radius)
+                            border_size: 1.0
+                            border_color: (shad_theme.color_outline_border)
+                        }
+
+                        Image{
+                            width: Fill
+                            height: Fill
+                            fit: ImageFit.Biggest
+                            src: crate_resource("self://resources/aspect-ratio/royal-esplanade.jpg")
+                        }
                     }
-                    ShadSectionHeader{ text: "9:16" }
+                }
+
+                ShadFieldLabel{text: "9:16"}
+                ShadFieldDescription{
+                    width: 132
+                    text: "Portrait-first crop for reels or mobile stories."
                 }
             }
         }
+
+        ShadHr{}
+
+        ShadSectionHeader{ text: "Usage" }
+
+        View{
+            width: Fill
+            height: Fit
+            flow: Down
+            spacing: 6.0
+
+            ShadFieldDescription{text: "Use ShadAspectRatio as the layout shell, not as an image widget. The child decides how media is fit, clipped, and decorated."}
+            ShadFieldDescription{text: "Use ImageFit.Biggest when you want a cover crop that fills the frame. Use ImageFit.Smallest when you want the entire image visible inside the ratio."}
+            ShadFieldDescription{text: "If you need rounded corners, overlays, or borders, put them on a clipped child container inside ShadAspectRatio so the ratio math stays separate from the media treatment."}
+        }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Choose the ratio shell first. The parent page decides whether the frame should be 16:9, 4:3, 1:1, or something custom."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Give ShadAspectRatio one controlling dimension. Width-driven layouts are the most common for media cards and gallery rows."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Put a clipped child container inside it, then let the Image fill that container with an explicit fit mode such as ImageFit.Biggest."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Add borders, badges, or overlays on the child container instead of baking those concerns into the aspect-ratio primitive itself."}
     },
 }

@@ -11,6 +11,49 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
+    let DialogPanel = mod.widgets.RoundedView{
+        width: Fill
+        height: Fit
+        flow: Down
+        spacing: 0.0
+
+        draw_bg +: {
+            color: (shad_theme.color_background)
+            border_radius: (shad_theme.radius)
+            border_size: 1.0
+            border_color: (shad_theme.color_outline_border)
+        }
+    }
+
+    mod.widgets.ShadDialogHeader = mod.widgets.View{
+        width: Fill
+        height: Fit
+        flow: Down
+        spacing: 6.0
+        padding: Inset{left: 20, right: 20, top: 20, bottom: 12}
+    }
+
+    mod.widgets.ShadDialogTitle = mod.widgets.ShadAlertTitle{}
+
+    mod.widgets.ShadDialogDescription = mod.widgets.ShadAlertDescription{}
+
+    mod.widgets.ShadDialogContent = mod.widgets.View{
+        width: Fill
+        height: Fit
+        flow: Down
+        spacing: 12.0
+        padding: Inset{left: 20, right: 20, top: 0, bottom: 16}
+    }
+
+    mod.widgets.ShadDialogFooter = mod.widgets.View{
+        width: Fill
+        height: Fit
+        flow: Right
+        align: Align{x: 1.0, y: 0.5}
+        spacing: 8.0
+        padding: Inset{left: 20, right: 20, top: 0, bottom: 20}
+    }
+
     mod.widgets.ShadDialogBase = #(ShadDialog::register_widget(vm))
 
     mod.widgets.ShadDialog = set_type_default() do mod.widgets.ShadDialogBase{
@@ -24,23 +67,10 @@ script_mod! {
             }
 
             content +: {
-                width: 360
+                width: 420
                 height: Fit
 
-                body := RoundedView{
-                    width: Fill
-                    height: Fit
-                    padding: Inset{left: 20, right: 20, top: 20, bottom: 16}
-                    flow: Down
-                    spacing: 12.0
-
-                    draw_bg +: {
-                        color: (shad_theme.color_secondary)
-                        border_radius: (shad_theme.radius)
-                        border_size: 1.0
-                        border_color: (shad_theme.color_outline_border)
-                    }
-                }
+                body := DialogPanel{}
             }
         }
     }
@@ -56,72 +86,26 @@ script_mod! {
             }
 
             content +: {
-                width: 360
+                width: 420
                 height: Fit
 
-                dialog_panel := RoundedView{
-                    width: Fill
-                    height: Fit
-                    padding: Inset{left: 20, right: 20, top: 20, bottom: 16}
-                    flow: Down
-                    spacing: 12.0
-
-                    draw_bg +: {
-                        color: (shad_theme.color_secondary)
-                        border_radius: (shad_theme.radius)
-                        border_size: 1.0
-                        border_color: (shad_theme.color_outline_border)
-                    }
-
-                    dialog_body := View{
-                        width: Fill
-                        height: Fit
-                        flow: Down
-                        spacing: 12.0
-                        margin: Inset{left: 20, right: 20}
-                        title_label := ShadAlertTitle{
+                dialog_panel := DialogPanel{
+                    dialog_body := mod.widgets.ShadDialogHeader{
+                        title_label := mod.widgets.ShadDialogTitle{
                             text: "Are you absolutely sure?"
                         }
-                        description_label := ShadAlertDescription{
+                        description_label := mod.widgets.ShadDialogDescription{
                             text: "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
                         }
                     }
 
-                    footer := View{
-                        width: Fill
-                        height: Fit
-                        flow: Right
-                        spacing: 8.0
-                        margin: Inset{top: 8}
-
-                        cancel := ButtonFlat{
+                    footer := mod.widgets.ShadDialogFooter{
+                        cancel := ShadButtonOutline{
                             text: "Cancel"
-                            height: 36
-                            padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
-                            draw_bg +: {
-                                color: #0000
-                                color_hover: (shad_theme.color_ghost_hover)
-                                color_down: (shad_theme.color_ghost_down)
-                                border_size: 1.0
-                                border_radius: (shad_theme.radius)
-                                border_color: (shad_theme.color_outline_border)
-                            }
-                            draw_text.color: (shad_theme.color_primary)
-                            draw_text.text_style.font_size: 11
                         }
 
-                        confirm := ButtonFlat{
+                        confirm := ShadButton{
                             text: "Continue"
-                            height: 36
-                            padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
-                            draw_bg +: {
-                                color: (shad_theme.color_primary_foreground)
-                                color_hover: (shad_theme.color_secondary)
-                                border_size: 0.0
-                                border_radius: (shad_theme.radius)
-                            }
-                            draw_text.color: (shad_theme.color_primary)
-                            draw_text.text_style.font_size: 11
                         }
                     }
                 }
@@ -140,72 +124,26 @@ script_mod! {
             }
 
             content +: {
-                width: 360
+                width: 420
                 height: Fit
 
-                dialog_panel := RoundedView{
-                    width: Fill
-                    height: Fit
-                    padding: Inset{left: 20, right: 20, top: 20, bottom: 16}
-                    flow: Down
-                    spacing: 12.0
-
-                    draw_bg +: {
-                        color: (shad_theme.color_secondary)
-                        border_radius: (shad_theme.radius)
-                        border_size: 1.0
-                        border_color: (shad_theme.color_outline_border)
-                    }
-
-                    dialog_body := View{
-                        width: Fill
-                        height: Fit
-                        flow: Down
-                        spacing: 12.0
-                        margin: Inset{left: 20, right: 20}
-                        title_label := ShadAlertTitle{
+                dialog_panel := DialogPanel{
+                    dialog_body := mod.widgets.ShadDialogHeader{
+                        title_label := mod.widgets.ShadDialogTitle{
                             text: "Are you absolutely sure?"
                         }
-                        description_label := ShadAlertDescription{
+                        description_label := mod.widgets.ShadDialogDescription{
                             text: "This action cannot be undone. This will permanently delete your account and remove your data from our servers."
                         }
                     }
 
-                    footer := View{
-                        width: Fill
-                        height: Fit
-                        flow: Right
-                        spacing: 8.0
-                        margin: Inset{top: 8}
-
-                        cancel := ButtonFlat{
+                    footer := mod.widgets.ShadDialogFooter{
+                        cancel := ShadButtonOutline{
                             text: "Cancel"
-                            height: 36
-                            padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
-                            draw_bg +: {
-                                color: #0000
-                                color_hover: (shad_theme.color_ghost_hover)
-                                color_down: (shad_theme.color_ghost_down)
-                                border_size: 1.0
-                                border_radius: (shad_theme.radius)
-                                border_color: (shad_theme.color_outline_border)
-                            }
-                            draw_text.color: (shad_theme.color_primary)
-                            draw_text.text_style.font_size: 11
                         }
 
-                        confirm := ButtonFlat{
+                        confirm := ShadButtonDestructive{
                             text: "Delete"
-                            height: 36
-                            padding: Inset{left: 16, right: 16, top: 0, bottom: 0}
-                            draw_bg +: {
-                                color: (shad_theme.color_destructive)
-                                color_hover: (shad_theme.color_destructive_hover)
-                                border_size: 0.0
-                                border_radius: (shad_theme.radius)
-                            }
-                            draw_text.color: (shad_theme.color_destructive_foreground)
-                            draw_text.text_style.font_size: 11
                         }
                     }
                 }

@@ -5,46 +5,242 @@ gallery_static_page! {
     widget: GalleryAvatarPage,
     page: avatar_page,
     title: "Avatar",
-    subtitle: "Avatar components with badges and fallback variants from makepad-components.",
+    subtitle: "Circular avatar surfaces for photos, fallback initials, and presence states from makepad-components.",
     divider: { ShadHr{} },
-    preview_spacing: 12.0,
+    preview_spacing: 16.0,
     preview: {
-        ShadSectionHeader{ text: "Sizes" }
+        ShadSectionHeader{ text: "Anatomy" }
+
+        View{
+            width: Fill
+            height: Fit
+            flow: Down
+            spacing: 6.0
+
+            ShadFieldDescription{text: "ShadAvatar is a compositional circular surface. The fallback text sits behind the image child, and the image covers it when a real photo is present."}
+            ShadFieldDescription{text: "Use ShadAvatarImage for a fill-sized, cover-cropped photo. Keep ShadAvatarFallback in the same avatar so empty or loading states still have a readable identity."}
+            ShadFieldDescription{text: "Add ShadAvatarStatusOnline, ShadAvatarStatusAway, or ShadAvatarStatusBusy when you need a small presence marker anchored to the avatar edge."}
+        }
+
+        ShadHr{}
+
+        ShadSectionHeader{ text: "Photo Sizes" }
 
         View{
             width: Fill
             height: Fit
             flow: Right
-            spacing: 16.0
+            spacing: 24.0
+            align: Align{y: 0.0}
 
-            ShadAvatarSm{
-                fallback := ShadAvatarFallback{text: "SM"}
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatarSm{
+                    fallback := ShadAvatarFallback{text: "ML"}
+                    image := ShadAvatarImage{
+                        src: crate_resource("self://resources/avatar/portrait-a.jpg")
+                    }
+                }
+
+                ShadFieldLabel{text: "Small"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Compact lists, mentions, and dense menus."
+                }
             }
-            ShadAvatar{
-                fallback := ShadAvatarFallback{text: "CN"}
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "CN"}
+                    image := ShadAvatarImage{
+                        src: crate_resource("self://resources/avatar/portrait-a.jpg")
+                    }
+                }
+
+                ShadFieldLabel{text: "Default"}
+                ShadFieldDescription{
+                    width: 120
+                    text: "Standard profile surfaces in app chrome."
+                }
             }
-            ShadAvatarLg{
-                fallback := ShadAvatarFallback{text: "LG"}
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatarLg{
+                    fallback := ShadAvatarFallback{text: "AB"}
+                    image := ShadAvatarImage{
+                        src: crate_resource("self://resources/avatar/portrait-b.jpg")
+                    }
+                }
+
+                ShadFieldLabel{text: "Large"}
+                ShadFieldDescription{
+                    width: 120
+                    text: "Profile cards, account switchers, and headers."
+                }
             }
         }
 
-        ShadSectionHeader{ text: "Fallback Variants" }
+        ShadSectionHeader{ text: "Fallbacks" }
 
         View{
             width: Fill
             height: Fit
             flow: Right
-            spacing: 16.0
+            spacing: 24.0
+            align: Align{y: 0.0}
 
-            ShadAvatar{
-                fallback := ShadAvatarFallback{text: "JD"}
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "JD"}
+                }
+
+                ShadFieldLabel{text: "Initials"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Use when the user has no uploaded photo."
+                }
             }
-            ShadAvatar{
-                fallback := ShadAvatarFallback{text: "AB"}
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "AB"}
+                }
+
+                ShadFieldLabel{text: "Team Member"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Letter pairs keep list rows identifiable."
+                }
             }
-            ShadAvatar{
-                fallback := ShadAvatarFallback{text: "?"}
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "?"}
+                }
+
+                ShadFieldLabel{text: "Unknown"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Fallback for anonymous or unresolved people."
+                }
             }
         }
+
+        ShadSectionHeader{ text: "Presence" }
+
+        View{
+            width: Fill
+            height: Fit
+            flow: Right
+            spacing: 24.0
+            align: Align{y: 0.0}
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "ML"}
+                    image := ShadAvatarImage{
+                        src: crate_resource("self://resources/avatar/portrait-a.jpg")
+                    }
+                    status := ShadAvatarStatusOnline{}
+                }
+
+                ShadFieldLabel{text: "Online"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Green status dot for active presence."
+                }
+            }
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "AB"}
+                    image := ShadAvatarImage{
+                        src: crate_resource("self://resources/avatar/portrait-b.jpg")
+                    }
+                    status := ShadAvatarStatusAway{}
+                }
+
+                ShadFieldLabel{text: "Away"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Muted dot for idle, away, or offline states."
+                }
+            }
+
+            View{
+                width: Fit
+                height: Fit
+                flow: Down
+                spacing: 8.0
+                align: Align{x: 0.5, y: 0.0}
+
+                ShadAvatar{
+                    fallback := ShadAvatarFallback{text: "CN"}
+                    image := ShadAvatarImage{
+                        src: crate_resource("self://resources/avatar/portrait-a.jpg")
+                    }
+                    status := ShadAvatarStatusBusy{}
+                }
+
+                ShadFieldLabel{text: "Busy"}
+                ShadFieldDescription{
+                    width: 110
+                    text: "Destructive dot for do-not-disturb or busy presence."
+                }
+            }
+        }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Start with ShadAvatar, ShadAvatarSm, or ShadAvatarLg depending on the layout density you need."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Keep ShadAvatarFallback in the avatar for identity-safe empty states, then add ShadAvatarImage when a real profile photo is available."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Add ShadAvatarStatusOnline, ShadAvatarStatusAway, or ShadAvatarStatusBusy only when presence matters to the workflow."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Keep avatar groups, notification counts, and richer profile metadata outside the primitive so the base avatar stays small and composable."}
     },
 }

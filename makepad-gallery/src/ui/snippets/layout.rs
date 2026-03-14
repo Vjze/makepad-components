@@ -1,4 +1,28 @@
-pub const ASPECT_RATIO_PREVIEW_CODE: &str = "ShadAspectRatio{\n    width: Fill\n    ratio: 1.7777777778\n    RoundedView{\n        width: Fill\n        height: Fill\n        draw_bg.color: (shad_theme.color_secondary)\n    }\n}";
+pub const ASPECT_RATIO_PREVIEW_CODE: &str = r#"// Use ShadAspectRatio as the frame, then let the child media fill it.
+ShadAspectRatio{
+    width: 320
+    ratio: 1.7777777778
+
+    RoundedView{
+        width: Fill
+        height: Fill
+        clip_x: true
+        clip_y: true
+        draw_bg +: {
+            color: (shad_theme.color_secondary)
+            border_radius: (shad_theme.radius)
+            border_size: 1.0
+            border_color: (shad_theme.color_outline_border)
+        }
+
+        Image{
+            width: Fill
+            height: Fill
+            fit: ImageFit.Biggest
+            src: crate_resource("self://resources/aspect-ratio/royal-esplanade.jpg")
+        }
+    }
+}"#;
 pub const RESIZABLE_PREVIEW_CODE: &str = r#"horizontal_split := ShadResizable{
     axis: SplitterAxis.Horizontal
     align: SplitterAlign.FromA(180.0)

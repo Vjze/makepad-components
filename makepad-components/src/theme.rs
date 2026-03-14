@@ -17,11 +17,19 @@ script_mod! {
 
             color_muted: #18181b
             color_muted_foreground: #a1a1aa
+            color_disabled: #27272a
+            color_disabled_foreground: #a1a1aa
+            color_disabled_border: #3f3f46
 
             color_destructive: #dc2626
             color_destructive_hover: #b91c1c
             color_destructive_down: #991b1b
             color_destructive_foreground: #fafafa
+
+            color_success: #22c55e
+            color_warning: #fbbf24
+            color_success_subtle: #052e16
+            color_warning_subtle: #451a03
 
             color_ghost_hover: #27272a
             color_ghost_down: #3f3f46
@@ -53,11 +61,19 @@ script_mod! {
 
             color_muted: #f4f4f5
             color_muted_foreground: #71717a
+            color_disabled: #e4e4e7
+            color_disabled_foreground: #71717a
+            color_disabled_border: #d4d4d8
 
             color_destructive: #dc2626
             color_destructive_hover: #b91c1c
             color_destructive_down: #991b1b
             color_destructive_foreground: #fafafa
+
+            color_success: #16a34a
+            color_warning: #b45309
+            color_success_subtle: #dcfce7
+            color_warning_subtle: #fef3c7
 
             color_ghost_hover: #f4f4f5
             color_ghost_down: #e4e4e7

@@ -13,7 +13,7 @@ script_mod! {
             color: (shad_theme.color_background)
             border_radius: (shad_theme.radius)
             border_size: 1.0
-            border_color: (shad_theme.color_outline_border)
+            border_color: (shad_theme.color_outline_border_hover)
         }
     }
 
@@ -21,29 +21,30 @@ script_mod! {
         width: Fill
         height: Fit
         flow: Down
-        spacing: 2.0
-        padding: Inset{left: 24, right: 24, top: 24, bottom: 16}
+        spacing: 4.0
+        padding: Inset{left: 20, right: 20, top: 20, bottom: 14}
     }
 
     mod.widgets.ShadCardTitle = mod.widgets.Label{
         width: Fill
         height: Fit
         draw_text.color: (shad_theme.color_primary)
-        draw_text.text_style.font_size: 18
+        draw_text.text_style.font_size: 16
     }
 
     mod.widgets.ShadCardDescription = mod.widgets.Label{
         width: Fill
         height: Fit
         draw_text.color: (shad_theme.color_muted_foreground)
-        draw_text.text_style.font_size: 14
+        draw_text.text_style.font_size: 11
     }
 
     mod.widgets.ShadCardContent = mod.widgets.View{
         width: Fill
         height: Fit
         flow: Down
-        padding: Inset{left: 24, right: 24, top: 0, bottom: 24}
+        spacing: 12.0
+        padding: Inset{left: 20, right: 20, top: 0, bottom: 20}
     }
 
     mod.widgets.ShadCardFooter = mod.widgets.View{
@@ -52,6 +53,6 @@ script_mod! {
         flow: Right
         align: Align{y: 0.5}
         spacing: 8.0
-        padding: Inset{left: 24, right: 24, top: 16, bottom: 24}
+        padding: Inset{left: 20, right: 20, top: 0, bottom: 20}
     }
 }
