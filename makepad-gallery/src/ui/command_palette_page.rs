@@ -1,121 +1,70 @@
-use crate::ui::snippets::COMMAND_PALETTE_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::widget::WidgetActionData;
 use makepad_components::makepad_widgets::*;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
+gallery_stateful_page_shell! {
+    widget: GalleryCommandPalettePage,
+    page: command_palette_page,
+    title: "Command Palette",
+    subtitle: "Global launcher for component pages. Press Command/Ctrl + K anywhere in the gallery, or use the trigger below. This page emits an open request; the app shell owns the shared overlay.",
+    divider: { ShadHr{} },
+    preview_spacing: 16.0,
+    preview: {
+        ShadSectionHeader{ text: "Open the palette" }
 
-    mod.widgets.GalleryCommandPalettePageBase = #(GalleryCommandPalettePage::register_widget(vm))
+        View{
+            width: Fill
+            height: Fit
+            flow: Down
+            spacing: 12.0
 
-    mod.widgets.GalleryCommandPalettePage = set_type_default() do mod.widgets.GalleryCommandPalettePageBase{
-        width: Fill
-        height: Fill
-
-        scroll_view := ShadScrollYView{
-            ShadPageTitle{
-                text: "Command Palette"
-            }
-
-            ShadPageSubtitle{
-                text: "Global launcher for component pages. Press Command/Ctrl + K anywhere in the gallery, or use the trigger below. This page emits an open request; the app shell owns the shared overlay."
-            }
-
-            ShadHr{}
-
-            command_palette_preview_section := mod.widgets.GalleryPreviewSection{
+            RoundedView{
                 width: Fill
                 height: Fit
+                flow: Down
+                spacing: 10.0
+                padding: Inset{left: 18, right: 18, top: 18, bottom: 18}
+                draw_bg +: {
+                    color: (shad_theme.color_secondary)
+                    border_size: 1.0
+                    border_radius: (shad_theme.radius)
+                    border_color: (shad_theme.color_outline_border)
+                }
 
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 16.0
+                ShadLabel{text: "Use the global launcher to jump between components faster."}
+                ShadFieldDescription{text: "The same overlay opens from this button or from the keyboard shortcut."}
 
-                                ShadSectionHeader{ text: "Open the palette" }
+                View{
+                    width: Fit
+                    height: Fit
+                    flow: Right
+                    spacing: 8.0
+                    align: Align{y: 0.5}
 
-                                View{
-                                    width: Fill
-                                    height: Fit
-                                    flow: Down
-                                    spacing: 12.0
+                    open_command_palette_btn := ShadButton{text: "Open Command Palette"}
 
-                                    RoundedView{
-                                        width: Fill
-                                        height: Fit
-                                        flow: Down
-                                        spacing: 10.0
-                                        padding: Inset{left: 18, right: 18, top: 18, bottom: 18}
-                                        draw_bg +: {
-                                            color: (shad_theme.color_secondary)
-                                            border_size: 1.0
-                                            border_radius: (shad_theme.radius)
-                                            border_color: (shad_theme.color_outline_border)
-                                        }
+                    ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
+                    ShadKbdSeparator{}
+                    ShadKbd{ label := ShadKbdLabel{text: "K"} }
 
-                                        ShadLabel{text: "Use the global launcher to jump between components faster."}
-                                        ShadFieldDescription{text: "The same overlay opens from this button or from the keyboard shortcut."}
-
-                                        View{
-                                            width: Fit
-                                            height: Fit
-                                            flow: Right
-                                            spacing: 8.0
-                                            align: Align{y: 0.5}
-
-                                            open_command_palette_btn := ShadButton{text: "Open Command Palette"}
-
-                                            ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
-                                            ShadKbdSeparator{}
-                                            ShadKbd{ label := ShadKbdLabel{text: "K"} }
-
-                                            ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
-                                            ShadKbdSeparator{}
-                                            ShadKbd{ label := ShadKbdLabel{text: "K"} }
-                                        }
-                                    }
-
-                                    ShadFieldDescription{
-                                        text: "Expected behavior: search filters live, Up/Down changes selection, Enter opens the highlighted page, and Escape dismisses the modal."
-                                    }
-
-                                }
-                            }
-
-                            action_flow +: {
-                                visible: true
-                                mod.widgets.GalleryActionFlow{
-                                    body +: {
-                                        mod.widgets.GalleryActionFlowStep{text: "1. This page does not open the shared palette directly; it emits GalleryCommandPalettePageAction::OpenRequested."}
-                                        mod.widgets.GalleryActionFlowStep{text: "2. The app shell listens to command_palette_page.open_requested(actions) and opens the global overlay."}
-                                        mod.widgets.GalleryActionFlowStep{text: "3. The overlay remains shell-owned, so no page-internal button ids leak into main.rs."}
-                                        mod.widgets.GalleryActionFlowStep{text: "4. When a command is chosen, the palette emits a semantic selection back to the shell for routing."}
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(COMMAND_PALETTE_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
+                    ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
+                    ShadKbdSeparator{}
+                    ShadKbd{ label := ShadKbdLabel{text: "K"} }
                 }
             }
+
+            ShadFieldDescription{
+                text: "Expected behavior: search filters live, Up/Down changes selection, Enter opens the highlighted page, and Escape dismisses the modal."
+            }
+
         }
-    }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. This page does not open the shared palette directly; it emits GalleryCommandPalettePageAction::OpenRequested."}
+        mod.widgets.GalleryActionFlowStep{text: "2. The app shell listens to command_palette_page.open_requested(actions) and opens the global overlay."}
+        mod.widgets.GalleryActionFlowStep{text: "3. The overlay remains shell-owned, so no page-internal button ids leak into main.rs."}
+        mod.widgets.GalleryActionFlowStep{text: "4. When a command is chosen, the palette emits a semantic selection back to the shell for routing."}
+    },
 }
 
 #[derive(Clone, Debug, Default)]

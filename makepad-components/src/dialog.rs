@@ -1,3 +1,9 @@
+use crate::internal::actions::first_widget_action;
+use crate::internal::overlay::{
+    button_clicked, draw_modal_overlay, modal_dismissed, set_modal_widget_open,
+    sync_modal_open_state,
+};
+use crate::internal::script_args::bool_arg;
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
 
@@ -210,8 +216,7 @@ script_mod! {
 
 #[derive(Clone, Debug, Default)]
 pub enum ShadDialogAction {
-    Opened,
-    Closed,
+    OpenChanged(bool),
     #[default]
     None,
 }
@@ -244,38 +249,20 @@ pub struct ShadDialog {
 
 impl ShadDialog {
     fn sync_open_state(&mut self, cx: &mut Cx) {
-        if self.is_synced_open == self.open {
-            return;
-        }
-
-        if let Some(mut modal) = self.overlay.borrow_mut::<Modal>() {
-            if self.open {
-                modal.open(cx);
-            } else {
-                modal.close(cx);
-            }
-        }
-
-        self.is_synced_open = self.open;
+        sync_modal_open_state(cx, &mut self.overlay, &mut self.is_synced_open, self.open);
     }
 
     pub fn set_open(&mut self, cx: &mut Cx, open: bool) {
-        if self.open == open {
-            self.sync_open_state(cx);
-            return;
-        }
-
-        self.open = open;
-        self.sync_open_state(cx);
-        self.overlay.redraw(cx);
-        cx.widget_action_with_data(
+        let uid = self.widget_uid();
+        set_modal_widget_open(
+            cx,
+            &mut self.overlay,
+            &mut self.open,
+            &mut self.is_synced_open,
             &self.action_data,
-            self.widget_uid(),
-            if open {
-                ShadDialogAction::Opened
-            } else {
-                ShadDialogAction::Closed
-            },
+            uid,
+            open,
+            ShadDialogAction::OpenChanged,
         );
     }
 
@@ -291,20 +278,13 @@ impl ShadDialog {
         self.open
     }
 
-    pub fn opened(&self, actions: &Actions) -> bool {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            matches!(item.cast::<ShadDialogAction>(), ShadDialogAction::Opened)
-        } else {
-            false
+    pub fn open_changed(&self, actions: &Actions) -> Option<bool> {
+        if let Some(ShadDialogAction::OpenChanged(open)) =
+            first_widget_action::<ShadDialogAction>(actions, self.widget_uid())
+        {
+            return Some(open);
         }
-    }
-
-    pub fn closed(&self, actions: &Actions) -> bool {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            matches!(item.cast::<ShadDialogAction>(), ShadDialogAction::Closed)
-        } else {
-            false
-        }
+        None
     }
 }
 
@@ -316,12 +296,8 @@ impl Widget for ShadDialog {
         args: ScriptValue,
     ) -> ScriptAsyncResult {
         if method == live_id!(set_open) {
-            if let Some(args_obj) = args.as_object() {
-                let trap = vm.bx.threads.cur().trap.pass();
-                let value = vm.bx.heap.vec_value(args_obj, 0, trap);
-                if let Some(open) = value.as_bool() {
-                    vm.with_cx_mut(|cx| self.set_open(cx, open));
-                }
+            if let Some(open) = bool_arg(vm, args) {
+                vm.with_cx_mut(|cx| self.set_open(cx, open));
             }
             return ScriptAsyncResult::Return(NIL);
         }
@@ -338,14 +314,11 @@ impl Widget for ShadDialog {
             self.overlay.handle_event(cx, event, scope);
             // Close when modal is dismissed (backdrop/Escape) or when cancel/confirm clicked (alert variants)
             if let Event::Actions(actions) = event {
-                let content = self.overlay.widget(cx, ids!(content));
-                if actions
-                    .find_widget_action(content.widget_uid())
-                    .is_some_and(|a| matches!(a.cast(), ModalAction::Dismissed))
-                {
+                if modal_dismissed(&self.overlay, cx, actions) {
                     self.close(cx);
                 }
-                let cancel_btn = self.overlay.widget(
+                if button_clicked(
+                    &self.overlay,
                     cx,
                     &[
                         live_id!(content),
@@ -353,8 +326,12 @@ impl Widget for ShadDialog {
                         live_id!(footer),
                         live_id!(cancel),
                     ],
-                );
-                let confirm_btn = self.overlay.widget(
+                    actions,
+                ) {
+                    self.close(cx);
+                }
+                if button_clicked(
+                    &self.overlay,
                     cx,
                     &[
                         live_id!(content),
@@ -362,19 +339,8 @@ impl Widget for ShadDialog {
                         live_id!(footer),
                         live_id!(confirm),
                     ],
-                );
-                if !cancel_btn.is_empty()
-                    && actions
-                        .find_widget_action(cancel_btn.widget_uid())
-                        .is_some_and(|a| matches!(a.cast(), ButtonAction::Clicked(_)))
-                {
-                    self.close(cx);
-                }
-                if !confirm_btn.is_empty()
-                    && actions
-                        .find_widget_action(confirm_btn.widget_uid())
-                        .is_some_and(|a| matches!(a.cast(), ButtonAction::Clicked(_)))
-                {
+                    actions,
+                ) {
                     self.close(cx);
                 }
             }
@@ -383,16 +349,7 @@ impl Widget for ShadDialog {
 
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         self.sync_open_state(cx);
-
-        if !self.open {
-            return DrawStep::done();
-        }
-        cx.begin_turtle(walk, self.layout);
-        let step = self
-            .overlay
-            .draw_walk(cx, scope, Walk::new(Size::fill(), Size::fill()));
-        cx.end_turtle();
-        step
+        draw_modal_overlay(cx, scope, walk, self.layout, self.open, &mut self.overlay)
     }
 }
 
@@ -419,11 +376,7 @@ impl ShadDialogRef {
         self.borrow().is_some_and(|inner| inner.is_open())
     }
 
-    pub fn opened(&self, actions: &Actions) -> bool {
-        self.borrow().is_some_and(|inner| inner.opened(actions))
-    }
-
-    pub fn closed(&self, actions: &Actions) -> bool {
-        self.borrow().is_some_and(|inner| inner.closed(actions))
+    pub fn open_changed(&self, actions: &Actions) -> Option<bool> {
+        self.borrow().and_then(|inner| inner.open_changed(actions))
     }
 }

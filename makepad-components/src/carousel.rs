@@ -1,3 +1,4 @@
+use crate::models::carousel::{next_index, normalize_index, prev_index};
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
 
@@ -221,6 +222,8 @@ pub struct ShadCarouselDots {
 
     #[rust]
     area: Area,
+    #[rust]
+    active_index: usize,
     #[redraw]
     #[live]
     draw_bg: DrawQuad,
@@ -239,6 +242,11 @@ impl ShadCarouselDots {
     const DOTS_W: f32 = 40.0;
 
     pub fn set_active(&mut self, cx: &mut Cx, index: usize) {
+        if self.active_index == index {
+            return;
+        }
+
+        self.active_index = index;
         match index {
             0 => self.animator_play(cx, ids!(active.on_0)),
             1 => self.animator_play(cx, ids!(active.on_1)),
@@ -279,7 +287,6 @@ impl Widget for ShadCarouselDots {
                         self.widget_uid(),
                         ShadCarouselDotsAction::Clicked(i),
                     );
-                    self.area.redraw(cx);
                 }
             }
         }
@@ -302,6 +309,8 @@ pub struct ShadCarousel {
     view: View,
     #[rust]
     current: usize,
+    #[rust]
+    synced_current: Option<usize>,
     #[action_data]
     #[rust]
     action_data: WidgetActionData,
@@ -309,6 +318,10 @@ pub struct ShadCarousel {
 
 impl ShadCarousel {
     fn sync_visual_state(&mut self, cx: &mut Cx) {
+        if self.synced_current == Some(self.current) {
+            return;
+        }
+
         if let Some(mut page_flip) = self
             .view
             .widget_flood(cx, ids!(carousel_flip))
@@ -323,19 +336,25 @@ impl ShadCarousel {
         {
             dots.set_active(cx, self.current);
         }
+
+        self.synced_current = Some(self.current);
     }
 
     fn set_current(&mut self, cx: &mut Cx, index: usize, emit_action: bool) {
-        if index >= SLIDE_IDS.len() {
+        let Some(index) = normalize_index(index, SLIDE_IDS.len()) else {
+            return;
+        };
+
+        if self.current == index {
             return;
         }
 
-        let changed = self.current != index;
         self.current = index;
+        self.synced_current = None;
         self.sync_visual_state(cx);
         self.view.redraw(cx);
 
-        if emit_action && changed {
+        if emit_action {
             cx.widget_action_with_data(
                 &self.action_data,
                 self.widget_uid(),
@@ -349,20 +368,12 @@ impl ShadCarousel {
     }
 
     pub fn next(&mut self, cx: &mut Cx) {
-        let next = if self.current + 1 >= SLIDE_IDS.len() {
-            0
-        } else {
-            self.current + 1
-        };
+        let next = next_index(self.current, SLIDE_IDS.len());
         self.go_to(cx, next);
     }
 
     pub fn prev(&mut self, cx: &mut Cx) {
-        let next = if self.current == 0 {
-            SLIDE_IDS.len() - 1
-        } else {
-            self.current - 1
-        };
+        let next = prev_index(self.current, SLIDE_IDS.len());
         self.go_to(cx, next);
     }
 

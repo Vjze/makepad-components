@@ -1,142 +1,91 @@
-use crate::ui::snippets::POPOVER_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::*;
 use makepad_components::popover::ShadPopoverWidgetExt;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
+gallery_stateful_page_shell! {
+    widget: GalleryPopoverPage,
+    page: popover_page,
+    title: "Popover",
+    subtitle: "Anchored overlays for compact, contextual UI. Use `set_open` / `open` / `close` on the widget ref, and reach into the popup content through `content_widget()` when the popup body has its own controls.",
+    divider: { ShadHr{} },
+    preview_spacing: 16.0,
+    preview: {
+        ShadSectionHeader{ text: "Basic" }
 
-    mod.widgets.GalleryPopoverPageBase = #(GalleryPopoverPage::register_widget(vm))
+        profile_popover := ShadPopover{
+            side: "bottom"
+            align: "start"
 
-    mod.widgets.GalleryPopoverPage = set_type_default() do mod.widgets.GalleryPopoverPageBase{
-        width: Fill
-        height: Fill
-
-        scroll_view := ShadScrollYView{
-            ShadPageTitle{
-                text: "Popover"
+            trigger := ShadButtonOutline{
+                text: "Open profile editor"
             }
 
-            ShadPageSubtitle{
-                text: "Anchored overlays for compact, contextual UI. Use `set_open` / `open` / `close` on the widget ref, and reach into the popup content through `content_widget()` when the popup body has its own controls."
-            }
+            content: ShadPopoverContent{
+                title := ShadSectionHeader{
+                    text: "Edit profile"
+                }
 
-            ShadHr{}
+                description := ShadFieldDescription{
+                    text: "Quick edits belong in a popover when the current page context should remain visible."
+                }
 
-            popover_preview_section := mod.widgets.GalleryPreviewSection{
-                width: Fill
-                height: Fit
+                footer := View{
+                    width: Fill
+                    height: Fit
+                    flow: Right
+                    spacing: 8.0
+                    margin: Inset{top: 8}
 
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 16.0
+                    popover_close_btn := ShadButtonGhost{
+                        text: "Cancel"
+                    }
 
-                                ShadSectionHeader{ text: "Basic" }
-
-                                profile_popover := ShadPopover{
-                                    side: "bottom"
-                                    align: "start"
-
-                                    trigger := ShadButtonOutline{
-                                        text: "Open profile editor"
-                                    }
-
-                                    content: ShadPopoverContent{
-                                        title := ShadSectionHeader{
-                                            text: "Edit profile"
-                                        }
-
-                                        description := ShadFieldDescription{
-                                            text: "Quick edits belong in a popover when the current page context should remain visible."
-                                        }
-
-                                        footer := View{
-                                            width: Fill
-                                            height: Fit
-                                            flow: Right
-                                            spacing: 8.0
-                                            margin: Inset{top: 8}
-
-                                            popover_close_btn := ShadButtonGhost{
-                                                text: "Cancel"
-                                            }
-
-                                            popover_apply_btn := ShadButton{
-                                                text: "Save"
-                                            }
-                                        }
-                                    }
-                                }
-
-                                popover_status := ShadFieldDescription{
-                                    text: "Popover is closed."
-                                }
-
-                                ShadHr{}
-
-                                ShadSectionHeader{ text: "Top / End aligned" }
-
-                                help_popover := ShadPopover{
-                                    side: "top"
-                                    align: "end"
-
-                                    trigger := ShadButtonGhost{
-                                        text: "Open top-end help"
-                                    }
-
-                                    content: ShadPopoverContent{
-                                        width: 280
-
-                                        title := ShadSectionHeader{
-                                            text: "Keyboard shortcuts"
-                                        }
-
-                                        description := ShadFieldDescription{
-                                            text: "Use popovers for compact help, profile cards, or lightweight editing flows that should stay attached to a trigger."
-                                        }
-                                    }
-                                }
-
-                                help_popover_status := ShadFieldDescription{
-                                    text: "Help popover is closed."
-                                }
-                            }
-
-                            action_flow +: {
-                                visible: true
-                                mod.widgets.GalleryActionFlow{
-                                    body +: {
-                                        mod.widgets.GalleryActionFlowStep{text: "1. Keep the trigger in normal layout, and let `ShadPopover` render the popup body into an overlay draw list when open."}
-                                        mod.widgets.GalleryActionFlowStep{text: "2. The widget flips top/bottom or left/right automatically when there is not enough room on the preferred side."}
-                                        mod.widgets.GalleryActionFlowStep{text: "3. Reach into popup controls with `content_widget()` if buttons or fields inside the popover should update page state."}
-                                        mod.widgets.GalleryActionFlowStep{text: "4. Close on outside click, Escape, back gesture, or explicitly from a button inside the popup."}
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(POPOVER_PREVIEW_CODE)
-                                }
-                            }
-                        }
+                    popover_apply_btn := ShadButton{
+                        text: "Save"
                     }
                 }
             }
         }
-    }
+
+        popover_status := ShadFieldDescription{
+            text: "Popover is closed."
+        }
+
+        ShadHr{}
+
+        ShadSectionHeader{ text: "Top / End aligned" }
+
+        help_popover := ShadPopover{
+            side: "top"
+            align: "end"
+
+            trigger := ShadButtonGhost{
+                text: "Open top-end help"
+            }
+
+            content: ShadPopoverContent{
+                width: 280
+
+                title := ShadSectionHeader{
+                    text: "Keyboard shortcuts"
+                }
+
+                description := ShadFieldDescription{
+                    text: "Use popovers for compact help, profile cards, or lightweight editing flows that should stay attached to a trigger."
+                }
+            }
+        }
+
+        help_popover_status := ShadFieldDescription{
+            text: "Help popover is closed."
+        }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Keep the trigger in normal layout, and let `ShadPopover` render the popup body into an overlay draw list when open."}
+        mod.widgets.GalleryActionFlowStep{text: "2. The widget flips top/bottom or left/right automatically when there is not enough room on the preferred side."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Reach into popup controls with `content_widget()` if buttons or fields inside the popover should update page state."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Close on outside click, Escape, back gesture, or explicitly from a button inside the popup."}
+    },
 }
 
 #[derive(Script, ScriptHook, Widget)]
@@ -200,11 +149,7 @@ impl Widget for GalleryPopoverPage {
             }
 
             let help = self.view.shad_popover(cx, ids!(help_popover));
-            if profile.opened(actions)
-                || profile.closed(actions)
-                || help.opened(actions)
-                || help.closed(actions)
-            {
+            if profile.open_changed(actions).is_some() || help.open_changed(actions).is_some() {
                 self.sync_status_labels(cx);
             }
         }

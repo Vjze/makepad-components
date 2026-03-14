@@ -3,70 +3,55 @@ pub use makepad_widgets;
 
 use makepad_widgets::*;
 
+mod internal;
+mod models;
+
+pub mod prelude {
+    pub use crate::calendar::ShadDate;
+    pub use crate::makepad_widgets::*;
+}
+
 pub mod accordion;
 pub mod alert;
+mod animation;
 pub mod dialog;
-pub use dialog::{
-    ShadDialog, ShadDialogAction, ShadDialogRef, ShadDialogWidgetExt, ShadDialogWidgetRefExt,
-};
-pub use sonner::{
-    ShadSonner, ShadSonnerAction, ShadSonnerRef, ShadSonnerWidgetExt, ShadSonnerWidgetRefExt,
-};
 pub mod aspect_ratio;
 pub mod avatar;
 pub mod badge;
 pub mod breadcrumb;
 pub mod button;
 pub mod button_group;
+pub mod calendar;
 pub mod card;
 pub mod carousel;
-pub use carousel::{
-    ShadCarousel, ShadCarouselAction, ShadCarouselRef, ShadCarouselWidgetExt,
-    ShadCarouselWidgetRefExt,
-};
+pub mod chart;
 pub mod checkbox;
 pub mod collapsible;
 pub mod context_menu;
-pub use context_menu::{
-    ShadContextMenuAction, ShadContextMenuRef, ShadContextMenuWidgetExt,
-    ShadContextMenuWidgetRefExt,
-};
+pub mod date_picker;
 pub mod hr;
 pub mod input;
 pub mod input_otp;
-pub use input_otp::{
-    ShadInputOtp, ShadInputOtpAction, ShadInputOtpRef, ShadInputOtpWidgetExt,
-    ShadInputOtpWidgetRefExt,
-};
 pub mod kbd;
 pub mod label;
 pub mod menubar;
 pub mod navigation_menu;
 pub mod pagination;
 pub mod panel;
-pub use pagination::{
-    ShadPagination, ShadPaginationAction, ShadPaginationRef, ShadPaginationWidgetExt,
-    ShadPaginationWidgetRefExt,
-};
 pub mod popover;
-pub use popover::{
-    ShadPopover, ShadPopoverAction, ShadPopoverRef, ShadPopoverWidgetExt, ShadPopoverWidgetRefExt,
-};
 pub mod progress;
 pub mod radio_group;
 pub mod resizable;
 pub mod scroll;
 pub mod select;
 pub mod sheet;
-pub use sheet::{
-    ShadSheet, ShadSheetAction, ShadSheetRef, ShadSheetWidgetExt, ShadSheetWidgetRefExt,
-};
 pub mod sidebar;
 pub mod skeleton;
 pub mod slider;
 pub mod sonner;
 pub mod spinner;
 pub mod switch;
+pub mod table;
 pub mod tabs;
 pub mod textarea;
 pub mod theme;
@@ -83,8 +68,10 @@ pub fn script_mod_without_theme(vm: &mut ScriptVm) {
     crate::tabs::script_mod(vm);
     crate::button::script_mod(vm);
     crate::button_group::script_mod(vm);
+    crate::calendar::script_mod(vm);
     crate::card::script_mod(vm);
     crate::carousel::script_mod(vm);
+    crate::chart::script_mod(vm);
     crate::checkbox::script_mod(vm);
     crate::collapsible::script_mod(vm);
     crate::context_menu::script_mod(vm);
@@ -97,6 +84,7 @@ pub fn script_mod_without_theme(vm: &mut ScriptVm) {
     crate::input_otp::script_mod(vm);
     crate::label::script_mod(vm);
     crate::popover::script_mod(vm);
+    crate::date_picker::script_mod(vm);
     crate::menubar::script_mod(vm);
     crate::navigation_menu::script_mod(vm);
     crate::panel::script_mod(vm);
@@ -112,6 +100,7 @@ pub fn script_mod_without_theme(vm: &mut ScriptVm) {
     crate::sonner::script_mod(vm);
     crate::spinner::script_mod(vm);
     crate::switch::script_mod(vm);
+    crate::table::script_mod(vm);
     crate::textarea::script_mod(vm);
     crate::toggle::script_mod(vm);
 }

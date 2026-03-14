@@ -1,3 +1,8 @@
+use crate::internal::script_args::number_arg;
+use crate::models::pagination::{
+    clamped_current_page, clamped_max_visible_pages, compute_window, normalized_page_count,
+    PaginationWindow,
+};
 use makepad_widgets::makepad_script::NoTrap;
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
@@ -206,24 +211,9 @@ impl ShadPagination {
         }
     }
 
-    fn normalized_page_count(&self) -> usize {
-        self.page_count.max(1) as usize
-    }
-
-    fn clamped_max_visible_pages(&self) -> usize {
-        self.max_visible_pages
-            .clamp(3, MAX_PAGE_BUTTONS as u32)
-            .min(self.page_count.max(1)) as usize
-    }
-
     fn normalize_state(&mut self) {
-        let page_count = self.normalized_page_count();
-        if self.current_page == 0 {
-            self.current_page = 1;
-        }
-        if self.current_page as usize > page_count {
-            self.current_page = page_count as u32;
-        }
+        self.current_page =
+            clamped_current_page(self.current_page, normalized_page_count(self.page_count)) as u32;
     }
 
     fn page_button_ref(&self, cx: &Cx, index: usize) -> ButtonRef {
@@ -246,38 +236,12 @@ impl ShadPagination {
         }
     }
 
-    fn compute_pages(&self) -> (Vec<usize>, bool, bool) {
-        let page_count = self.normalized_page_count();
-        let max_visible = self.clamped_max_visible_pages().min(page_count);
-
-        if page_count <= max_visible {
-            return ((1..=page_count).collect(), false, false);
-        }
-
-        let current = self.page();
-        let inner_window = max_visible.saturating_sub(2).max(1);
-        let mut start = current.saturating_sub(inner_window / 2);
-        if start < 2 {
-            start = 2;
-        }
-
-        let mut end = start + inner_window - 1;
-        let last_inner_page = page_count - 1;
-        if end > last_inner_page {
-            end = last_inner_page;
-            start = end.saturating_sub(inner_window - 1).max(2);
-        }
-
-        let show_left = start > 2;
-        let show_right = end < last_inner_page;
-
-        let mut pages = Vec::with_capacity(max_visible);
-        pages.push(1);
-        for page in start..=end {
-            pages.push(page);
-        }
-        pages.push(page_count);
-        (pages, show_left, show_right)
+    fn compute_pages(&self) -> PaginationWindow {
+        compute_window(
+            self.page(),
+            normalized_page_count(self.page_count),
+            clamped_max_visible_pages(self.max_visible_pages, self.page_count, MAX_PAGE_BUTTONS),
+        )
     }
 
     fn apply_page_button_style(&self, cx: &mut Cx, index: usize, is_active: bool) {
@@ -330,8 +294,8 @@ impl ShadPagination {
 
     fn sync_view(&mut self, cx: &mut Cx) {
         let current_page = self.page();
-        let page_count = self.normalized_page_count();
-        let (pages, show_left_ellipsis, show_right_ellipsis) = self.compute_pages();
+        let page_count = normalized_page_count(self.page_count);
+        let window = self.compute_pages();
 
         self.view
             .button(cx, ids!(prev_btn))
@@ -341,13 +305,13 @@ impl ShadPagination {
             .set_disabled(cx, current_page >= page_count);
 
         self.ellipsis_ref(cx, true)
-            .set_visible(cx, show_left_ellipsis);
+            .set_visible(cx, window.show_left_ellipsis);
         self.ellipsis_ref(cx, false)
-            .set_visible(cx, show_right_ellipsis);
+            .set_visible(cx, window.show_right_ellipsis);
 
         for index in 0..MAX_PAGE_BUTTONS {
             let button = self.page_button_ref(cx, index);
-            if let Some(page) = pages.get(index).copied() {
+            if let Some(page) = window.pages.get(index).copied() {
                 self.slot_pages[index] = page;
                 button.set_visible(cx, true);
                 button.set_text(cx, &page.to_string());
@@ -360,12 +324,15 @@ impl ShadPagination {
     }
 
     fn set_page_internal(&mut self, cx: &mut Cx, page: usize, emit_action: bool) {
-        let clamped = page.clamp(1, self.normalized_page_count());
-        let changed = self.current_page as usize != clamped;
+        let clamped = page.clamp(1, normalized_page_count(self.page_count));
+        if self.current_page as usize == clamped {
+            return;
+        }
+
         self.current_page = clamped as u32;
         self.sync_view(cx);
 
-        if changed && emit_action {
+        if emit_action {
             cx.widget_action_with_data(
                 &self.action_data,
                 self.widget_uid(),
@@ -379,8 +346,13 @@ impl ShadPagination {
     }
 
     pub fn set_page_count(&mut self, cx: &mut Cx, page_count: usize) {
+        let prev_page_count = self.page_count;
+        let prev_page = self.current_page;
         self.page_count = page_count.max(1) as u32;
         self.normalize_state();
+        if self.page_count == prev_page_count && self.current_page == prev_page {
+            return;
+        }
         self.sync_view(cx);
     }
 
@@ -399,7 +371,7 @@ impl ShadPagination {
     }
 
     pub fn page_count(&self) -> usize {
-        self.normalized_page_count()
+        normalized_page_count(self.page_count)
     }
 
     pub fn changed(&self, actions: &Actions) -> Option<usize> {
@@ -421,12 +393,8 @@ impl Widget for ShadPagination {
         args: ScriptValue,
     ) -> ScriptAsyncResult {
         if method == live_id!(set_page) {
-            if let Some(args_obj) = args.as_object() {
-                let trap = vm.bx.threads.cur().trap.pass();
-                let value = vm.bx.heap.vec_value(args_obj, 0, trap);
-                if let Some(page) = value.as_number() {
-                    vm.with_cx_mut(|cx| self.set_page(cx, page as usize));
-                }
+            if let Some(page) = number_arg(vm, args) {
+                vm.with_cx_mut(|cx| self.set_page(cx, page as usize));
             }
             return ScriptAsyncResult::Return(NIL);
         }
@@ -434,12 +402,8 @@ impl Widget for ShadPagination {
             return ScriptAsyncResult::Return(ScriptValue::from_u32(self.page() as u32));
         }
         if method == live_id!(set_page_count) {
-            if let Some(args_obj) = args.as_object() {
-                let trap = vm.bx.threads.cur().trap.pass();
-                let value = vm.bx.heap.vec_value(args_obj, 0, trap);
-                if let Some(page_count) = value.as_number() {
-                    vm.with_cx_mut(|cx| self.set_page_count(cx, page_count as usize));
-                }
+            if let Some(page_count) = number_arg(vm, args) {
+                vm.with_cx_mut(|cx| self.set_page_count(cx, page_count as usize));
             }
             return ScriptAsyncResult::Return(NIL);
         }

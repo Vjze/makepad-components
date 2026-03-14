@@ -1,116 +1,65 @@
-use crate::ui::snippets::PAGINATION_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::*;
 use makepad_components::pagination::ShadPaginationWidgetExt;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
+gallery_stateful_page_shell! {
+    widget: GalleryPaginationPage,
+    page: pagination_page,
+    title: "Pagination",
+    subtitle: "Stateful page controls with previous/next actions, compact ranges, and page-change events. Keep the selected page in app state, then drive data fetching or visible rows from that value.",
+    divider: { ShadHr{} },
+    preview_spacing: 16.0,
+    preview: {
+        ShadSectionHeader{ text: "Controlled pagination" }
 
-    mod.widgets.GalleryPaginationPageBase = #(GalleryPaginationPage::register_widget(vm))
+        pagination_demo := ShadPagination{
+            current_page: 5
+            page_count: 12
+        }
 
-    mod.widgets.GalleryPaginationPage = set_type_default() do mod.widgets.GalleryPaginationPageBase{
-        width: Fill
-        height: Fill
+        View{
+            width: Fit
+            height: Fit
+            flow: Right
+            spacing: 8.0
 
-        scroll_view := ShadScrollYView{
-            ShadPageTitle{
-                text: "Pagination"
+            prev_external_btn := ShadButtonOutline{
+                text: "Previous"
             }
 
-            ShadPageSubtitle{
-                text: "Stateful page controls with previous/next actions, compact ranges, and page-change events. Keep the selected page in app state, then drive data fetching or visible rows from that value."
+            next_external_btn := ShadButtonOutline{
+                text: "Next"
             }
 
-            ShadHr{}
-
-            pagination_preview_section := mod.widgets.GalleryPreviewSection{
-                width: Fill
-                height: Fit
-
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 16.0
-
-                                ShadSectionHeader{ text: "Controlled pagination" }
-
-                                pagination_demo := ShadPagination{
-                                    current_page: 5
-                                    page_count: 12
-                                }
-
-                                View{
-                                    width: Fit
-                                    height: Fit
-                                    flow: Right
-                                    spacing: 8.0
-
-                                    prev_external_btn := ShadButtonOutline{
-                                        text: "Previous"
-                                    }
-
-                                    next_external_btn := ShadButtonOutline{
-                                        text: "Next"
-                                    }
-
-                                    jump_last_btn := ShadButtonGhost{
-                                        text: "Jump to last"
-                                    }
-                                }
-
-                                pagination_status := ShadFieldDescription{
-                                    text: "Current page: 5 of 12"
-                                }
-
-                                ShadHr{}
-
-                                ShadSectionHeader{ text: "Compact range" }
-
-                                pagination_compact := ShadPagination{
-                                    current_page: 21
-                                    page_count: 42
-                                    max_visible_pages: 5
-                                }
-
-                                pagination_compact_status := ShadFieldDescription{
-                                    text: "Current page: 21 of 42"
-                                }
-                            }
-
-                            action_flow +: {
-                                visible: true
-                                mod.widgets.GalleryActionFlow{
-                                    body +: {
-                                        mod.widgets.GalleryActionFlowStep{text: "1. Treat the current page as app or page state. `ShadPagination` only emits page changes, it does not own your data source."}
-                                        mod.widgets.GalleryActionFlowStep{text: "2. Listen to `changed(actions)` when a user clicks a number, Previous, or Next."}
-                                        mod.widgets.GalleryActionFlowStep{text: "3. Use `set_page(cx, ...)`, `next(cx)`, or `prev(cx)` when external buttons or keyboard shortcuts should drive the control."}
-                                        mod.widgets.GalleryActionFlowStep{text: "4. Recompute the visible rows or fetch the next slice from your backend using the selected page."}
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(PAGINATION_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
-                }
+            jump_last_btn := ShadButtonGhost{
+                text: "Jump to last"
             }
         }
-    }
+
+        pagination_status := ShadFieldDescription{
+            text: "Current page: 5 of 12"
+        }
+
+        ShadHr{}
+
+        ShadSectionHeader{ text: "Compact range" }
+
+        pagination_compact := ShadPagination{
+            current_page: 21
+            page_count: 42
+            max_visible_pages: 5
+        }
+
+        pagination_compact_status := ShadFieldDescription{
+            text: "Current page: 21 of 42"
+        }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Treat the current page as app or page state. `ShadPagination` only emits page changes, it does not own your data source."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Listen to `changed(actions)` when a user clicks a number, Previous, or Next."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Use `set_page(cx, ...)`, `next(cx)`, or `prev(cx)` when external buttons or keyboard shortcuts should drive the control."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Recompute the visible rows or fetch the next slice from your backend using the selected page."}
+    },
 }
 
 #[derive(Script, ScriptHook, Widget)]

@@ -1,124 +1,62 @@
-use crate::ui::snippets::SCROLL_AREA_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_static_page;
 use makepad_components::makepad_widgets::*;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
-
-    mod.widgets.GalleryScrollAreaPageBase = #(GalleryScrollAreaPage::register_widget(vm))
-
-    mod.widgets.GalleryScrollAreaPage = set_type_default() do mod.widgets.GalleryScrollAreaPageBase{
-        width: Fill
-        height: Fill
-
-        scroll_area := ShadScrollArea{
-            ShadPageTitle{
-                text: "Scroll Area"
-            }
-
-            ShadPageSubtitle{
-                text: "Canonical scroll wrappers for vertical, horizontal, and two-axis overflow."
-            }
-
-            ShadSeparator{}
-
-            scroll_area_preview_section := mod.widgets.GalleryPreviewSection{
+gallery_static_page! {
+    root: ShadScrollArea,
+    widget: GalleryScrollAreaPage,
+    page: scroll_area_page,
+    title: "Scroll Area",
+    subtitle: "Canonical scroll wrappers for vertical, horizontal, and two-axis overflow.",
+    divider: { ShadSeparator{} },
+    preview_spacing: 12.0,
+    preview: {
+        ShadSectionHeader{ text: "Vertical" }
+        ShadPanel{
+            scroll_area_demo := ShadScrollArea{
                 width: Fill
-                height: Fit
+                height: 220
 
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
+                View{
+                    width: Fill
+                    height: Fit
+                    flow: Down
+                    spacing: 10.0
 
-                                ShadSectionHeader{ text: "Vertical" }
-                                ShadPanel{
-                                    scroll_area_demo := ShadScrollArea{
-                                        width: Fill
-                                        height: 220
-
-                                        View{
-                                            width: Fill
-                                            height: Fit
-                                            flow: Down
-                                            spacing: 10.0
-
-                                            ShadLabel{text: "Recent activity"}
-                                            ShadSeparator{}
-                                            ShadLabel{text: "Project Alpha updated 2 minutes ago"}
-                                            ShadLabel{text: "Billing statement exported"}
-                                            ShadLabel{text: "New teammate invited to workspace"}
-                                            ShadLabel{text: "API key rotated successfully"}
-                                            ShadLabel{text: "Audit log downloaded"}
-                                            ShadLabel{text: "Staging deploy completed"}
-                                            ShadLabel{text: "Design review scheduled for Friday"}
-                                            ShadLabel{text: "Feature flag enabled for beta cohort"}
-                                            ShadLabel{text: "Customer note added to ticket #438"}
-                                        }
-                                    }
-                                }
-
-                                ShadSectionHeader{ text: "Horizontal" }
-                                ShadPanel{
-                                    ShadScrollAreaX{
-                                        width: Fill
-                                        height: Fit
-
-                                        View{
-                                            width: Fit
-                                            height: Fit
-                                            flow: Right
-                                            spacing: 12.0
-
-                                            ShadBadge{ label := ShadBadgeLabel{text: "Analytics"} }
-                                            ShadBadgeSecondary{ label := ShadBadgeSecondaryLabel{text: "Retention"} }
-                                            ShadBadgeOutline{ label := ShadBadgeOutlineLabel{text: "Growth"} }
-                                            ShadBadge{ label := ShadBadgeLabel{text: "Revenue"} }
-                                            ShadBadgeSecondary{ label := ShadBadgeSecondaryLabel{text: "Operations"} }
-                                            ShadBadgeOutline{ label := ShadBadgeOutlineLabel{text: "Launch Week"} }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(SCROLL_AREA_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
+                    ShadLabel{text: "Recent activity"}
+                    ShadSeparator{}
+                    ShadLabel{text: "Project Alpha updated 2 minutes ago"}
+                    ShadLabel{text: "Billing statement exported"}
+                    ShadLabel{text: "New teammate invited to workspace"}
+                    ShadLabel{text: "API key rotated successfully"}
+                    ShadLabel{text: "Audit log downloaded"}
+                    ShadLabel{text: "Staging deploy completed"}
+                    ShadLabel{text: "Design review scheduled for Friday"}
+                    ShadLabel{text: "Feature flag enabled for beta cohort"}
+                    ShadLabel{text: "Customer note added to ticket #438"}
                 }
             }
         }
-    }
-}
 
-#[derive(Script, ScriptHook, Widget)]
-pub struct GalleryScrollAreaPage {
-    #[source]
-    source: ScriptObjectRef,
-    #[deref]
-    view: View,
-}
+        ShadSectionHeader{ text: "Horizontal" }
+        ShadPanel{
+            ShadScrollAreaX{
+                width: Fill
+                height: Fit
 
-impl Widget for GalleryScrollAreaPage {
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        self.view.handle_event(cx, event, scope);
-    }
+                View{
+                    width: Fit
+                    height: Fit
+                    flow: Right
+                    spacing: 12.0
 
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.view.draw_walk(cx, scope, walk)
-    }
+                    ShadBadge{ label := ShadBadgeLabel{text: "Analytics"} }
+                    ShadBadgeSecondary{ label := ShadBadgeSecondaryLabel{text: "Retention"} }
+                    ShadBadgeOutline{ label := ShadBadgeOutlineLabel{text: "Growth"} }
+                    ShadBadge{ label := ShadBadgeLabel{text: "Revenue"} }
+                    ShadBadgeSecondary{ label := ShadBadgeSecondaryLabel{text: "Operations"} }
+                    ShadBadgeOutline{ label := ShadBadgeOutlineLabel{text: "Launch Week"} }
+                }
+            }
+        }
+    },
 }

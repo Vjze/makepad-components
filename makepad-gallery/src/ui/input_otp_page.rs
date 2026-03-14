@@ -1,90 +1,36 @@
-use crate::ui::snippets::INPUT_OTP_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::input_otp::ShadInputOtpWidgetExt;
 use makepad_components::makepad_widgets::*;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
+gallery_stateful_page_shell! {
+    widget: GalleryInputOtpPage,
+    page: input_otp_page,
+    title: "Input OTP",
+    subtitle: "Segmented one-time passcode entry with numeric filtering and paste support. Read partial updates with changed(actions) and final codes with completed(actions).",
+    divider: { ShadHr{} },
+    preview_spacing: 12.0,
+    preview: {
+        ShadSectionHeader{ text: "Verification code" }
 
-    mod.widgets.GalleryInputOtpPageBase = #(GalleryInputOtpPage::register_widget(vm))
+        View{
+            width: Fit
+            height: Fit
+            flow: Down
+            spacing: 8.0
 
-    mod.widgets.GalleryInputOtpPage = set_type_default() do mod.widgets.GalleryInputOtpPageBase{
-        width: Fill
-        height: Fill
-
-        scroll_area := ShadScrollYView{
-            width: Fill
-            height: Fill
-
-            ShadPageTitle{
-                text: "Input OTP"
-            }
-
-            ShadPageSubtitle{
-                text: "Segmented one-time passcode entry with numeric filtering and paste support. Read partial updates with changed(actions) and final codes with completed(actions)."
-            }
-
-            ShadHr{}
-
-            input_otp_preview_section := mod.widgets.GalleryPreviewSection{
-                width: Fill
-                height: Fit
-
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                ShadSectionHeader{ text: "Verification code" }
-
-                                View{
-                                    width: Fit
-                                    height: Fit
-                                    flow: Down
-                                    spacing: 8.0
-
-                                    ShadLabel{text: "Enter the 6-digit code"}
-                                    otp_demo := ShadInputOtp{}
-                                    otp_status := ShadFieldDescription{
-                                        text: "Waiting for input."
-                                    }
-                                }
-                            }
-
-                            action_flow +: {
-                                visible: true
-                                mod.widgets.GalleryActionFlow{
-                                    body +: {
-                                        mod.widgets.GalleryActionFlowStep{text: "1. Use changed(actions) for partial entry so the page can update validation or helper text as the user types."}
-                                        mod.widgets.GalleryActionFlowStep{text: "2. Use completed(actions) when the full code is available and the feature should verify or submit it."}
-                                        mod.widgets.GalleryActionFlowStep{text: "3. value() lets the page rebuild visible state after reload or redraw without waiting for a new action."}
-                                        mod.widgets.GalleryActionFlowStep{text: "4. Numeric filtering and paste handling stay inside the component, so the page only reacts to semantic values."}
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(INPUT_OTP_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
-                }
+            ShadLabel{text: "Enter the 6-digit code"}
+            otp_demo := ShadInputOtp{}
+            otp_status := ShadFieldDescription{
+                text: "Waiting for input."
             }
         }
-    }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Use changed(actions) for partial entry so the page can update validation or helper text as the user types."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Use completed(actions) when the full code is available and the feature should verify or submit it."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Use set_value(cx, ...) to restore saved codes or clear the control from outside, and value() to inspect the current state."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Numeric filtering and paste handling stay inside the component, so the page only reacts to semantic values."}
+    },
 }
 
 #[derive(Script, ScriptHook, Widget)]

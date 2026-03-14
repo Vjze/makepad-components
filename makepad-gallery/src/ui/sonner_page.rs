@@ -1,122 +1,71 @@
-use crate::ui::snippets::SONNER_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::*;
 use makepad_components::sonner::ShadSonnerWidgetExt;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
+gallery_stateful_page_shell! {
+    widget: GallerySonnerPage,
+    page: sonner_page,
+    title: "Sonner / Toast",
+    subtitle: "Toast notifications with Modal overlay. Use ShadSonnerRef::open/close and `open_changed(actions)` when a page or app shell triggers toasts.",
+    divider: { ShadHr{} },
+    preview_spacing: 16.0,
+    preview: {
+        ShadSectionHeader{ text: "Basic" }
 
-    mod.widgets.GallerySonnerPageBase = #(GallerySonnerPage::register_widget(vm))
+        View{
+            width: Fill
+            height: Fit
+            flow: Right
+            spacing: 8.0
 
-    mod.widgets.GallerySonnerPage = set_type_default() do mod.widgets.GallerySonnerPageBase{
-        width: Fill
-        height: Fill
+            toast_event_btn := ShadButton{text: "Event created"}
+            toast_desc_btn := ShadButton{text: "Toast with description"}
+        }
 
-        scroll_view := ShadScrollYView{
-            ShadPageTitle{
-                text: "Sonner / Toast"
-            }
-
-            ShadPageSubtitle{
-                text: "Toast notifications with Modal overlay. Use ShadSonnerRef::show/hide and opened/closed actions when a page or app shell triggers toasts."
-            }
-
-            ShadHr{}
-
-            sonner_preview_section := mod.widgets.GalleryPreviewSection{
+        View{
+            width: Fill
+            height: 200
+            toast_event := ShadSonner{
                 width: Fill
-                height: Fit
-
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 16.0
-
-                                ShadSectionHeader{ text: "Basic" }
-
-                                View{
-                                    width: Fill
-                                    height: Fit
-                                    flow: Right
-                                    spacing: 8.0
-
-                                    toast_event_btn := ShadButton{text: "Event created"}
-                                    toast_desc_btn := ShadButton{text: "Toast with description"}
-                                }
-
-                                View{
-                                    width: Fill
-                                    height: 200
-                                    toast_event := ShadSonner{
-                                        width: Fill
-                                        height: Fill
-                                        open: false
-                                    }
-                                    toast_desc := ShadSonnerWithDescription{
-                                        width: Fill
-                                        height: Fill
-                                        open: false
-                                    }
-                                }
-
-                                ShadHr{}
-
-                                ShadSectionHeader{ text: "With Close Button" }
-
-                                View{
-                                    width: Fill
-                                    height: Fit
-                                    flow: Right
-                                    spacing: 8.0
-
-                                    toast_close_btn := ShadButton{text: "Show toast with close"}
-                                }
-
-                                View{
-                                    width: Fill
-                                    height: 200
-                                    toast_close := ShadSonnerWithClose{
-                                        width: Fill
-                                        height: Fill
-                                        open: false
-                                    }
-                                }
-                            }
-
-                            action_flow +: {
-                                visible: true
-                                mod.widgets.GalleryActionFlow{
-                                    body +: {
-                                        mod.widgets.GalleryActionFlowStep{text: "1. Keep one ShadSonnerRef per toast variant the page can trigger."}
-                                        mod.widgets.GalleryActionFlowStep{text: "2. Call show(cx) from buttons, async completions, or other semantic page events."}
-                                        mod.widgets.GalleryActionFlowStep{text: "3. Use opened(actions) and closed(actions) when the page or shell reacts to toast lifecycle."}
-                                        mod.widgets.GalleryActionFlowStep{text: "4. Close buttons and modal dismissal remain component-owned, so the page just triggers and observes."}
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(SONNER_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
-                }
+                height: Fill
+                open: false
+            }
+            toast_desc := ShadSonnerWithDescription{
+                width: Fill
+                height: Fill
+                open: false
             }
         }
-    }
+
+        ShadHr{}
+
+        ShadSectionHeader{ text: "With Close Button" }
+
+        View{
+            width: Fill
+            height: Fit
+            flow: Right
+            spacing: 8.0
+
+            toast_close_btn := ShadButton{text: "Show toast with close"}
+        }
+
+        View{
+            width: Fill
+            height: 200
+            toast_close := ShadSonnerWithClose{
+                width: Fill
+                height: Fill
+                open: false
+            }
+        }
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Keep one ShadSonnerRef per toast variant the page can trigger."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Call open(cx) from buttons, async completions, or other semantic page events."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Use `open_changed(actions)` when the page or shell reacts to toast lifecycle."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Close buttons and modal dismissal remain component-owned, so the page just triggers and observes."}
+    },
 }
 
 #[derive(Script, ScriptHook, Widget)]
@@ -133,13 +82,13 @@ impl Widget for GallerySonnerPage {
 
         if let Event::Actions(actions) = event {
             if self.view.button(cx, ids!(toast_event_btn)).clicked(actions) {
-                self.view.shad_sonner(cx, ids!(toast_event)).show(cx);
+                self.view.shad_sonner(cx, ids!(toast_event)).open(cx);
             }
             if self.view.button(cx, ids!(toast_desc_btn)).clicked(actions) {
-                self.view.shad_sonner(cx, ids!(toast_desc)).show(cx);
+                self.view.shad_sonner(cx, ids!(toast_desc)).open(cx);
             }
             if self.view.button(cx, ids!(toast_close_btn)).clicked(actions) {
-                self.view.shad_sonner(cx, ids!(toast_close)).show(cx);
+                self.view.shad_sonner(cx, ids!(toast_close)).open(cx);
             }
         }
     }

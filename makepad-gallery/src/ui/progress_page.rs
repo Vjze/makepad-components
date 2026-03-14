@@ -1,85 +1,36 @@
-use crate::ui::snippets::PROGRESS_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_static_page;
 use makepad_components::makepad_widgets::*;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
+gallery_static_page! {
+    widget: GalleryProgressPage,
+    page: progress_page,
+    title: "Progress",
+    subtitle: "Shadcn-inspired progress bars. Determinate (value 0–1) and indeterminate (animated).",
+    divider: { ShadHr{} },
+    preview_spacing: 12.0,
+    preview: {
+        ShadSectionHeader{ text: "Determinate" }
 
-    mod.widgets.GalleryProgressPageBase = #(GalleryProgressPage::register_widget(vm))
+        ShadProgress33{}
+        ShadProgress66{}
+        ShadProgressFull{}
 
-    mod.widgets.GalleryProgressPage = set_type_default() do mod.widgets.GalleryProgressPageBase{
-        width: Fill
-        height: Fill
+        ShadSectionHeader{ text: "Indeterminate (animated)" }
 
-        scroll_view := ShadScrollYView{
-            ShadPageTitle{
-                text: "Progress"
-            }
+        ShadProgressIndeterminate{}
 
-            ShadPageSubtitle{
-                text: "Shadcn-inspired progress bars. Determinate (value 0–1) and indeterminate (animated)."
-            }
+        ShadSectionHeader{ text: "Animation stress" }
 
-            ShadHr{}
+        View{
+            width: Fill
+            height: Fit
+            flow: Down
+            spacing: 8.0
 
-            progress_preview_section := mod.widgets.GalleryPreviewSection{
-                width: Fill
-                height: Fit
-
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                ShadSectionHeader{ text: "Determinate" }
-
-                                ShadProgress33{}
-                                ShadProgress66{}
-                                ShadProgressFull{}
-
-                                ShadSectionHeader{ text: "Indeterminate (animated)" }
-
-                                ShadProgressIndeterminate{}
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(PROGRESS_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            ShadProgressIndeterminate{}
+            ShadProgressIndeterminate{}
+            ShadProgressIndeterminate{}
+            ShadProgressIndeterminate{}
         }
-    }
-}
-
-#[derive(Script, ScriptHook, Widget)]
-pub struct GalleryProgressPage {
-    #[source]
-    source: ScriptObjectRef,
-    #[deref]
-    view: View,
-}
-
-impl Widget for GalleryProgressPage {
-    fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        self.view.handle_event(cx, event, scope);
-    }
-
-    fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.view.draw_walk(cx, scope, walk)
-    }
+    },
 }

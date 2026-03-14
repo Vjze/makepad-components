@@ -1,96 +1,49 @@
-use crate::ui::snippets::SHEET_PREVIEW_CODE;
+use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::*;
 use makepad_components::sheet::ShadSheetWidgetExt;
 
-script_mod! {
-    use mod.prelude.widgets.*
-    use mod.widgets.*
-
-    mod.widgets.GallerySheetPageBase = #(GallerySheetPage::register_widget(vm))
-
-    mod.widgets.GallerySheetPage = set_type_default() do mod.widgets.GallerySheetPageBase{
-        width: Fill
-        height: Fill
+gallery_stateful_page_shell! {
+    root: ShadScrollArea,
+    shell: {
         draw_bg.color: (shad_theme.color_background)
         flow: Overlay
-
-        ShadScrollArea{
-            ShadPageTitle{
-                text: "Sheet"
-            }
-
-            ShadPageSubtitle{
-                text: "Modal sheet overlays for contextual editing and supporting flows. Use ShadSheetRef::open/close plus opened/closed actions for page-level control."
-            }
-
-            ShadSeparator{}
-
-            sheet_preview_section := mod.widgets.GalleryPreviewSection{
+    },
+    widget: GallerySheetPage,
+    page: sheet_page,
+    title: "Sheet",
+    subtitle: "Modal sheet overlays for contextual editing and supporting flows. Use ShadSheetRef::open/close plus `open_changed(actions)` for page-level control.",
+    divider: { ShadSeparator{} },
+    preview_spacing: 12.0,
+    preview: {
+        ShadPanel{
+            View{
                 width: Fill
                 height: Fit
+                flow: Down
+                spacing: 12.0
 
-                preview_panel +: {
-                    preview_flip +: {
-                        root_view +: {
-                            preview_content +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
+                ShadSectionHeader{ text: "Sides" }
+                View{
+                    width: Fit
+                    height: Fit
+                    flow: Right
+                    spacing: 12.0
 
-                                ShadPanel{
-                                    View{
-                                        width: Fill
-                                        height: Fit
-                                        flow: Down
-                                        spacing: 12.0
-
-                                        ShadSectionHeader{ text: "Sides" }
-                                        View{
-                                            width: Fit
-                                            height: Fit
-                                            flow: Right
-                                            spacing: 12.0
-
-                                            open_right_sheet_btn := ShadButton{text: "Right"}
-                                            open_left_sheet_btn := ShadButtonOutline{text: "Left"}
-                                            open_top_sheet_btn := ShadButtonOutline{text: "Top"}
-                                            open_bottom_sheet_btn := ShadButtonOutline{text: "Bottom"}
-                                        }
-                                    }
-                                }
-                            }
-
-                            action_flow +: {
-                                visible: true
-                                mod.widgets.GalleryActionFlow{
-                                    body +: {
-                                        mod.widgets.GalleryActionFlowStep{text: "1. Keep one ShadSheetRef per sheet variant the page controls, such as right, left, top, or bottom."}
-                                        mod.widgets.GalleryActionFlowStep{text: "2. Trigger open(cx) and close(cx) from page buttons or row actions instead of reaching into the sheet internals."}
-                                        mod.widgets.GalleryActionFlowStep{text: "3. Listen to opened(actions) and closed(actions) if the surrounding page needs to react to visibility changes."}
-                                        mod.widgets.GalleryActionFlowStep{text: "4. Internal dismiss controls and backdrop behavior remain inside the sheet component."}
-                                    }
-                                }
-                            }
-                        }
-
-                        code_page +: {
-                            body +: {
-                                width: Fill
-                                height: Fit
-                                flow: Down
-                                spacing: 12.0
-
-                                code_snippet +: {
-                                    code: #(SHEET_PREVIEW_CODE)
-                                }
-                            }
-                        }
-                    }
+                    open_right_sheet_btn := ShadButton{text: "Right"}
+                    open_left_sheet_btn := ShadButtonOutline{text: "Left"}
+                    open_top_sheet_btn := ShadButtonOutline{text: "Top"}
+                    open_bottom_sheet_btn := ShadButtonOutline{text: "Bottom"}
                 }
             }
         }
-
+    },
+    action_flow: {
+        mod.widgets.GalleryActionFlowStep{text: "1. Keep one ShadSheetRef per sheet variant the page controls, such as right, left, top, or bottom."}
+        mod.widgets.GalleryActionFlowStep{text: "2. Trigger open(cx) and close(cx) from page buttons or row actions instead of reaching into the sheet internals."}
+        mod.widgets.GalleryActionFlowStep{text: "3. Listen to `open_changed(actions)` if the surrounding page needs to react to visibility changes."}
+        mod.widgets.GalleryActionFlowStep{text: "4. Internal dismiss controls and backdrop behavior remain inside the sheet component."}
+    },
+    after_root: {
         right_sheet := ShadSheet{
             side: "right"
             sheet_size: 360.0
@@ -180,7 +133,7 @@ script_mod! {
                 }
             }
         }
-    }
+    },
 }
 
 #[derive(Script, ScriptHook, Widget)]

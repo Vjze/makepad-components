@@ -1,3 +1,8 @@
+use crate::internal::actions::first_widget_action;
+use crate::internal::overlay::{
+    draw_modal_overlay, modal_dismissed, set_modal_widget_open, sync_modal_open_state,
+};
+use crate::internal::script_args::bool_arg;
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
 
@@ -80,8 +85,7 @@ script_mod! {
 
 #[derive(Clone, Debug, Default)]
 pub enum ShadSheetAction {
-    Opened,
-    Closed,
+    OpenChanged(bool),
     #[default]
     None,
 }
@@ -183,39 +187,21 @@ impl ShadSheet {
 
     fn sync_open_state(&mut self, cx: &mut Cx) {
         self.sync_side_layout(cx);
-
-        if self.is_synced_open == self.open {
-            return;
-        }
-
-        if let Some(mut modal) = self.overlay.borrow_mut::<Modal>() {
-            if self.open {
-                modal.open(cx);
-            } else {
-                modal.close(cx);
-            }
-        }
-
-        self.is_synced_open = self.open;
+        sync_modal_open_state(cx, &mut self.overlay, &mut self.is_synced_open, self.open);
     }
 
     pub fn set_open(&mut self, cx: &mut Cx, open: bool) {
-        if self.open == open {
-            self.sync_open_state(cx);
-            return;
-        }
-
-        self.open = open;
-        self.sync_open_state(cx);
-        self.overlay.redraw(cx);
-        cx.widget_action_with_data(
+        self.sync_side_layout(cx);
+        let uid = self.widget_uid();
+        set_modal_widget_open(
+            cx,
+            &mut self.overlay,
+            &mut self.open,
+            &mut self.is_synced_open,
             &self.action_data,
-            self.widget_uid(),
-            if open {
-                ShadSheetAction::Opened
-            } else {
-                ShadSheetAction::Closed
-            },
+            uid,
+            open,
+            ShadSheetAction::OpenChanged,
         );
     }
 
@@ -231,20 +217,13 @@ impl ShadSheet {
         self.open
     }
 
-    pub fn opened(&self, actions: &Actions) -> bool {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            matches!(item.cast::<ShadSheetAction>(), ShadSheetAction::Opened)
-        } else {
-            false
+    pub fn open_changed(&self, actions: &Actions) -> Option<bool> {
+        if let Some(ShadSheetAction::OpenChanged(open)) =
+            first_widget_action::<ShadSheetAction>(actions, self.widget_uid())
+        {
+            return Some(open);
         }
-    }
-
-    pub fn closed(&self, actions: &Actions) -> bool {
-        if let Some(item) = actions.find_widget_action(self.widget_uid()) {
-            matches!(item.cast::<ShadSheetAction>(), ShadSheetAction::Closed)
-        } else {
-            false
-        }
+        None
     }
 }
 
@@ -256,12 +235,8 @@ impl Widget for ShadSheet {
         args: ScriptValue,
     ) -> ScriptAsyncResult {
         if method == live_id!(set_open) {
-            if let Some(args_obj) = args.as_object() {
-                let trap = vm.bx.threads.cur().trap.pass();
-                let value = vm.bx.heap.vec_value(args_obj, 0, trap);
-                if let Some(open) = value.as_bool() {
-                    vm.with_cx_mut(|cx| self.set_open(cx, open));
-                }
+            if let Some(open) = bool_arg(vm, args) {
+                vm.with_cx_mut(|cx| self.set_open(cx, open));
             }
             return ScriptAsyncResult::Return(NIL);
         }
@@ -277,11 +252,7 @@ impl Widget for ShadSheet {
         if self.open {
             self.overlay.handle_event(cx, event, scope);
             if let Event::Actions(actions) = event {
-                let content = self.overlay.widget(cx, ids!(content));
-                if actions
-                    .find_widget_action(content.widget_uid())
-                    .is_some_and(|a| matches!(a.cast(), ModalAction::Dismissed))
-                {
+                if modal_dismissed(&self.overlay, cx, actions) {
                     self.close(cx);
                 }
             }
@@ -290,17 +261,7 @@ impl Widget for ShadSheet {
 
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         self.sync_open_state(cx);
-
-        if !self.open {
-            return DrawStep::done();
-        }
-
-        cx.begin_turtle(walk, self.layout);
-        let step = self
-            .overlay
-            .draw_walk(cx, scope, Walk::new(Size::fill(), Size::fill()));
-        cx.end_turtle();
-        step
+        draw_modal_overlay(cx, scope, walk, self.layout, self.open, &mut self.overlay)
     }
 }
 
@@ -327,11 +288,7 @@ impl ShadSheetRef {
         self.borrow().is_some_and(|inner| inner.is_open())
     }
 
-    pub fn opened(&self, actions: &Actions) -> bool {
-        self.borrow().is_some_and(|inner| inner.opened(actions))
-    }
-
-    pub fn closed(&self, actions: &Actions) -> bool {
-        self.borrow().is_some_and(|inner| inner.closed(actions))
+    pub fn open_changed(&self, actions: &Actions) -> Option<bool> {
+        self.borrow().and_then(|inner| inner.open_changed(actions))
     }
 }

@@ -1,3 +1,5 @@
+use crate::internal::actions::{emit_widget_action, first_widget_action};
+use crate::internal::script_args::bool_arg;
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
 
@@ -57,8 +59,7 @@ script_mod! {
 
 #[derive(Clone, Debug, Default)]
 pub enum ShadPopoverAction {
-    Opened,
-    Closed,
+    OpenChanged(bool),
     #[default]
     None,
 }
@@ -213,20 +214,16 @@ impl ShadPopover {
     }
 
     fn emit_open_state(&self, cx: &mut Cx, open: bool) {
-        cx.widget_action_with_data(
+        emit_widget_action(
+            cx,
             &self.action_data,
             self.widget_uid(),
-            if open {
-                ShadPopoverAction::Opened
-            } else {
-                ShadPopoverAction::Closed
-            },
+            ShadPopoverAction::OpenChanged(open),
         );
     }
 
     pub fn set_open(&mut self, cx: &mut Cx, open: bool) {
         if self.open == open {
-            self.redraw_overlay(cx);
             return;
         }
 
@@ -251,26 +248,13 @@ impl ShadPopover {
         self.popup_content.clone()
     }
 
-    pub fn opened(&self, actions: &Actions) -> bool {
-        if let Some(action) = actions.find_widget_action(self.widget_uid()) {
-            matches!(
-                action.cast::<ShadPopoverAction>(),
-                ShadPopoverAction::Opened
-            )
-        } else {
-            false
+    pub fn open_changed(&self, actions: &Actions) -> Option<bool> {
+        if let Some(ShadPopoverAction::OpenChanged(open)) =
+            first_widget_action::<ShadPopoverAction>(actions, self.widget_uid())
+        {
+            return Some(open);
         }
-    }
-
-    pub fn closed(&self, actions: &Actions) -> bool {
-        if let Some(action) = actions.find_widget_action(self.widget_uid()) {
-            matches!(
-                action.cast::<ShadPopoverAction>(),
-                ShadPopoverAction::Closed
-            )
-        } else {
-            false
-        }
+        None
     }
 }
 
@@ -282,12 +266,8 @@ impl Widget for ShadPopover {
         args: ScriptValue,
     ) -> ScriptAsyncResult {
         if method == live_id!(set_open) {
-            if let Some(args_obj) = args.as_object() {
-                let trap = vm.bx.threads.cur().trap.pass();
-                let value = vm.bx.heap.vec_value(args_obj, 0, trap);
-                if let Some(open) = value.as_bool() {
-                    vm.with_cx_mut(|cx| self.set_open(cx, open));
-                }
+            if let Some(open) = bool_arg(vm, args) {
+                vm.with_cx_mut(|cx| self.set_open(cx, open));
             }
             return ScriptAsyncResult::Return(NIL);
         }
@@ -410,12 +390,8 @@ impl ShadPopoverRef {
         self.borrow().is_some_and(|inner| inner.is_open())
     }
 
-    pub fn opened(&self, actions: &Actions) -> bool {
-        self.borrow().is_some_and(|inner| inner.opened(actions))
-    }
-
-    pub fn closed(&self, actions: &Actions) -> bool {
-        self.borrow().is_some_and(|inner| inner.closed(actions))
+    pub fn open_changed(&self, actions: &Actions) -> Option<bool> {
+        self.borrow().and_then(|inner| inner.open_changed(actions))
     }
 
     pub fn content_widget(&self) -> WidgetRef {

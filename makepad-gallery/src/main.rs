@@ -3,58 +3,11 @@ pub use makepad_widgets;
 
 mod ui;
 
+use crate::ui::catalog;
 use crate::ui::command_palette::GalleryCommandPalette;
 use crate::ui::command_palette_page::GalleryCommandPalettePageWidgetRefExt;
 use makepad_components::makepad_widgets::*;
 use makepad_router::RouterWidgetWidgetRefExt;
-
-const SIDEBAR_ROUTES: &[(LiveId, LiveId)] = &[
-    (live_id!(sidebar_accordion), live_id!(accordion_page)),
-    (live_id!(sidebar_alert), live_id!(alert_page)),
-    (live_id!(sidebar_aspect_ratio), live_id!(aspect_ratio_page)),
-    (live_id!(sidebar_avatar), live_id!(avatar_page)),
-    (live_id!(sidebar_badge), live_id!(badge_page)),
-    (live_id!(sidebar_breadcrumb), live_id!(breadcrumb_page)),
-    (live_id!(sidebar_button), live_id!(button_page)),
-    (live_id!(sidebar_button_group), live_id!(button_group_page)),
-    (live_id!(sidebar_card), live_id!(card_page)),
-    (live_id!(sidebar_carousel), live_id!(carousel_page)),
-    (live_id!(sidebar_checkbox), live_id!(checkbox_page)),
-    (live_id!(sidebar_collapsible), live_id!(collapsible_page)),
-    (
-        live_id!(sidebar_command_palette),
-        live_id!(command_palette_page),
-    ),
-    (live_id!(sidebar_context_menu), live_id!(context_menu_page)),
-    (live_id!(sidebar_dialog), live_id!(dialog_page)),
-    (live_id!(sidebar_input), live_id!(input_page)),
-    (live_id!(sidebar_input_otp), live_id!(input_otp_page)),
-    (live_id!(sidebar_menubar), live_id!(menubar_page)),
-    (
-        live_id!(sidebar_navigation_menu),
-        live_id!(navigation_menu_page),
-    ),
-    (live_id!(sidebar_pagination), live_id!(pagination_page)),
-    (live_id!(sidebar_popover), live_id!(popover_page)),
-    (live_id!(sidebar_radio_group), live_id!(radio_group_page)),
-    (live_id!(sidebar_resizable), live_id!(resizable_page)),
-    (live_id!(sidebar_scroll_area), live_id!(scroll_area_page)),
-    (live_id!(sidebar_select), live_id!(select_page)),
-    (live_id!(sidebar_separator), live_id!(separator_page)),
-    (live_id!(sidebar_sheet), live_id!(sheet_page)),
-    (live_id!(sidebar_skeleton), live_id!(skeleton_page)),
-    (live_id!(sidebar_switch), live_id!(switch_page)),
-    (live_id!(sidebar_tabs), live_id!(tabs_page)),
-    (live_id!(sidebar_textarea), live_id!(textarea_page)),
-    (live_id!(sidebar_toggle), live_id!(toggle_page)),
-    (live_id!(sidebar_kbd), live_id!(kbd_page)),
-    (live_id!(sidebar_label), live_id!(label_page)),
-    (live_id!(sidebar_progress), live_id!(progress_page)),
-    (live_id!(sidebar_sidebar), live_id!(sidebar_page)),
-    (live_id!(sidebar_slider), live_id!(slider_page)),
-    (live_id!(sidebar_sonner), live_id!(sonner_page)),
-    (live_id!(sidebar_spinner), live_id!(spinner_page)),
-];
 
 app_main!(App);
 
@@ -94,6 +47,7 @@ impl App {
         self.ui
             .router_widget(cx, ids!(content_flip))
             .go_to_route(cx, page);
+        self.sync_page_metadata(cx);
         if self.is_small_screen {
             self.sidebar_open = false;
             self.apply_responsive_visibility(cx);
@@ -145,6 +99,14 @@ impl App {
             .set_text(cx, button_text);
     }
 
+    fn sync_page_metadata(&self, cx: &mut Cx) {
+        if let Some(entry) = catalog::entry_for_page(self.current_page) {
+            self.ui
+                .label(cx, ids!(mobile_page_label))
+                .set_text(cx, entry.title);
+        }
+    }
+
     fn reload_ui_for_theme(&mut self, cx: &mut Cx) {
         cx.with_vm(|vm| {
             let value = Self::build_script_mod(vm, self.is_light_theme);
@@ -190,9 +152,9 @@ impl App {
     }
 
     fn handle_sidebar_navigation(&mut self, cx: &mut Cx, actions: &Actions) {
-        for (button_id, page_id) in SIDEBAR_ROUTES {
-            if self.ui.button(cx, &[*button_id]).clicked(actions) {
-                self.set_current_page(cx, *page_id);
+        for entry in catalog::entries() {
+            if self.ui.button(cx, &[entry.sidebar_id]).clicked(actions) {
+                self.set_current_page(cx, entry.page);
                 break;
             }
         }
@@ -266,7 +228,7 @@ impl AppMain for App {
         match event {
             Event::Startup => {
                 self.sidebar_open = true;
-                self.current_page = live_id!(accordion_page);
+                self.current_page = catalog::default_page();
                 self.is_light_theme = false;
                 self.sync_theme_toggle_labels(cx);
                 self.apply_responsive_visibility(cx);
