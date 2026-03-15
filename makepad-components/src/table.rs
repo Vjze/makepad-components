@@ -162,7 +162,6 @@ pub struct ShadTableHeaderView {
 }
 
 impl ShadTableHeaderView {
-    // Optimization: avoid repeated allocation in render loop by taking slices and cloning only when data changes
     pub fn set_header_data(
         &mut self,
         cx: &mut Cx,
@@ -170,14 +169,22 @@ impl ShadTableHeaderView {
         widths: &[f64],
         total_width: f64,
     ) {
+        let mut changed = false;
         if self.headers != headers {
             self.headers = headers.to_vec();
+            changed = true;
         }
         if self.widths != widths {
             self.widths = widths.to_vec();
+            changed = true;
         }
-        self.walk.width = Size::Fixed(total_width);
-        self.area.redraw(cx);
+        if !matches!(self.walk.width, Size::Fixed(width) if width == total_width) {
+            self.walk.width = Size::Fixed(total_width);
+            changed = true;
+        }
+        if changed {
+            self.area.redraw(cx);
+        }
     }
 }
 
@@ -255,7 +262,6 @@ pub struct ShadTableRowView {
 }
 
 impl ShadTableRowView {
-    // Optimization: avoid repeated allocation in render loop by taking slices and cloning only when data changes
     #[allow(clippy::too_many_arguments)]
     pub fn set_row_data(
         &mut self,
@@ -267,17 +273,34 @@ impl ShadTableRowView {
         selected: bool,
         striped: bool,
     ) {
-        self.row_index = row_index;
+        let mut changed = false;
+        if self.row_index != row_index {
+            self.row_index = row_index;
+            changed = true;
+        }
         if self.cells != cells {
             self.cells = cells.to_vec();
+            changed = true;
         }
         if self.widths != widths {
             self.widths = widths.to_vec();
+            changed = true;
         }
-        self.selected = selected;
-        self.striped = striped;
-        self.walk.width = Size::Fixed(total_width);
-        self.area.redraw(cx);
+        if self.selected != selected {
+            self.selected = selected;
+            changed = true;
+        }
+        if self.striped != striped {
+            self.striped = striped;
+            changed = true;
+        }
+        if !matches!(self.walk.width, Size::Fixed(width) if width == total_width) {
+            self.walk.width = Size::Fixed(total_width);
+            changed = true;
+        }
+        if changed {
+            self.area.redraw(cx);
+        }
     }
 
     pub fn clicked(&self, actions: &Actions) -> bool {
