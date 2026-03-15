@@ -224,3 +224,13 @@ pub const COLLAPSIBLE_PREVIEW_CODE: &str = r#"mod.widgets.ShadCollapsible{
 // if let Some(progress) = details.animation_progress(actions) {
 //     log!("Collapsible animation progress: {}", progress);
 // }"#;
+
+pub const ICON_GALLERY_PREVIEW_CODE: &str = r#"// The Icons page is generated from makepad-icon/resources/icons/*.svg.
+//
+// 1) Sync assets:
+// python3 makepad-icon/scripts/download_lucide_icons.py --clean
+//
+// 2) Build:
+// cargo check -p makepad-icon
+//
+// 3) Open /icons in makepad-gallery to preview all generated icon components."#;

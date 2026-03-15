@@ -12,6 +12,7 @@ pub mod overlays;
 pub use components::{
     ACCORDION_PREVIEW_CODE, AVATAR_PREVIEW_CODE, BADGE_PREVIEW_CODE, BUTTON_GROUP_PREVIEW_CODE,
     BUTTON_PREVIEW_CODE, CARD_PREVIEW_CODE, CAROUSEL_PREVIEW_CODE, COLLAPSIBLE_PREVIEW_CODE,
+    ICON_GALLERY_PREVIEW_CODE,
 };
 pub use data::{CHART_PREVIEW_CODE, TABLE_PREVIEW_CODE};
 pub use feedback::{
@@ -57,6 +58,7 @@ pub fn snippet_code(key: GallerySnippetKey) -> &'static str {
         GallerySnippetKey::DatePicker => DATE_PICKER_PREVIEW_CODE,
         GallerySnippetKey::Dialog => DIALOG_PREVIEW_CODE,
         GallerySnippetKey::Input => INPUT_PREVIEW_CODE,
+        GallerySnippetKey::IconGallery => ICON_GALLERY_PREVIEW_CODE,
         GallerySnippetKey::InputOtp => INPUT_OTP_PREVIEW_CODE,
         GallerySnippetKey::Kbd => KBD_PREVIEW_CODE,
         GallerySnippetKey::Label => LABEL_PREVIEW_CODE,

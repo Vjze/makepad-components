@@ -22,6 +22,7 @@ pub enum GallerySnippetKey {
     DatePicker,
     Dialog,
     Input,
+    IconGallery,
     InputOtp,
     Kbd,
     Label,
