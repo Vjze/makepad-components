@@ -40,6 +40,13 @@ fn query_map_decodes_and_builds() {
 }
 
 #[test]
+fn build_query_string_empty_map() {
+    let map = HashMap::new();
+    let rebuilt = build_query_string(&map);
+    assert_eq!(rebuilt, "");
+}
+
+#[test]
 fn normalize_path_cow_borrows_when_possible() {
     let borrowed = normalize_path_cow("/already/normalized");
     assert!(matches!(borrowed, std::borrow::Cow::Borrowed(_)));
