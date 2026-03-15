@@ -296,7 +296,9 @@ impl ShadTableRowView {
         if row_changed {
             self.row_index = row_index;
             // Optimization: PortalList recycles row widgets for different row indices while scrolling.
-            // Previously: we still compared `self.cells != cells` first, scanning the whole row before cloning.
+            // A changed row index means this widget now represents a different logical row, so its data
+            // must be refreshed anyway. Previously: we still compared `self.cells != cells` first,
+            // scanning the whole row before cloning.
             // Now: for recycled rows, we skip that equality scan and just refresh the row buffer in-place.
             replace_vec_contents(&mut self.cells, cells);
             changed = true;
@@ -834,14 +836,16 @@ mod tests {
     }
 
     #[test]
-    fn replace_vec_contents_benchmark() {
-        let updates = 50_000usize;
+    fn replace_vec_contents_performance_comparison() {
+        // Performance comparison helper: this prints timings for manual verification.
+        // It intentionally does not assert wall-clock durations to avoid flaky CI failures.
+        const BENCHMARK_ITERATIONS: usize = 50_000;
         let source_a = vec!["A".to_string(), "B".to_string(), "C".to_string()];
         let source_b = vec!["X".to_string(), "Y".to_string(), "Z".to_string()];
 
         let mut old = source_b.clone();
         let old_start = Instant::now();
-        for _ in 0..updates {
+        for _ in 0..BENCHMARK_ITERATIONS {
             // Previous row-change path: compare full row, then allocate a new Vec.
             if old.as_slice() != source_a.as_slice() {
                 old = source_a.to_vec();
@@ -855,7 +859,7 @@ mod tests {
 
         let mut optimized = source_b.clone();
         let new_start = Instant::now();
-        for _ in 0..updates {
+        for _ in 0..BENCHMARK_ITERATIONS {
             // Optimized row-change path: no row equality scan, reuse allocation.
             replace_vec_contents(&mut optimized, &source_a);
             replace_vec_contents(&mut optimized, &source_b);
@@ -863,7 +867,7 @@ mod tests {
         }
         let new_elapsed = new_start.elapsed();
 
-        eprintln!(
+        println!(
             "replace_vec_contents_if_changed benchmark: old={old_elapsed:?}, new={new_elapsed:?}"
         );
     }
