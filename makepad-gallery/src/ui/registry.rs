@@ -201,6 +201,17 @@ macro_rules! gallery_page_entries {
                 snippet: Dialog,
             }
             {
+                title: "Icons",
+                route: "/icons",
+                page: icon_gallery_page,
+                widget: GalleryIconGalleryPage,
+                sidebar_id: sidebar_icons,
+                sidebar_label: "Icons",
+                section: "Components",
+                shortcut: "IC",
+                snippet: IconGallery,
+            }
+            {
                 title: "Input",
                 route: "/input",
                 page: input_page,
