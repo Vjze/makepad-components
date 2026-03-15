@@ -134,14 +134,26 @@ fn replace_vec_contents<T: Clone>(dst: &mut Vec<T>, src: &[T]) {
     dst.extend_from_slice(src);
 }
 
+/// Ensures the table width buffer tracks the current column count while reusing allocations.
+///
+/// The common case for virtualized updates is a stable column count, so this returns early and
+/// avoids rebuilding the Vec every sync.
 fn sync_default_widths(widths: &mut Vec<f64>, column_count: usize, default_width: f64) {
-    if widths.len() == column_count {
+    let previous_len = widths.len();
+    if previous_len == column_count {
+        if widths.iter().any(|width| *width != default_width) {
+            widths.fill(default_width);
+        }
         return;
     }
     // Optimization: virtual-window updates call sync_layout often, but the column count is usually
     // stable. Resizing only when the count changes avoids allocating a brand-new width Vec each
     // update (`vec![..]`), reducing heap churn while scrolling large tables.
+    let shrinking = previous_len > column_count;
     widths.resize(column_count, default_width);
+    if shrinking && widths.iter().any(|width| *width != default_width) {
+        widths.fill(default_width);
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -496,7 +508,7 @@ impl ShadTable {
             column_count,
             DEFAULT_COLUMN_WIDTH,
         );
-        self.total_width = (column_count as f64 * DEFAULT_COLUMN_WIDTH) + 24.0;
+        self.total_width = self.resolved_widths.iter().sum::<f64>() + 24.0;
         self.selected_row = clamp_selected_row(self.selected_row, self.data_row_count());
 
         self.view
@@ -881,7 +893,7 @@ mod tests {
     }
 
     #[test]
-    fn sync_default_widths_reuses_allocation_for_stable_column_count() {
+    fn test_sync_default_widths_reuses_allocation() {
         let mut widths = vec![160.0, 160.0, 160.0, 160.0];
         let ptr_before = widths.as_ptr();
         let capacity_before = widths.capacity();
@@ -891,14 +903,14 @@ mod tests {
     }
 
     #[test]
-    fn sync_default_widths_performance_comparison() {
+    fn test_sync_default_widths_performance_comparison() {
         // Performance comparison helper: this prints timings for manual verification.
         // It intentionally does not assert wall-clock durations to avoid flaky CI failures.
         const BENCHMARK_ITERATIONS: usize = 100_000;
         const COLUMN_COUNT: usize = 8;
 
         let old_start = Instant::now();
-        let mut old = vec![160.0; COLUMN_COUNT];
+        let mut old = Vec::new();
         for _ in 0..BENCHMARK_ITERATIONS {
             old = vec![160.0; COLUMN_COUNT];
             black_box(&old);
@@ -907,12 +919,32 @@ mod tests {
 
         let new_start = Instant::now();
         let mut optimized = vec![160.0; COLUMN_COUNT];
+        let optimized_capacity = optimized.capacity();
         for _ in 0..BENCHMARK_ITERATIONS {
             sync_default_widths(&mut optimized, COLUMN_COUNT, 160.0);
             black_box(&optimized);
         }
         let new_elapsed = new_start.elapsed();
+        assert_eq!(optimized.capacity(), optimized_capacity);
+        assert_eq!(old, optimized);
 
         println!("sync_default_widths benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
+    }
+
+    #[test]
+    fn test_sync_default_widths_resizes_with_existing_capacity() {
+        let mut widths = vec![160.0; 8];
+        widths.reserve(8);
+        let capacity_before = widths.capacity();
+
+        sync_default_widths(&mut widths, 12, 160.0);
+        assert_eq!(widths.len(), 12);
+        assert_eq!(widths.capacity(), capacity_before);
+        assert!(widths.iter().all(|width| *width == 160.0));
+
+        sync_default_widths(&mut widths, 8, 160.0);
+        assert_eq!(widths.len(), 8);
+        assert_eq!(widths.capacity(), capacity_before);
+        assert!(widths.iter().all(|width| *width == 160.0));
     }
 }
