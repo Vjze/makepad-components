@@ -747,9 +747,7 @@ impl Widget for ShadTable {
         let list = self
             .view
             .portal_list(cx, ids!(table_view.scroll.content.list));
-        let list_widget = self
-            .view
-            .widget(cx, ids!(table_view.scroll.content.list));
+        let list_widget = self.view.widget(cx, ids!(table_view.scroll.content.list));
         self.view.handle_event(cx, event, scope);
 
         if let Event::Scroll(scroll_event) = event {
