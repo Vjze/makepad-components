@@ -13,22 +13,13 @@ use std::ops::Deref;
 use std::sync::Arc;
 
 fn next_non_empty_segment<'a>(segments: &mut std::str::Split<'a, char>) -> Option<&'a str> {
-    while let Some(seg) = segments.next() {
-        if !seg.is_empty() {
-            return Some(seg);
-        }
-    }
-    None
+    segments.by_ref().find(|seg| !seg.is_empty())
 }
 
 fn collect_tail(first: Option<&str>, segments: &mut std::str::Split<'_, char>) -> String {
     let mut out = String::new();
     let push_segment = |segment: &str, out: &mut String| {
-        if out.is_empty() {
-            out.push('/');
-        } else {
-            out.push('/');
-        }
+        out.push('/');
         out.push_str(segment);
     };
 
@@ -178,17 +169,13 @@ impl RoutePattern {
         for segment in &self.segments {
             match segment {
                 RouteSegment::Static(expected) => {
-                    let Some(actual) = next_non_empty_segment(&mut path_segments) else {
-                        return None;
-                    };
+                    let actual = next_non_empty_segment(&mut path_segments)?;
                     if actual != expected {
                         return None;
                     }
                 }
                 RouteSegment::Dynamic { key, .. } => {
-                    let Some(value) = next_non_empty_segment(&mut path_segments) else {
-                        return None;
-                    };
+                    let value = next_non_empty_segment(&mut path_segments)?;
                     // Use from_str_with_intern to store the string so it can be retrieved later
                     use makepad_live_id::InternLiveId;
                     let param_value = LiveId::from_str_with_intern(value, InternLiveId::Yes);
@@ -235,17 +222,13 @@ impl RoutePattern {
         for (pattern_idx, segment) in self.segments.iter().enumerate() {
             match segment {
                 RouteSegment::Static(expected) => {
-                    let Some(actual) = next_non_empty_segment(&mut path_segments) else {
-                        return None;
-                    };
+                    let actual = next_non_empty_segment(&mut path_segments)?;
                     if actual != expected {
                         return None;
                     }
                 }
                 RouteSegment::Dynamic { key, .. } => {
-                    let Some(value) = next_non_empty_segment(&mut path_segments) else {
-                        return None;
-                    };
+                    let value = next_non_empty_segment(&mut path_segments)?;
                     use makepad_live_id::InternLiveId;
                     let param_value = LiveId::from_str_with_intern(value, InternLiveId::Yes);
                     params.add(*key, param_value);

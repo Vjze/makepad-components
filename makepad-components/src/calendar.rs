@@ -156,6 +156,8 @@ pub struct ShadCalendar {
     today: Option<ShadDate>,
     #[rust]
     hovered_target: Option<CalendarTarget>,
+    #[rust]
+    month_title_cache: String,
 
     #[action_data]
     #[rust]
@@ -171,6 +173,7 @@ impl ScriptHook for ShadCalendar {
             .unwrap_or_else(ShadDate::fallback_visible_month);
         self.visible_year = year;
         self.visible_month = month;
+        self.update_month_title_cache();
     }
 
     fn on_after_apply(
@@ -186,6 +189,7 @@ impl ScriptHook for ShadCalendar {
             if let Some(date) = parsed {
                 self.visible_year = date.year;
                 self.visible_month = date.month;
+                self.update_month_title_cache();
             }
             self.area.redraw(cx);
         });
@@ -230,12 +234,18 @@ impl ShadCalendar {
         }
     }
 
-    fn month_title(&self) -> String {
-        format!(
+    fn update_month_title_cache(&mut self) {
+        // Optimization: avoid repeated string allocations in UI draw_walk loops
+        // Previously: allocated a new String using `format!()` on every frame
+        // Now: reuse the `month_title_cache` string capacity, eliminating allocation overhead
+        use std::fmt::Write;
+        self.month_title_cache.clear();
+        let _ = write!(
+            &mut self.month_title_cache,
             "{} {}",
             MONTH_LABELS[(self.visible_month.saturating_sub(1)) as usize],
             self.visible_year
-        )
+        );
     }
 
     fn month_grid(&self) -> Vec<CalendarCell> {
@@ -342,6 +352,7 @@ impl ShadCalendar {
         if let Some(date) = value {
             self.visible_year = date.year;
             self.visible_month = date.month;
+            self.update_month_title_cache();
             cx.widget_action_with_data(
                 &self.action_data,
                 self.widget_uid(),
@@ -368,6 +379,7 @@ impl ShadCalendar {
         }
         self.visible_year = year;
         self.visible_month = clamped_month;
+        self.update_month_title_cache();
         self.area.redraw(cx);
     }
 
@@ -487,7 +499,7 @@ impl Widget for ShadCalendar {
 
         self.draw_header_text.color = self.color_primary;
         self.draw_header_text
-            .draw_abs(cx, layout.title_pos, &self.month_title());
+            .draw_abs(cx, layout.title_pos, &self.month_title_cache);
 
         for (index, label) in WEEKDAY_LABELS.iter().enumerate() {
             let label_x = layout.grid_origin.x
