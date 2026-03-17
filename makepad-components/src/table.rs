@@ -123,8 +123,6 @@ const TABLE_ROW_HEIGHT: f64 = 40.0;
 const CHAR_WIDTH_FACTOR: f64 = 0.6;
 const HEADER_FONT_SIZE: f64 = 10.0;
 const CELL_FONT_SIZE: f64 = 11.0;
-const CELL_PADDING: f64 = 12.0;
-
 fn estimate_text_width(text: &str, font_size: f64) -> f64 {
     text.len() as f64 * font_size * CHAR_WIDTH_FACTOR
 }
@@ -488,6 +486,8 @@ pub struct ShadTable {
     #[rust]
     rows_source: ScriptValue,
     #[rust]
+    custom_row_template_ids: Vec<LiveId>,
+    #[rust]
     virtual_window_start: usize,
     #[rust]
     resolved_widths: Vec<f64>,
@@ -548,8 +548,14 @@ impl ShadTable {
         item.draw_all(cx, &mut Scope::empty());
     }
 
+    fn has_custom_rows(&self) -> bool {
+        !self.custom_row_template_ids.is_empty()
+    }
+
     fn data_row_count(&self) -> usize {
-        if self.virtual_total_rows > 0 {
+        if self.has_custom_rows() {
+            self.custom_row_template_ids.len()
+        } else if self.virtual_total_rows > 0 {
             self.virtual_total_rows
         } else {
             self.rows_data.len()
@@ -593,9 +599,17 @@ impl ShadTable {
     }
 
     fn sync_layout(&mut self, cx: &mut Cx) {
-        let column_count = resolved_column_count(&self.headers, &self.rows_data);
+        let custom_row_mode = self.has_custom_rows();
+        let column_count = if custom_row_mode {
+            1
+        } else {
+            resolved_column_count(&self.headers, &self.rows_data).max(1)
+        };
 
-        if self.auto_fill_width && !self.rows_data.is_empty() && self.virtual_total_rows == 0 {
+        if custom_row_mode {
+            sync_default_widths(&mut self.resolved_widths, column_count, DEFAULT_COLUMN_WIDTH);
+        } else if self.auto_fill_width && !self.rows_data.is_empty() && self.virtual_total_rows == 0
+        {
             let content_widths = calculate_content_based_widths(&self.headers, &self.rows_data);
             if self.resolved_widths.len() != content_widths.len() {
                 self.resolved_widths = content_widths;
@@ -624,6 +638,9 @@ impl ShadTable {
         self.view
             .label(cx, ids!(table_view.caption_label))
             .set_visible(cx, !self.caption.as_ref().is_empty());
+        self.view
+            .widget(cx, ids!(table_view.scroll.content.header))
+            .set_visible(cx, !custom_row_mode && !self.headers.is_empty());
 
         if let Some(mut header) = self
             .view
@@ -654,6 +671,11 @@ impl ShadTable {
     }
 
     fn draw_rows(&mut self, cx: &mut Cx2d, list: &mut PortalList) {
+        if self.has_custom_rows() {
+            self.draw_custom_rows(cx, list);
+            return;
+        }
+
         if self.data_row_count() == 0 {
             let rows = Self::empty_fill_rows(list, cx, 0).max(1);
             list.set_item_range(cx, 0, rows);
@@ -707,6 +729,11 @@ impl ShadTable {
         widths: &Arc<[f64]>,
         total_width: f64,
     ) {
+        if self.has_custom_rows() {
+            self.draw_custom_rows(cx, list);
+            return;
+        }
+
         if self.data_row_count() == 0 {
             let rows = Self::empty_fill_rows(list, cx, 0).max(1);
             list.set_item_range(cx, 0, rows);
@@ -752,8 +779,39 @@ impl ShadTable {
         }
     }
 
+    fn draw_custom_rows(&mut self, cx: &mut Cx2d, list: &mut PortalList) {
+        let row_count = self.data_row_count();
+        if row_count == 0 {
+            let rows = Self::empty_fill_rows(list, cx, 0).max(1);
+            list.set_item_range(cx, 0, rows);
+            while let Some(item_id) = list.next_visible_item(cx) {
+                let label = if item_id == 0 {
+                    self.empty_message.as_ref()
+                } else {
+                    ""
+                };
+                self.draw_empty_row(cx, list, item_id, label);
+            }
+            return;
+        }
+
+        let empty_rows = Self::empty_fill_rows(list, cx, row_count);
+        list.set_item_range(cx, 0, row_count + empty_rows);
+        while let Some(item_id) = list.next_visible_item(cx) {
+            if item_id >= row_count {
+                self.draw_empty_row(cx, list, item_id, "");
+                continue;
+            }
+            let Some(template) = self.custom_row_template_ids.get(item_id).copied() else {
+                self.draw_empty_row(cx, list, item_id, "");
+                continue;
+            };
+            list.item(cx, item_id, template).draw_all(cx, &mut Scope::empty());
+        }
+    }
+
     fn maybe_request_virtual_window(&self, cx: &mut Cx, list: &PortalListRef) {
-        if self.virtual_total_rows == 0 || self.rows_data.is_empty() {
+        if self.has_custom_rows() || self.virtual_total_rows == 0 || self.rows_data.is_empty() {
             return;
         }
 
@@ -801,6 +859,7 @@ impl ShadTable {
     }
 
     pub fn set_rows(&mut self, cx: &mut Cx, rows: Vec<Vec<String>>) {
+        self.custom_row_template_ids.clear();
         self.virtual_total_rows = 0;
         self.virtual_window_start = 0;
         self.rows_data = into_arc_rows(rows);
@@ -811,6 +870,7 @@ impl ShadTable {
     }
 
     pub fn set_virtual_total_rows(&mut self, cx: &mut Cx, total_rows: usize) {
+        self.custom_row_template_ids.clear();
         if self.virtual_total_rows == total_rows {
             return;
         }
@@ -828,6 +888,7 @@ impl ShadTable {
     }
 
     pub fn set_virtual_window(&mut self, cx: &mut Cx, start_row: usize, rows: Vec<Vec<String>>) {
+        self.custom_row_template_ids.clear();
         if self.virtual_total_rows == 0 {
             self.set_rows(cx, rows);
             return;
@@ -856,6 +917,20 @@ impl ShadTable {
         self.selected_row = clamp_selected_row(self.selected_row, row_count);
         self.sync_layout(cx);
         self.view.redraw(cx);
+    }
+
+    pub fn set_custom_row_templates(&mut self, cx: &mut Cx, templates: Vec<LiveId>) {
+        let changed = self.custom_row_template_ids != templates;
+        self.custom_row_template_ids = templates;
+        self.virtual_total_rows = 0;
+        self.virtual_window_start = 0;
+        self.rows_data.clear();
+        self.rows_source = ScriptValue::default();
+        self.selected_row = None;
+        if changed {
+            self.sync_layout(cx);
+            self.view.redraw(cx);
+        }
     }
 
     pub fn set_selected_row(&mut self, cx: &mut Cx, selected_row: Option<usize>) {
@@ -1030,6 +1105,12 @@ impl ShadTableRef {
     pub fn set_virtual_window(&self, cx: &mut Cx, start_row: usize, rows: Vec<Vec<String>>) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.set_virtual_window(cx, start_row, rows);
+        }
+    }
+
+    pub fn set_custom_row_templates(&self, cx: &mut Cx, templates: Vec<LiveId>) {
+        if let Some(mut inner) = self.borrow_mut() {
+            inner.set_custom_row_templates(cx, templates);
         }
     }
 
