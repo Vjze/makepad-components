@@ -894,6 +894,7 @@ impl ShadTable {
     }
 
     pub fn set_virtual_window(&mut self, cx: &mut Cx, start_row: usize, rows: Vec<Vec<String>>) {
+        let cleared_custom_rows = !self.custom_row_template_ids.is_empty();
         self.custom_row_template_ids = Arc::default();
         if self.virtual_total_rows == 0 {
             self.set_rows(cx, rows);
@@ -921,7 +922,10 @@ impl ShadTable {
             self.rows_data.truncate(max_window_len);
         }
         self.selected_row = clamp_selected_row(self.selected_row, row_count);
-        self.sync_layout(cx);
+        let column_count = resolved_column_count(&self.headers, &self.rows_data).max(1);
+        if cleared_custom_rows || self.resolved_widths.len() != column_count {
+            self.sync_layout(cx);
+        }
         self.view.redraw(cx);
     }
 
