@@ -245,6 +245,8 @@ pub struct GalleryCommandPalette {
     #[rust]
     filtered_indices: Vec<usize>,
     #[rust]
+    filtered_indices_scratch: Vec<usize>,
+    #[rust]
     active_index: usize,
     #[rust]
     focus_search_on_next_draw: bool,
@@ -350,19 +352,19 @@ impl GalleryCommandPalette {
         let query = self.normalize_query();
         let search_terms = command_search_terms();
         let previous_active = self.active_index;
-        let mut next_filtered_indices = Vec::new();
+        self.filtered_indices_scratch.clear();
 
         for (index, _command) in catalog::entries().iter().enumerate() {
             if query.is_empty()
                 || search_terms[index].title.contains(&query)
                 || search_terms[index].section.contains(&query)
             {
-                next_filtered_indices.push(index);
+                self.filtered_indices_scratch.push(index);
             }
         }
-        let results_changed = self.filtered_indices != next_filtered_indices;
+        let results_changed = self.filtered_indices != self.filtered_indices_scratch;
         if results_changed {
-            self.filtered_indices = next_filtered_indices;
+            std::mem::swap(&mut self.filtered_indices, &mut self.filtered_indices_scratch);
             // PortalList reuses item widgets, so clear row-style cache when the backing list
             // changes to avoid carrying old active styles across recycled items.
             self.row_active_by_uid.clear();

@@ -253,6 +253,23 @@ impl ScriptHook for ShadSonner {
 }
 
 impl ShadSonner {
+    fn visible_toasts_snapshot(
+        state: &SonnerGlobalState,
+    ) -> [Option<SonnerToastKind>; MAX_VISIBLE_TOASTS] {
+        let mut visible = [None; MAX_VISIBLE_TOASTS];
+        for (index, kind) in state
+            .toasts
+            .iter()
+            .rev()
+            .take(MAX_VISIBLE_TOASTS)
+            .copied()
+            .enumerate()
+        {
+            visible[index] = Some(kind);
+        }
+        visible
+    }
+
     fn default_toast_kind(&self) -> SonnerToastKind {
         match self.toast_kind.as_ref() {
             "description" => SonnerToastKind::Description,
@@ -282,18 +299,10 @@ impl ShadSonner {
         is_open
     }
 
-    fn visible_toasts(&self, cx: &mut Cx) -> Vec<SonnerToastKind> {
+    fn visible_toasts(&self, cx: &mut Cx) -> [Option<SonnerToastKind>; MAX_VISIBLE_TOASTS] {
         let global = cx.global::<SonnerGlobal>().clone();
-        let visible = global
-            .state
-            .borrow()
-            .toasts
-            .iter()
-            .rev()
-            .take(MAX_VISIBLE_TOASTS)
-            .copied()
-            .collect();
-        visible
+        let state = global.state.borrow();
+        Self::visible_toasts_snapshot(&state)
     }
 
     fn sync_overlay_slot(
@@ -329,21 +338,12 @@ impl ShadSonner {
         let global = cx.global::<SonnerGlobal>().clone();
         let (host_overlay, visible_toasts) = {
             let state = global.state.borrow();
-            (
-                state.host_overlay.clone(),
-                state
-                    .toasts
-                    .iter()
-                    .rev()
-                    .take(MAX_VISIBLE_TOASTS)
-                    .copied()
-                    .collect::<Vec<_>>(),
-            )
+            (state.host_overlay.clone(), Self::visible_toasts_snapshot(&state))
         };
 
         if let Some(overlay) = host_overlay {
             if let Some(mut popup) = overlay.borrow_mut::<PopupNotification>() {
-                if visible_toasts.is_empty() {
+                if visible_toasts[0].is_none() {
                     popup.close(cx);
                 } else {
                     popup.open(cx);
@@ -351,7 +351,7 @@ impl ShadSonner {
             }
 
             for index in 0..MAX_VISIBLE_TOASTS {
-                Self::sync_overlay_slot(cx, &overlay, index, visible_toasts.get(index).copied());
+                Self::sync_overlay_slot(cx, &overlay, index, visible_toasts[index]);
             }
             overlay.redraw(cx);
         }
@@ -456,7 +456,7 @@ impl ShadSonner {
 
         let visible_toasts = self.visible_toasts(cx);
         for index in 0..MAX_VISIBLE_TOASTS {
-            Self::sync_overlay_slot(cx, &self.overlay, index, visible_toasts.get(index).copied());
+            Self::sync_overlay_slot(cx, &self.overlay, index, visible_toasts[index]);
         }
         self.sync_overlay_open_state(cx);
     }
