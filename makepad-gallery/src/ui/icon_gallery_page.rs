@@ -1,6 +1,7 @@
 use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::*;
 use makepad_components::table::ShadTableWidgetExt;
+use std::sync::Arc;
 
 #[derive(Clone, Copy)]
 struct IconGalleryEntry {
@@ -144,7 +145,7 @@ pub struct GalleryIconGalleryPage {
     #[rust]
     widget_name_lower: Vec<String>,
     #[rust]
-    filtered_template_ids: Vec<LiveId>,
+    filtered_template_ids: Arc<[LiveId]>,
     #[rust]
     filtered_template_ids_scratch: Vec<LiveId>,
     #[rust]
@@ -229,8 +230,8 @@ impl GalleryIconGalleryPage {
             .iter()
             .map(|entry| entry.widget_name.to_ascii_lowercase())
             .collect();
-        self.filtered_template_ids.clear();
-        self.filtered_template_ids_scratch.clear();
+        self.filtered_template_ids = Arc::default();
+        self.filtered_template_ids_scratch = Vec::with_capacity(ICON_GALLERY_ENTRIES.len());
     }
 
     fn apply_filter(&mut self, cx: &mut Cx) {
@@ -256,14 +257,14 @@ impl GalleryIconGalleryPage {
             }
         }
 
-        if self.filtered_template_ids != self.filtered_template_ids_scratch {
-            std::mem::swap(
-                &mut self.filtered_template_ids,
+        if self.filtered_template_ids.as_ref() != self.filtered_template_ids_scratch.as_slice() {
+            self.filtered_template_ids = Arc::from(std::mem::take(
                 &mut self.filtered_template_ids_scratch,
-            );
+            ));
+            self.filtered_template_ids_scratch = Vec::with_capacity(self.template_live_ids.len());
             self.view
                 .shad_table(cx, ids!(icon_table))
-                .set_custom_row_templates(cx, self.filtered_template_ids.clone());
+                .set_custom_row_templates(cx, Arc::clone(&self.filtered_template_ids));
             changed = true;
         }
 
