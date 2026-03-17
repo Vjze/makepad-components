@@ -870,8 +870,9 @@ impl ShadTable {
     }
 
     pub fn set_virtual_total_rows(&mut self, cx: &mut Cx, total_rows: usize) {
+        let cleared_custom_rows = !self.custom_row_template_ids.is_empty();
         self.custom_row_template_ids.clear();
-        if self.virtual_total_rows == total_rows {
+        if self.virtual_total_rows == total_rows && !cleared_custom_rows {
             return;
         }
         self.virtual_total_rows = total_rows;
