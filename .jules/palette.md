@@ -9,3 +9,7 @@
 ## 2026-03-17 – [Expose keyboard-only actions in shell chrome]
 **Learning:** In the gallery shell, the command palette already existed but was hard to discover because it mostly relied on `Cmd/Ctrl + K` and a docs page.
 **Action:** When a Makepad app has a global launcher or shortcut-driven feature, add a visible header trigger near navigation controls so mouse and first-run users can find it immediately.
+
+## 2026-03-17 – [Keep live search controls stable]
+**Learning:** In the gallery, a live-filtering search field became less obvious when a submit-style `Search` button implied delayed execution and the `Clear` button appeared and disappeared, shifting the toolbar.
+**Action:** For live search in this codebase, keep reset actions in a stable slot, disable them when idle, and label any secondary button by what it actually does, like refocusing the field.

@@ -35,10 +35,13 @@ macro_rules! icon_gallery_page_generated {
 
                     clear_search_btn := ShadButtonOutline{
                         text: "Clear"
-                        visible: false
                     }
 
-                    icon_search_btn := ShadButtonSm{text: "Search"}
+                    icon_search_btn := ShadButtonSm{text: "Focus field"}
+                }
+
+                search_hint := ShadFieldDescription{
+                    text: "Results update as you type. Press Esc or Clear to reset the search."
                 }
 
                 icon_results_summary := ShadFieldDescription{
@@ -277,7 +280,7 @@ impl GalleryIconGalleryPage {
 
         self.view
             .button(cx, ids!(clear_search_btn))
-            .set_visible(cx, !query.is_empty());
+            .set_enabled(cx, !query.is_empty());
 
         match first_match_index {
             Some(target_entry_index) => {
@@ -337,7 +340,6 @@ impl Widget for GalleryIconGalleryPage {
             }
             if self.view.button(cx, ids!(icon_search_btn)).clicked(actions) {
                 search_input.set_key_focus(cx);
-                next_query = Some(search_input.text());
             }
             if self.view.button(cx, ids!(clear_search_btn)).clicked(actions) {
                 search_input.set_text(cx, "");
