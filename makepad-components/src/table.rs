@@ -67,6 +67,7 @@ script_mod! {
         empty_message: "No rows available."
         selectable: true
         auto_fill_width: true
+        text_align: 0.5
         virtual_total_rows: 0
         headers: ["Name" "Email" "Role"]
         rows: []
@@ -223,6 +224,8 @@ pub struct ShadTableHeaderView {
     border_color: Vec4,
     #[live]
     text_color: Vec4,
+    #[live(0.5)]
+    text_align: f64,
     #[rust]
     area: Area,
     #[rust]
@@ -238,6 +241,7 @@ impl ShadTableHeaderView {
         headers: &[String],
         widths: &[f64],
         total_width: f64,
+        text_align: f64,
     ) {
         let mut changed = false;
         if self.headers != headers {
@@ -246,6 +250,10 @@ impl ShadTableHeaderView {
         }
         if self.widths != widths {
             self.widths = widths.to_vec();
+            changed = true;
+        }
+        if self.text_align != text_align {
+            self.text_align = text_align;
             changed = true;
         }
         if !matches!(self.walk.width, Size::Fixed(width) if width == total_width) {
@@ -276,13 +284,10 @@ impl Widget for ShadTableHeaderView {
                 .copied()
                 .unwrap_or(DEFAULT_COLUMN_WIDTH);
             let text_width = estimate_text_width(header, HEADER_FONT_SIZE);
-            let offset_x = (width - text_width) / 2.0;
+            let align_offset = (width - text_width) * self.text_align;
             self.draw_text.color = self.text_color;
-            self.draw_text.draw_abs(
-                cx,
-                dvec2(x + offset_x.max(CELL_PADDING), rect.pos.y + 12.0),
-                header,
-            );
+            self.draw_text
+                .draw_abs(cx, dvec2(x + align_offset, rect.pos.y + 12.0), header);
             x += width;
         }
 
@@ -317,6 +322,8 @@ pub struct ShadTableRowView {
     fill_selected: Vec4,
     #[live]
     fill_striped: Vec4,
+    #[live(0.5)]
+    text_align: f64,
     #[rust]
     area: Area,
     #[rust]
@@ -345,6 +352,7 @@ impl ShadTableRowView {
         cells: &Arc<[String]>,
         widths: &Arc<[f64]>,
         total_width: f64,
+        text_align: f64,
         selected: bool,
         striped: bool,
     ) {
@@ -357,6 +365,10 @@ impl ShadTableRowView {
             changed = true;
         }
         if replace_arc_slice_if_changed(&mut self.widths, widths) {
+            changed = true;
+        }
+        if self.text_align != text_align {
+            self.text_align = text_align;
             changed = true;
         }
         if self.selected != selected {
@@ -435,13 +447,10 @@ impl Widget for ShadTableRowView {
                 .copied()
                 .unwrap_or(DEFAULT_COLUMN_WIDTH);
             let text_width = estimate_text_width(cell, CELL_FONT_SIZE);
-            let offset_x = (width - text_width) / 2.0;
+            let align_offset = (width - text_width) * self.text_align;
             self.draw_text.color = self.text_color;
-            self.draw_text.draw_abs(
-                cx,
-                dvec2(x + offset_x.max(CELL_PADDING), rect.pos.y + 14.0),
-                cell,
-            );
+            self.draw_text
+                .draw_abs(cx, dvec2(x + align_offset, rect.pos.y + 14.0), cell);
             x += width;
         }
 
@@ -469,6 +478,8 @@ pub struct ShadTable {
     selectable: bool,
     #[live(true)]
     auto_fill_width: bool,
+    #[live(0.5)]
+    text_align: f64,
     #[live]
     virtual_total_rows: usize,
 
@@ -585,7 +596,13 @@ impl ShadTable {
             .widget_flood(cx, ids!(table_view.scroll.content.header))
             .borrow_mut::<ShadTableHeaderView>()
         {
-            header.set_header_data(cx, &self.headers, &self.resolved_widths, self.total_width);
+            header.set_header_data(
+                cx,
+                &self.headers,
+                &self.resolved_widths,
+                self.total_width,
+                self.text_align,
+            );
         }
 
         let mut content = self.view.view(cx, ids!(table_view.scroll.content));
@@ -640,6 +657,7 @@ impl ShadTable {
                     row,
                     shared_widths,
                     self.total_width,
+                    self.text_align,
                     self.selected_row == Some(item_id),
                     item_id & 1 == 1,
                 );
@@ -691,6 +709,7 @@ impl ShadTable {
                     row,
                     widths,
                     total_width,
+                    self.text_align,
                     self.selected_row == Some(item_id),
                     item_id & 1 == 1,
                 );
@@ -923,7 +942,13 @@ impl Widget for ShadTable {
                     .widget_flood(cx, ids!(table_view.scroll.content.header))
                     .borrow_mut::<ShadTableHeaderView>()
                 {
-                    header.set_header_data(cx, &self.headers, &shared_widths, new_total);
+                    header.set_header_data(
+                        cx,
+                        &self.headers,
+                        &shared_widths,
+                        new_total,
+                        self.text_align,
+                    );
                 }
 
                 let mut content = self.view.view(cx, ids!(table_view.scroll.content));
