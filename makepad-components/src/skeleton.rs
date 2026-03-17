@@ -10,7 +10,7 @@ script_mod! {
         width: 100
         height: 20
         animate: true
-        animation_fps: 30.0
+        animation_fps: 24.0
         shimmer_speed: 2.0
 
         draw_bg +: {
@@ -67,7 +67,7 @@ pub struct ShadSkeleton {
     draw_bg: DrawQuad,
     #[live(true)]
     animate: bool,
-    #[live(30.0)]
+    #[live(24.0)]
     animation_fps: f64,
     #[live(2.0)]
     shimmer_speed: f32,

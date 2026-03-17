@@ -83,6 +83,8 @@ pub struct ShadContextMenu {
     popup_menu: ScriptValue,
     #[rust]
     popup_menu_state: Option<PopupMenu>,
+    #[rust]
+    popup_menu_state_key: ScriptValue,
 
     #[rust]
     is_active: bool,
@@ -104,9 +106,14 @@ impl ScriptHook for ShadContextMenu {
     ) {
         if self.popup_menu.is_nil() {
             self.popup_menu_state = None;
+            self.popup_menu_state_key = ScriptValue::default();
+            return;
+        }
+        if self.popup_menu_state.is_some() && self.popup_menu_state_key == self.popup_menu {
             return;
         }
         self.popup_menu_state = Some(PopupMenu::script_from_value(vm, self.popup_menu));
+        self.popup_menu_state_key = self.popup_menu;
     }
 }
 

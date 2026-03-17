@@ -1,8 +1,30 @@
 use crate::ui::catalog;
 use makepad_components::makepad_widgets::*;
+use std::collections::HashMap;
+use std::sync::OnceLock;
 
 const RESULTS_SCROLL_SPEED: f64 = 18.0;
 const RESULTS_MAX_ITEMS_TO_SHOW: usize = 8;
+
+struct CommandSearchTerm {
+    title: String,
+    section: String,
+}
+
+fn command_search_terms() -> &'static [CommandSearchTerm] {
+    static TERMS: OnceLock<Vec<CommandSearchTerm>> = OnceLock::new();
+    TERMS
+        .get_or_init(|| {
+            catalog::entries()
+                .iter()
+                .map(|entry| CommandSearchTerm {
+                    title: entry.title.to_ascii_lowercase(),
+                    section: entry.section.to_ascii_lowercase(),
+                })
+                .collect()
+        })
+        .as_slice()
+}
 
 script_mod! {
     use mod.prelude.widgets.*
@@ -228,6 +250,10 @@ pub struct GalleryCommandPalette {
     focus_search_on_next_draw: bool,
     #[rust]
     is_synced_open: bool,
+    #[rust]
+    has_results_cache: Option<bool>,
+    #[rust]
+    row_active_by_uid: HashMap<WidgetUid, bool>,
 }
 
 impl GalleryCommandPalette {
@@ -249,6 +275,10 @@ impl GalleryCommandPalette {
 
     fn sync_empty_state(&mut self, cx: &mut Cx) {
         let has_results = !self.filtered_indices.is_empty();
+        if self.has_results_cache == Some(has_results) {
+            return;
+        }
+        self.has_results_cache = Some(has_results);
         self.overlay
             .widget(cx, ids!(results))
             .set_visible(cx, has_results);
@@ -281,6 +311,8 @@ impl GalleryCommandPalette {
         self.query.clear();
         self.active_index = 0;
         self.focus_search_on_next_draw = true;
+        self.has_results_cache = None;
+        self.row_active_by_uid.clear();
         self.overlay
             .text_input(cx, ids!(search_input))
             .set_text(cx, "");
@@ -293,6 +325,8 @@ impl GalleryCommandPalette {
         self.query.clear();
         self.active_index = 0;
         self.focus_search_on_next_draw = false;
+        self.has_results_cache = None;
+        self.row_active_by_uid.clear();
         self.overlay
             .text_input(cx, ids!(search_input))
             .set_text(cx, "");
@@ -314,15 +348,25 @@ impl GalleryCommandPalette {
 
     fn refresh_results(&mut self, cx: &mut Cx) {
         let query = self.normalize_query();
-        self.filtered_indices.clear();
+        let search_terms = command_search_terms();
+        let previous_active = self.active_index;
+        let mut next_filtered_indices = Vec::new();
 
-        for (index, command) in catalog::entries().iter().enumerate() {
+        for (index, _command) in catalog::entries().iter().enumerate() {
             if query.is_empty()
-                || command.title.to_ascii_lowercase().contains(&query)
-                || command.section.to_ascii_lowercase().contains(&query)
+                || search_terms[index].title.contains(&query)
+                || search_terms[index].section.contains(&query)
             {
-                self.filtered_indices.push(index);
+                next_filtered_indices.push(index);
             }
+        }
+        let results_changed = self.filtered_indices != next_filtered_indices;
+        if results_changed {
+            self.filtered_indices = next_filtered_indices;
+            // PortalList reuses item widgets, so clear row-style cache when the backing list
+            // changes to avoid carrying old active styles across recycled items.
+            self.row_active_by_uid.clear();
+            self.has_results_cache = None;
         }
 
         if self.filtered_indices.is_empty() {
@@ -330,10 +374,13 @@ impl GalleryCommandPalette {
         } else {
             self.active_index = self.active_index.min(self.filtered_indices.len() - 1);
         }
+        let active_changed = previous_active != self.active_index;
 
         self.sync_empty_state(cx);
         self.reset_results_position(cx);
-        self.redraw(cx);
+        if results_changed || active_changed {
+            self.redraw(cx);
+        }
     }
 
     fn draw_results(&mut self, cx: &mut Cx2d, list: &mut PortalList) {
@@ -365,12 +412,17 @@ impl GalleryCommandPalette {
                 Vec4f::all(0.0)
             };
             let mut row = item.view(cx, ids!(row));
-            script_apply_eval!(cx, row, {
-                draw_bg +: {
-                    color: #(background)
-                    border_radius: 10.0
-                }
-            });
+            let row_uid = row.widget_uid();
+            let is_active = item_id == self.active_index;
+            if self.row_active_by_uid.get(&row_uid).copied() != Some(is_active) {
+                script_apply_eval!(cx, row, {
+                    draw_bg +: {
+                        color: #(background)
+                        border_radius: 10.0
+                    }
+                });
+                self.row_active_by_uid.insert(row_uid, is_active);
+            }
 
             item.draw_all(cx, &mut Scope::empty());
         }

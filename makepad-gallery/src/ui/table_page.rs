@@ -68,8 +68,6 @@ pub struct GalleryTablePage {
     #[rust]
     dataset_index: usize,
     #[rust]
-    current_rows: Vec<Vec<String>>,
-    #[rust]
     virtual_mode: bool,
     #[rust]
     virtual_start: usize,
@@ -110,7 +108,6 @@ impl GalleryTablePage {
     fn apply_dataset(&mut self, cx: &mut Cx) {
         self.virtual_mode = false;
         let (title, headers, rows) = table_dataset(self.dataset_index);
-        self.current_rows = rows.clone();
 
         let table = self.view.shad_table(cx, ids!(table_demo));
         table.set_caption(cx, title.to_string());
@@ -138,7 +135,6 @@ impl GalleryTablePage {
             "Status".to_string(),
         ];
         let rows = Self::make_virtual_rows(self.virtual_start, Self::VIRTUAL_WINDOW_SIZE);
-        self.current_rows = rows.clone();
 
         let table = self.view.shad_table(cx, ids!(table_demo));
         table.set_caption(cx, "Virtualized 10k".to_string());
@@ -148,12 +144,9 @@ impl GalleryTablePage {
         if clear_selection {
             table.set_selected_row(cx, None);
         }
-        let end = if self.current_rows.is_empty() {
-            self.virtual_start
-        } else {
-            self.virtual_start
-                .saturating_add(self.current_rows.len().saturating_sub(1))
-        };
+        let remaining = Self::VIRTUAL_TOTAL.saturating_sub(self.virtual_start);
+        let window_len = remaining.min(Self::VIRTUAL_WINDOW_SIZE).max(1);
+        let end = self.virtual_start.saturating_add(window_len.saturating_sub(1));
         self.view.label(cx, ids!(table_status)).set_text(
             cx,
             &format!(
@@ -169,15 +162,15 @@ impl GalleryTablePage {
     fn selected_primary_cell(&self, selected_row: Option<usize>) -> String {
         selected_row
             .and_then(|index| {
-                let local_index = if self.virtual_mode {
-                    index.checked_sub(self.virtual_start)
-                } else {
-                    Some(index)
-                }?;
-                self.current_rows
-                    .get(local_index)
-                    .and_then(|row| row.first())
-                    .cloned()
+                if self.virtual_mode {
+                    if index >= Self::VIRTUAL_TOTAL {
+                        return None;
+                    }
+                    return Some(format!("JOB-{index:05}"));
+                }
+
+                let rows = table_dataset(self.dataset_index).2;
+                rows.get(index).and_then(|row| row.first()).cloned()
             })
             .unwrap_or_else(|| "none".to_string())
     }

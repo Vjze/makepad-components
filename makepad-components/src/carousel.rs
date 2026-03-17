@@ -451,7 +451,7 @@ impl Widget for ShadCarouselDots {
     }
 }
 
-#[derive(Script, ScriptHook, Widget)]
+#[derive(Script, Widget)]
 pub struct ShadCarousel {
     #[source]
     source: ScriptObjectRef,
@@ -461,29 +461,40 @@ pub struct ShadCarousel {
     current: usize,
     #[rust]
     synced_current: Option<usize>,
+    #[rust]
+    page_flip_ref: WidgetRef,
+    #[rust]
+    dots_ref: WidgetRef,
+    #[rust]
+    dots_uid: Option<WidgetUid>,
     #[action_data]
     #[rust]
     action_data: WidgetActionData,
 }
 
 impl ShadCarousel {
+    fn ensure_cached_refs(&mut self, cx: &Cx) {
+        if self.page_flip_ref.is_empty() {
+            self.page_flip_ref = self.view.widget(cx, ids!(carousel_flip));
+        }
+        if self.dots_ref.is_empty() {
+            self.dots_ref = self.view.widget(cx, ids!(dots));
+            if !self.dots_ref.is_empty() {
+                self.dots_uid = Some(self.dots_ref.widget_uid());
+            }
+        }
+    }
+
     fn sync_visual_state(&mut self, cx: &mut Cx) {
         if self.synced_current == Some(self.current) {
             return;
         }
+        self.ensure_cached_refs(cx);
 
-        if let Some(mut page_flip) = self
-            .view
-            .widget_flood(cx, ids!(carousel_flip))
-            .borrow_mut::<PageFlip>()
-        {
+        if let Some(mut page_flip) = self.page_flip_ref.borrow_mut::<PageFlip>() {
             page_flip.set_active_page(cx, SLIDE_IDS[self.current]);
         }
-        if let Some(mut dots) = self
-            .view
-            .widget_flood(cx, ids!(dots))
-            .borrow_mut::<ShadCarouselDots>()
-        {
+        if let Some(mut dots) = self.dots_ref.borrow_mut::<ShadCarouselDots>() {
             dots.set_active(cx, self.current);
         }
 
@@ -547,12 +558,31 @@ impl ShadCarousel {
         if self.view.button(cx, ids!(next_btn)).clicked(actions) {
             self.next(cx);
         }
-        let dots_uid = self.view.widget_flood(cx, ids!(dots)).widget_uid();
+        self.ensure_cached_refs(cx);
+        let Some(dots_uid) = self.dots_uid else {
+            return;
+        };
         if let Some(item) = actions.find_widget_action(dots_uid) {
             if let ShadCarouselDotsAction::Clicked(index) = item.cast() {
                 self.go_to(cx, index);
             }
         }
+    }
+}
+
+impl ScriptHook for ShadCarousel {
+    fn on_after_apply(
+        &mut self,
+        _vm: &mut ScriptVm,
+        _apply: &Apply,
+        _scope: &mut Scope,
+        _value: ScriptValue,
+    ) {
+        // The widget tree can be reconstructed after apply, so refresh cached refs lazily.
+        self.page_flip_ref = WidgetRef::empty();
+        self.dots_ref = WidgetRef::empty();
+        self.dots_uid = None;
+        self.synced_current = None;
     }
 }
 

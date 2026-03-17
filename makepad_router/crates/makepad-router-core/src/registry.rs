@@ -12,7 +12,7 @@ use crate::route::Route;
 use crate::url;
 use makepad_live_id::*;
 use makepad_micro_serde::*;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 fn first_segment(path: &str) -> &str {
     let trimmed = path.strip_prefix('/').unwrap_or(path);
@@ -120,6 +120,46 @@ impl RouteRegistry {
             self.by_pattern.insert(pos, entry);
             self.rebuild_indices();
         }
+        Ok(())
+    }
+
+    /// Register many route patterns in a single rebuild pass.
+    ///
+    /// This is intended for live-apply/reload flows where many routes are re-registered together.
+    /// The method parses all entries first; if parsing succeeds, it performs one sort/index rebuild.
+    pub fn register_patterns_batch<I, S>(&mut self, patterns: I) -> Result<(), String>
+    where
+        I: IntoIterator<Item = (LiveId, S)>,
+        S: AsRef<str>,
+    {
+        let mut entries = Vec::new();
+        let mut route_ids = HashSet::new();
+
+        for (route_id, pattern) in patterns {
+            let route_pattern = RoutePattern::parse(pattern.as_ref())?;
+            let priority = route_pattern.priority();
+            entries.push(RouteEntry {
+                route_id,
+                pattern: Some(RoutePatternRef::new(route_pattern)),
+                priority,
+            });
+            route_ids.insert(route_id);
+        }
+
+        if entries.is_empty() {
+            return Ok(());
+        }
+
+        self.by_pattern
+            .retain(|existing| !route_ids.contains(&existing.route_id));
+
+        for entry in entries {
+            self.by_id.insert(entry.route_id, entry.clone());
+            self.by_pattern.push(entry);
+        }
+
+        self.by_pattern.sort_by_key(|entry| entry.priority);
+        self.rebuild_indices();
         Ok(())
     }
 
@@ -484,6 +524,32 @@ mod tests {
         assert_eq!(
             registry.resolve_path("/second").map(|route| route.id),
             Some(live_id!(shared_route))
+        );
+    }
+
+    #[test]
+    fn test_route_registry_register_patterns_batch_rebuilds_once_semantically() {
+        let mut registry = RouteRegistry::new();
+        registry
+            .register_pattern("/first", live_id!(shared_route))
+            .unwrap();
+
+        registry
+            .register_patterns_batch(vec![
+                (live_id!(shared_route), "/second"),
+                (live_id!(user_dynamic), "/user/:id"),
+            ])
+            .unwrap();
+
+        assert_eq!(registry.by_pattern.len(), 2);
+        assert!(registry.resolve_path("/first").is_none());
+        assert_eq!(
+            registry.resolve_path("/second").map(|route| route.id),
+            Some(live_id!(shared_route))
+        );
+        assert_eq!(
+            registry.resolve_path("/user/123").map(|route| route.id),
+            Some(live_id!(user_dynamic))
         );
     }
 }

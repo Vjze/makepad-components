@@ -41,7 +41,7 @@ script_mod! {
         width: 24
         height: 24
         animate: true
-        animation_fps: 30.0
+        animation_fps: 24.0
 
         spinner_body := SpinnerVisual{}
     }
@@ -75,17 +75,28 @@ pub struct ShadSpinner {
     view: View,
     #[live(true)]
     animate: bool,
-    #[live(30.0)]
+    #[live(24.0)]
     animation_fps: f64,
     #[rust]
     ticker: AnimationTicker,
+}
+
+impl ShadSpinner {
+    fn is_visible(&self, cx: &Cx) -> bool {
+        let area = self.view.area();
+        if !area.is_valid(cx) {
+            return false;
+        }
+        let clipped = area.clipped_rect(cx);
+        clipped.size.x > 0.0 && clipped.size.y > 0.0
+    }
 }
 
 impl Widget for ShadSpinner {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         self.view.handle_event(cx, event, scope);
 
-        let animate = self.animate && self.view.area().is_valid(cx);
+        let animate = self.animate && self.animation_fps > 0.0 && self.is_visible(cx);
         if let AnimationStep::Redraw { .. } =
             self.ticker
                 .handle_event(cx, event, animate, self.animation_fps)
@@ -95,7 +106,9 @@ impl Widget for ShadSpinner {
     }
 
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
-        self.ticker.ensure_started(cx, self.animate);
+        let should_tick =
+            self.animate && self.animation_fps > 0.0 && cx.walk_turtle_would_be_visible(walk);
+        self.ticker.ensure_started(cx, should_tick);
         self.view.draw_walk(cx, scope, walk)
     }
 }

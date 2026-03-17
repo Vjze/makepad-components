@@ -184,7 +184,7 @@ impl RouterWidget {
         } else {
             self.transition_rt.state = None;
         }
-        self.redraw(cx);
+        self.redraw_transition_frame(cx);
     }
 
     pub(super) fn ease_in_out(t: f64) -> f64 {

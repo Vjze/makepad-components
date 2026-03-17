@@ -426,6 +426,8 @@ pub struct ShadTable {
     #[rust]
     rows_data: Vec<Arc<[String]>>,
     #[rust]
+    rows_source: ScriptValue,
+    #[rust]
     virtual_window_start: usize,
     #[rust]
     resolved_widths: Vec<f64>,
@@ -449,9 +451,16 @@ impl ScriptHook for ShadTable {
         _scope: &mut Scope,
         _value: ScriptValue,
     ) {
-        let rows = parse_rows(vm, self.rows);
+        let parsed_rows = if self.rows_source != self.rows {
+            Some(parse_rows(vm, self.rows))
+        } else {
+            None
+        };
         vm.with_cx_mut(|cx| {
-            self.rows_data = rows;
+            if let Some(rows) = parsed_rows {
+                self.rows_data = rows;
+                self.rows_source = self.rows;
+            }
             if self.virtual_total_rows == 0 {
                 self.virtual_window_start = 0;
             } else if self.virtual_window_start >= self.virtual_total_rows {
@@ -629,6 +638,7 @@ impl ShadTable {
         self.virtual_total_rows = 0;
         self.virtual_window_start = 0;
         self.rows_data = into_arc_rows(rows);
+        self.rows_source = ScriptValue::default();
         self.selected_row = clamp_selected_row(self.selected_row, self.data_row_count());
         self.sync_layout(cx);
         self.view.redraw(cx);
@@ -640,6 +650,7 @@ impl ShadTable {
         }
         self.virtual_total_rows = total_rows;
         self.rows_data.clear();
+        self.rows_source = ScriptValue::default();
         if total_rows == 0 {
             self.virtual_window_start = 0;
         } else if self.virtual_window_start >= total_rows {
@@ -656,6 +667,7 @@ impl ShadTable {
             return;
         }
         self.rows_data = into_arc_rows(rows);
+        self.rows_source = ScriptValue::default();
         let row_count = self.data_row_count();
         let clamped_start = if row_count == 0 {
             0

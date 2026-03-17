@@ -384,6 +384,13 @@ impl RouterWidget {
             cx.extend_actions(actions);
         }
     }
+
+    fn redraw_transition_frame(&mut self, cx: &mut Cx) {
+        // Transition frames only update draw-list transforms/progress. Keep route draw-lists
+        // clean so draw-list reuse remains effective across animation ticks.
+        self.draw_lists.inspector.redraw(cx);
+        self.area.redraw(cx);
+    }
 }
 
 impl WidgetNode for RouterWidget {

@@ -8,6 +8,8 @@ enum DrawState {
     DrawBody,
 }
 
+const BODY_DRAW_CLOSE_THRESHOLD: f64 = 0.6;
+
 script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
@@ -323,7 +325,12 @@ impl Widget for ShadCollapsible {
         }
 
         if let Some(DrawState::DrawBody) = self.draw_state.get() {
-            if self.active > 0.0 {
+            let draw_body = if self.is_open {
+                self.active > 0.0
+            } else {
+                self.active >= BODY_DRAW_CLOSE_THRESHOLD
+            };
+            if draw_body {
                 let body_walk = self.body.walk(cx);
                 self.body.draw_walk(cx, scope, body_walk)?;
             }

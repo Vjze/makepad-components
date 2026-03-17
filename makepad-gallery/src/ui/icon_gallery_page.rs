@@ -94,14 +94,30 @@ pub struct GalleryIconGalleryPage {
     view: View,
     #[rust]
     query: String,
+    #[rust]
+    entry_row_ids: Vec<LiveId>,
+    #[rust]
+    entry_card_ids: Vec<LiveId>,
+    #[rust]
+    row_live_ids: Vec<LiveId>,
+    #[rust]
+    widget_name_lower: Vec<String>,
+    #[rust]
+    card_visible_cache: Vec<bool>,
+    #[rust]
+    row_visible_cache: Vec<bool>,
+    #[rust]
+    summary_cache: String,
+    #[rust]
+    usage_entry_cache: Option<usize>,
 }
 
 impl GalleryIconGalleryPage {
-    fn default_entry() -> &'static IconGalleryEntry {
+    fn default_entry_index() -> usize {
         ICON_GALLERY_ENTRIES
             .iter()
-            .find(|entry| entry.widget_name == "IconSearch")
-            .unwrap_or(&ICON_GALLERY_ENTRIES[0])
+            .position(|entry| entry.widget_name == "IconSearch")
+            .unwrap_or(0)
     }
 
     fn normalize_query(query: &str) -> String {
@@ -144,55 +160,109 @@ impl GalleryIconGalleryPage {
             .set_text(cx, &Self::usage_code(entry.widget_name));
     }
 
+    fn ensure_filter_cache(&mut self) {
+        if self.entry_row_ids.len() == ICON_GALLERY_ENTRIES.len()
+            && self.entry_card_ids.len() == ICON_GALLERY_ENTRIES.len()
+            && self.widget_name_lower.len() == ICON_GALLERY_ENTRIES.len()
+            && self.card_visible_cache.len() == ICON_GALLERY_ENTRIES.len()
+            && self.row_live_ids.len() == ICON_GALLERY_ROW_IDS.len()
+            && self.row_visible_cache.len() == ICON_GALLERY_ROW_IDS.len()
+        {
+            return;
+        }
+
+        self.entry_row_ids = ICON_GALLERY_ENTRIES
+            .iter()
+            .map(|entry| LiveId::from_str(entry.row_id))
+            .collect();
+        self.entry_card_ids = ICON_GALLERY_ENTRIES
+            .iter()
+            .map(|entry| LiveId::from_str(entry.card_id))
+            .collect();
+        self.widget_name_lower = ICON_GALLERY_ENTRIES
+            .iter()
+            .map(|entry| entry.widget_name.to_ascii_lowercase())
+            .collect();
+        self.card_visible_cache = vec![false; ICON_GALLERY_ENTRIES.len()];
+
+        self.row_live_ids = ICON_GALLERY_ROW_IDS
+            .iter()
+            .map(|row_id| LiveId::from_str(row_id))
+            .collect();
+        self.row_visible_cache = vec![false; ICON_GALLERY_ROW_IDS.len()];
+    }
+
     fn apply_filter(&mut self, cx: &mut Cx) {
+        self.ensure_filter_cache();
         let display_query = self.query.trim().to_string();
         let query = Self::normalize_query(&self.query);
-        let mut visible_rows = vec![false; ICON_GALLERY_ROW_IDS.len()];
+        let mut visible_rows = vec![false; self.row_live_ids.len()];
         let mut matches_count = 0;
-        let mut first_match = None;
+        let mut first_match_index = None;
+        let mut changed = false;
 
-        for entry in ICON_GALLERY_ENTRIES {
+        for (index, entry) in ICON_GALLERY_ENTRIES.iter().enumerate() {
             let matches = query.is_empty()
                 || entry.icon_name.contains(&query)
-                || entry.widget_name.to_ascii_lowercase().contains(&query);
+                || self.widget_name_lower[index].contains(&query);
             if matches {
                 visible_rows[entry.row_index] = true;
                 matches_count += 1;
-                if first_match.is_none() {
-                    first_match = Some(entry);
+                if first_match_index.is_none() {
+                    first_match_index = Some(index);
                 }
             }
 
-            self.view
-                .widget(
-                    cx,
-                    &[
-                        live_id!(icon_grid),
-                        LiveId::from_str(entry.row_id),
-                        LiveId::from_str(entry.card_id),
-                    ],
-                )
-                .set_visible(cx, matches);
+            if self.card_visible_cache[index] != matches {
+                self.card_visible_cache[index] = matches;
+                self.view
+                    .widget(
+                        cx,
+                        &[
+                            live_id!(icon_grid),
+                            self.entry_row_ids[index],
+                            self.entry_card_ids[index],
+                        ],
+                    )
+                    .set_visible(cx, matches);
+                changed = true;
+            }
         }
 
-        for (row_index, row_id) in ICON_GALLERY_ROW_IDS.iter().enumerate() {
-            self.view
-                .widget(cx, &[live_id!(icon_grid), LiveId::from_str(row_id)])
-                .set_visible(cx, visible_rows[row_index]);
+        for (row_index, row_id) in self.row_live_ids.iter().enumerate() {
+            let is_visible = visible_rows[row_index];
+            if self.row_visible_cache[row_index] != is_visible {
+                self.row_visible_cache[row_index] = is_visible;
+                self.view
+                    .widget(cx, &[live_id!(icon_grid), *row_id])
+                    .set_visible(cx, is_visible);
+                changed = true;
+            }
         }
 
-        self.view
-            .label(cx, ids!(icon_results_summary))
-            .set_text(cx, &Self::summary_text(&display_query, matches_count));
-        self.sync_usage_preview(
-            cx,
-            if query.is_empty() {
-                Self::default_entry()
-            } else {
-                first_match.unwrap_or(Self::default_entry())
-            },
-        );
-        self.view.redraw(cx);
+        let summary = Self::summary_text(&display_query, matches_count);
+        if self.summary_cache != summary {
+            self.summary_cache = summary;
+            self.view
+                .label(cx, ids!(icon_results_summary))
+                .set_text(cx, &self.summary_cache);
+            changed = true;
+        }
+
+        let target_entry_index = if query.is_empty() {
+            Self::default_entry_index()
+        } else {
+            first_match_index.unwrap_or(Self::default_entry_index())
+        };
+        if self.usage_entry_cache != Some(target_entry_index) {
+            self.usage_entry_cache = Some(target_entry_index);
+            self.sync_usage_preview(cx, &ICON_GALLERY_ENTRIES[target_entry_index]);
+            changed = true;
+        }
+
+        if changed {
+            self.view.redraw(cx);
+        }
     }
 }
 

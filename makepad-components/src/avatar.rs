@@ -1,5 +1,6 @@
 use makepad_widgets::*;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::Arc;
 
 script_mod! {
@@ -239,28 +240,26 @@ impl ShadAvatarImage {
             return;
         }
 
-        let data = if let Some(data) = cx.get_resource(handle) {
-            data
-        } else {
-            match cx.get_resource(handle) {
-                Some(data) => data,
-                None => {
-                    let resources = cx.script_data.resources.resources.borrow();
-                    if let Some(res) = resources.iter().find(|r| r.handle == handle) {
-                        if res.is_error() {
-                            drop(resources);
-                            self.src_loaded = true;
-                            return;
-                        }
-                    } else {
-                        self.src_loaded = true;
-                    }
+        let Some(data) = cx.get_resource(handle) else {
+            let resources = cx.script_data.resources.resources.borrow();
+            if let Some(res) = resources.iter().find(|r| r.handle == handle) {
+                if res.is_error() {
+                    drop(resources);
+                    self.src_loaded = true;
                     return;
                 }
+            } else {
+                self.src_loaded = true;
             }
+            return;
         };
         self.src_loaded = true;
-        let _ = self.load_image_from_data_async(cx, &path, Arc::new((*data).clone()));
+        // If this is the last Rc owner, move the bytes into Arc without cloning.
+        let data = match Rc::try_unwrap(data) {
+            Ok(bytes) => Arc::new(bytes),
+            Err(shared) => Arc::new((*shared).clone()),
+        };
+        let _ = self.load_image_from_data_async(cx, &path, data);
     }
 
     fn draw_walk_image(&mut self, cx: &mut Cx2d, mut walk: Walk) -> DrawStep {

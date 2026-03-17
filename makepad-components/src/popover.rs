@@ -129,6 +129,23 @@ impl ScriptHook for ShadPopover {
 }
 
 impl ShadPopover {
+    fn draw_overlay_content(&mut self, cx: &mut Cx2d, scope: &mut Scope, popup_pos: Vec2d) {
+        let draw_list = self.draw_list.as_mut().unwrap();
+        draw_list.begin_overlay_reuse(cx);
+
+        let pass_size = cx.current_pass_size();
+        cx.begin_root_turtle(pass_size, Layout::flow_down());
+        self.draw_bg
+            .begin(cx, Walk::new(Size::fill(), Size::fill()), Layout::default());
+
+        let popup_walk = self.popup_content.walk(cx).with_abs_pos(popup_pos);
+        self.popup_content.draw_walk_all(cx, scope, popup_walk);
+
+        self.draw_bg.end(cx);
+        cx.end_pass_sized_turtle();
+        draw_list.end(cx);
+    }
+
     fn redraw_overlay(&mut self, cx: &mut Cx) {
         if let Some(draw_list) = &self.draw_list {
             draw_list.redraw(cx);
@@ -468,20 +485,7 @@ impl Widget for ShadPopover {
         }
 
         let popup_pos = self.compute_popup_pos(cx);
-        let draw_list = self.draw_list.as_mut().unwrap();
-        draw_list.begin_overlay_reuse(cx);
-
-        let pass_size = cx.current_pass_size();
-        cx.begin_root_turtle(pass_size, Layout::flow_down());
-        self.draw_bg
-            .begin(cx, Walk::new(Size::fill(), Size::fill()), Layout::default());
-
-        let popup_walk = self.popup_content.walk(cx).with_abs_pos(popup_pos);
-        self.popup_content.draw_walk_all(cx, scope, popup_walk);
-
-        self.draw_bg.end(cx);
-        cx.end_pass_sized_turtle();
-        draw_list.end(cx);
+        self.draw_overlay_content(cx, scope, popup_pos);
 
         let measured_rect = self.popup_content.area().rect(cx);
         if measured_rect.size != self.content_size
@@ -493,7 +497,9 @@ impl Widget for ShadPopover {
             let moved_x = (next_popup_pos.x - popup_pos.x).abs();
             let moved_y = (next_popup_pos.y - popup_pos.y).abs();
             if moved_x > 0.5 || moved_y > 0.5 {
-                self.redraw_overlay(cx);
+                // Reposition immediately in this frame to avoid a guaranteed
+                // follow-up frame redraw on first open for center/end alignment.
+                self.draw_overlay_content(cx, scope, next_popup_pos);
             }
         }
 

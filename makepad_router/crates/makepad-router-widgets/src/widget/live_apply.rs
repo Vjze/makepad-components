@@ -39,6 +39,8 @@ impl ScriptHook for RouterWidget {
         value: ScriptValue,
     ) {
         if !apply.is_eval() {
+            let mut pending_patterns = Vec::<(LiveId, String)>::new();
+            let mut registered_patterns = false;
             if let Some(obj) = value.as_object() {
                 vm.vec_with(obj, |vm, vec| {
                     for kv in vec {
@@ -59,14 +61,7 @@ impl ScriptHook for RouterWidget {
 
                         if let Some(pattern) = route_def.pattern {
                             self.routes.patterns.insert(route_id, pattern.clone());
-                            if let Err(err) = self.router.register_route_pattern(&pattern, route_id)
-                            {
-                                log!("Failed to register route pattern {}: {}", pattern, err);
-                            } else {
-                                self.caches.route_registry_epoch =
-                                    self.caches.route_registry_epoch.wrapping_add(1);
-                                self.caches.child_router_scan_widget_count = 0;
-                            }
+                            pending_patterns.push((route_id, pattern));
                         }
 
                         if let Some(transition) = route_def.transition {
@@ -85,9 +80,45 @@ impl ScriptHook for RouterWidget {
 
                         if let Some(route_widget) = self.routes.widgets.get_mut(&route_id) {
                             route_widget.script_apply(vm, apply, scope, kv.value);
+                            // Route widget trees can change in place on live-apply. Drop both
+                            // positive and negative nested-child scan caches for this route.
+                            self.child_routers.remove(&route_id);
+                            self.child_router_scan_misses.remove(&route_id);
+                            self.caches.child_router_scan_widget_count = 0;
                         }
                     }
                 });
+            }
+
+            if !pending_patterns.is_empty() {
+                if let Err(err) = self.router.route_registry.register_patterns_batch(
+                    pending_patterns
+                        .iter()
+                        .map(|(route_id, pattern)| (*route_id, pattern.as_str())),
+                ) {
+                    // Preserve best-effort behavior if one pattern in the batch is invalid.
+                    log!(
+                        "Failed to register route pattern batch (falling back to per-route): {}",
+                        err
+                    );
+                    for (route_id, pattern) in pending_patterns {
+                        if let Err(err) = self.router.register_route_pattern(&pattern, route_id) {
+                            log!("Failed to register route pattern {}: {}", pattern, err);
+                        } else {
+                            registered_patterns = true;
+                        }
+                    }
+                } else {
+                    registered_patterns = true;
+                }
+            }
+
+            if registered_patterns {
+                self.caches.route_registry_epoch = self.caches.route_registry_epoch.wrapping_add(1);
+                self.caches.nested_prefix_cache_epoch = 0;
+                self.caches.nested_prefix_cache_path.clear();
+                self.caches.nested_prefix_cache_result = None;
+                self.caches.child_router_scan_widget_count = 0;
             }
         }
 
