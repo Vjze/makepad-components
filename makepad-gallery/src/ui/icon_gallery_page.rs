@@ -33,6 +33,11 @@ macro_rules! icon_gallery_page_generated {
                         }
                     }
 
+                    clear_search_btn := ShadButtonOutline{
+                        text: "Clear"
+                        visible: false
+                    }
+
                     icon_search_btn := ShadButtonSm{text: "Search"}
                 }
 
@@ -262,6 +267,10 @@ impl GalleryIconGalleryPage {
             changed = true;
         }
 
+        self.view
+            .button(cx, ids!(clear_search_btn))
+            .set_visible(cx, !query.is_empty());
+
         match first_match_index {
             Some(target_entry_index) => {
                 if self.usage_entry_cache != Some(target_entry_index) {
@@ -316,6 +325,11 @@ impl Widget for GalleryIconGalleryPage {
             if self.view.button(cx, ids!(icon_search_btn)).clicked(actions) {
                 search_input.set_key_focus(cx);
                 next_query = Some(search_input.text());
+            }
+            if self.view.button(cx, ids!(clear_search_btn)).clicked(actions) {
+                search_input.set_text(cx, "");
+                search_input.set_key_focus(cx);
+                next_query = Some(String::new());
             }
 
             if let Some(query) = next_query {
