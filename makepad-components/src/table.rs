@@ -486,7 +486,7 @@ pub struct ShadTable {
     #[rust]
     rows_source: ScriptValue,
     #[rust]
-    custom_row_template_ids: Vec<LiveId>,
+    custom_row_template_ids: Arc<[LiveId]>,
     #[rust]
     virtual_window_start: usize,
     #[rust]
@@ -864,7 +864,7 @@ impl ShadTable {
     }
 
     pub fn set_rows(&mut self, cx: &mut Cx, rows: Vec<Vec<String>>) {
-        self.custom_row_template_ids.clear();
+        self.custom_row_template_ids = Arc::default();
         self.virtual_total_rows = 0;
         self.virtual_window_start = 0;
         self.rows_data = into_arc_rows(rows);
@@ -876,7 +876,7 @@ impl ShadTable {
 
     pub fn set_virtual_total_rows(&mut self, cx: &mut Cx, total_rows: usize) {
         let cleared_custom_rows = !self.custom_row_template_ids.is_empty();
-        self.custom_row_template_ids.clear();
+        self.custom_row_template_ids = Arc::default();
         if self.virtual_total_rows == total_rows && !cleared_custom_rows {
             return;
         }
@@ -894,7 +894,7 @@ impl ShadTable {
     }
 
     pub fn set_virtual_window(&mut self, cx: &mut Cx, start_row: usize, rows: Vec<Vec<String>>) {
-        self.custom_row_template_ids.clear();
+        self.custom_row_template_ids = Arc::default();
         if self.virtual_total_rows == 0 {
             self.set_rows(cx, rows);
             return;
@@ -925,8 +925,8 @@ impl ShadTable {
         self.view.redraw(cx);
     }
 
-    pub fn set_custom_row_templates(&mut self, cx: &mut Cx, templates: Vec<LiveId>) {
-        let changed = self.custom_row_template_ids != templates;
+    pub fn set_custom_row_templates(&mut self, cx: &mut Cx, templates: Arc<[LiveId]>) {
+        let changed = self.custom_row_template_ids.as_ref() != templates.as_ref();
         self.custom_row_template_ids = templates;
         self.virtual_total_rows = 0;
         self.virtual_window_start = 0;
@@ -1114,7 +1114,7 @@ impl ShadTableRef {
         }
     }
 
-    pub fn set_custom_row_templates(&self, cx: &mut Cx, templates: Vec<LiveId>) {
+    pub fn set_custom_row_templates(&self, cx: &mut Cx, templates: Arc<[LiveId]>) {
         if let Some(mut inner) = self.borrow_mut() {
             inner.set_custom_row_templates(cx, templates);
         }
