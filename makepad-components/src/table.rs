@@ -494,6 +494,14 @@ pub struct ShadTable {
     #[rust]
     resolved_widths_shared: Arc<[f64]>,
     #[rust]
+    stretched_widths: Vec<f64>,
+    #[rust]
+    stretched_widths_shared: Arc<[f64]>,
+    #[rust]
+    stretched_source_widths: Arc<[f64]>,
+    #[rust]
+    stretched_avail_width: f64,
+    #[rust]
     total_width: f64,
     #[rust]
     selected_row: Option<usize>,
@@ -556,6 +564,32 @@ impl ShadTable {
         } else {
             self.rows_data.get(row_index)
         }
+    }
+
+    fn cached_stretched_widths(&mut self, avail: f64) -> Option<(Arc<[f64]>, f64)> {
+        if avail <= self.total_width || avail <= 0.0 || self.resolved_widths.is_empty() {
+            return None;
+        }
+
+        if self.stretched_avail_width != avail
+            || !Arc::ptr_eq(&self.stretched_source_widths, &self.resolved_widths_shared)
+        {
+            self.stretched_widths.clear();
+            self.stretched_widths
+                .extend_from_slice(self.resolved_widths.as_slice());
+
+            let extra_width = avail - self.total_width;
+            let extra_per_column = extra_width / self.stretched_widths.len() as f64;
+            for width in &mut self.stretched_widths {
+                *width += extra_per_column;
+            }
+
+            self.stretched_widths_shared = Arc::from(self.stretched_widths.as_slice());
+            self.stretched_source_widths = Arc::clone(&self.resolved_widths_shared);
+            self.stretched_avail_width = avail;
+        }
+
+        Some((Arc::clone(&self.stretched_widths_shared), avail))
     }
 
     fn sync_layout(&mut self, cx: &mut Cx) {
@@ -921,22 +955,11 @@ impl Widget for ShadTable {
 
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
         let auto_filled = if self.auto_fill_width && !self.resolved_widths.is_empty() {
-            let mut widths: Vec<f64> = self.resolved_widths.clone();
-            let calculated_width: f64 = widths.iter().sum::<f64>() + 24.0;
-
             cx.begin_turtle(walk, self.layout);
             let avail = cx.turtle().rect().size.x;
             cx.end_turtle();
 
-            if avail > calculated_width && avail > 0.0 {
-                let extra_width = avail - calculated_width;
-                let extra_per_column = extra_width / widths.len() as f64;
-                for width in &mut widths {
-                    *width += extra_per_column;
-                }
-                let new_total = avail;
-                let shared_widths = Arc::from(widths.as_slice());
-
+            if let Some((shared_widths, new_total)) = self.cached_stretched_widths(avail) {
                 if let Some(mut header) = self
                     .view
                     .widget_flood(cx, ids!(table_view.scroll.content.header))
