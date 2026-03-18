@@ -162,6 +162,10 @@ fn update_cached_width(cached_width: &mut f64, width: f64) -> bool {
     true
 }
 
+fn invalidate_cached_width(cached_width: &mut f64) {
+    *cached_width = f64::NAN;
+}
+
 fn calculate_content_based_widths(headers: &[String], rows_data: &[Arc<[String]>]) -> Vec<f64> {
     let column_count = headers.len();
     if column_count == 0 {
@@ -539,6 +543,10 @@ impl ScriptHook for ShadTable {
                 self.rows_data = rows;
                 self.rows_source = self.rows;
             }
+            // A live/script apply can restore `table_view.scroll.content` to its declared `Fit`
+            // width before `sync_layout` reapplies the computed fixed width. Invalidate the cache
+            // so same-width reapplies still run `script_apply_eval!` once after every apply pass.
+            invalidate_cached_width(&mut self.applied_content_width);
             if self.virtual_total_rows == 0 {
                 self.virtual_window_start = 0;
             } else if self.virtual_window_start >= self.virtual_total_rows {
@@ -1230,7 +1238,10 @@ fn draw_border(cx: &mut Cx2d, draw: &mut DrawColor, rect: Rect, color: Vec4) {
 
 #[cfg(test)]
 mod tests {
-    use super::{replace_arc_slice_if_changed, sync_default_widths, update_cached_width};
+    use super::{
+        invalidate_cached_width, replace_arc_slice_if_changed, sync_default_widths,
+        update_cached_width,
+    };
     use std::hint::black_box;
     use std::sync::Arc;
     use std::time::Instant;
@@ -1354,6 +1365,14 @@ mod tests {
 
         assert!(update_cached_width(&mut cached_width, 512.0));
         assert_eq!(cached_width, 512.0);
+    }
+
+    #[test]
+    fn content_width_cache_reapplies_after_invalidation() {
+        let mut cached_width = 320.0;
+        invalidate_cached_width(&mut cached_width);
+        assert!(update_cached_width(&mut cached_width, 320.0));
+        assert_eq!(cached_width, 320.0);
     }
 
     #[test]
