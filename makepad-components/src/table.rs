@@ -525,7 +525,7 @@ pub struct ShadTable {
     #[rust]
     stretched_avail_width: f64,
     #[rust]
-    applied_content_width: f64,
+    applied_content_width: Option<f64>,
     #[rust]
     total_width: f64,
     #[rust]
@@ -554,10 +554,7 @@ impl ScriptHook for ShadTable {
                 self.rows_data = rows;
                 self.rows_source = self.rows;
             }
-            // A live/script apply can restore `table_view.scroll.content` to its declared `Fit`
-            // width before `sync_layout` reapplies the computed fixed width. Invalidate the cache
-            // so same-width reapplies still run `script_apply_eval!` once after every apply pass.
-            invalidate_cached_width(&mut self.applied_content_width);
+            invalidate_content_width_cache(&mut self.applied_content_width);
             if self.virtual_total_rows == 0 {
                 self.virtual_window_start = 0;
             } else if self.virtual_window_start >= self.virtual_total_rows {
@@ -570,6 +567,20 @@ impl ScriptHook for ShadTable {
 
 impl ShadTable {
     const VIRTUAL_WINDOW_PRELOAD_MARGIN: usize = 8;
+
+    fn apply_content_width_if_changed(&mut self, cx: &mut Cx, width: f64) {
+        if !should_apply_content_width(&mut self.applied_content_width, width) {
+            return;
+        }
+
+        let mut content = self.view.view(cx, ids!(table_view.scroll.content));
+        // Optimization: avoid re-running `script_apply_eval!` on every draw when the table width
+        // is unchanged. The auto-fill path can redraw continuously while scrolling, so caching the
+        // last applied width removes repeated script evaluation from the steady-state render loop.
+        script_apply_eval!(cx, content, {
+            width: #(width)
+        });
+    }
 
     fn draw_empty_row(&self, cx: &mut Cx2d, list: &mut PortalList, item_id: usize, label: &str) {
         let item = list.item(cx, item_id, id!(Empty)).as_view();
@@ -703,7 +714,7 @@ impl ShadTable {
             );
         }
 
-        self.sync_content_width(cx, self.total_width);
+        self.apply_content_width_if_changed(cx, self.total_width);
     }
 
     fn empty_fill_rows(list: &PortalList, cx: &Cx2d, used_rows: usize) -> usize {
@@ -1099,7 +1110,7 @@ impl Widget for ShadTable {
                     );
                 }
 
-                self.sync_content_width(cx, new_total);
+                self.apply_content_width_if_changed(cx, new_total);
 
                 while let Some(step) = self.view.draw_walk(cx, scope, walk).step() {
                     if let Some(mut list) = step.as_portal_list().borrow_mut() {
@@ -1215,6 +1226,18 @@ fn parse_rows(vm: &mut ScriptVm, value: ScriptValue) -> Vec<Arc<[String]>> {
     rows
 }
 
+fn should_apply_content_width(last_applied_width: &mut Option<f64>, width: f64) -> bool {
+    if matches!(last_applied_width, Some(previous) if previous.to_bits() == width.to_bits()) {
+        return false;
+    }
+    *last_applied_width = Some(width);
+    true
+}
+
+fn invalidate_content_width_cache(last_applied_width: &mut Option<f64>) {
+    *last_applied_width = None;
+}
+
 fn draw_border(cx: &mut Cx2d, draw: &mut DrawColor, rect: Rect, color: Vec4) {
     draw.color = color;
     draw.draw_abs(
@@ -1249,7 +1272,10 @@ fn draw_border(cx: &mut Cx2d, draw: &mut DrawColor, rect: Rect, color: Vec4) {
 
 #[cfg(test)]
 mod tests {
-    use super::{replace_arc_slice_if_changed, sync_default_widths, sync_vec_if_changed};
+    use super::{
+        invalidate_content_width_cache, replace_arc_slice_if_changed, should_apply_content_width,
+        sync_default_widths,
+    };
     use std::hint::black_box;
     use std::sync::Arc;
     use std::time::Instant;
@@ -1366,64 +1392,44 @@ mod tests {
     }
 
     #[test]
-    fn sync_vec_if_changed_reuses_allocation_for_header_updates() {
-        let mut headers = vec!["old".to_string(), "header".to_string()];
-        headers.reserve(2);
-        let ptr_before = headers.as_ptr();
-        let capacity_before = headers.capacity();
-
-        assert!(sync_vec_if_changed(
-            &mut headers,
-            &["new".to_string(), "labels".to_string()]
-        ));
-        assert_eq!(headers.as_ptr(), ptr_before);
-        assert_eq!(headers.capacity(), capacity_before);
-        assert_eq!(headers, ["new".to_string(), "labels".to_string()]);
-    }
-
-    #[test]
-    fn sync_vec_if_changed_performance_comparison() {
-        // Performance comparison helper: this prints timings for manual verification.
-        // It intentionally does not assert wall-clock durations to avoid flaky CI failures.
-        const BENCHMARK_ITERATIONS: usize = 100_000;
-        let source_a = vec![
-            "A".to_string(),
-            "B".to_string(),
-            "C".to_string(),
-            "D".to_string(),
-        ];
-        let source_b = vec![
-            "W".to_string(),
-            "X".to_string(),
-            "Y".to_string(),
-            "Z".to_string(),
-        ];
+    fn content_width_apply_cache_skips_steady_state_updates() {
+        const FRAME_COUNT: usize = 120_000;
 
         let old_start = Instant::now();
-        let mut old = source_b.clone();
-        for _ in 0..BENCHMARK_ITERATIONS {
-            if old != source_a {
-                old = source_a.to_vec();
-            }
-            if old != source_b {
-                old = source_b.to_vec();
-            }
-            black_box(&old);
+        let mut uncached_updates = 0usize;
+        for _ in 0..FRAME_COUNT {
+            uncached_updates += 1;
+            black_box(uncached_updates);
         }
         let old_elapsed = old_start.elapsed();
 
         let new_start = Instant::now();
-        let mut optimized = source_b.clone();
-        let optimized_capacity = optimized.capacity();
-        for _ in 0..BENCHMARK_ITERATIONS {
-            sync_vec_if_changed(&mut optimized, &source_a);
-            sync_vec_if_changed(&mut optimized, &source_b);
-            black_box(&optimized);
+        let mut cached_width = None;
+        let mut cached_updates = 0usize;
+        for _ in 0..FRAME_COUNT {
+            if should_apply_content_width(&mut cached_width, 960.0) {
+                cached_updates += 1;
+            }
+            black_box(cached_updates);
         }
         let new_elapsed = new_start.elapsed();
 
-        assert_eq!(optimized.capacity(), optimized_capacity);
-        assert_eq!(old, optimized);
-        println!("sync_vec_if_changed benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
+        assert_eq!(uncached_updates, FRAME_COUNT);
+        assert_eq!(cached_updates, 1);
+        println!(
+            "content_width_apply_cache benchmark: frames={FRAME_COUNT}, uncached_updates={uncached_updates}, cached_updates={cached_updates}, old={old_elapsed:?}, new={new_elapsed:?}"
+        );
+    }
+
+    #[test]
+    fn content_width_apply_cache_reapplies_after_invalidation() {
+        let mut cached_width = None;
+
+        assert!(should_apply_content_width(&mut cached_width, 960.0));
+        assert!(!should_apply_content_width(&mut cached_width, 960.0));
+
+        invalidate_content_width_cache(&mut cached_width);
+
+        assert!(should_apply_content_width(&mut cached_width, 960.0));
     }
 }

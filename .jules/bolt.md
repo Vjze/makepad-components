@@ -19,6 +19,9 @@
 **Learning:** In `ShadTableRowView::set_row_data`, replacing row/cell vectors with `to_vec()` during scroll updates creates repeated heap allocations and deallocations in a hot UI path.
 **Action:** For virtualized row updates, prefer `clear()` + `extend_from_slice()` on existing `Vec` storage (after change detection) so visible row widgets reuse capacity instead of reallocating every swap.
 
+## 2026-03-18 - Caching script width updates in auto-fill table draws
+**Learning:** `ShadTable::draw_walk` can re-enter continuously while scrolling or hovering, so calling `script_apply_eval!` for the scroll content width on every frame wastes CPU even when the computed width is unchanged.
+**Action:** In Makepad widgets with derived layout values, keep a small Rust-side cache of the last applied value and guard `script_apply_eval!` behind that change check so steady-state redraws skip script work entirely.
 ## 2026-03-18 - Streaming router paths avoids segment churn
 **Learning:** In `makepad-router-core`, formatting route URLs through `Vec<String>` plus `join("/")` clones every static segment and adds an extra heap pass on each navigation/update.
 **Action:** Build router paths directly into one pre-sized `String`, and use `LiveId::as_string` for interned dynamic params before falling back to `to_string()`.
