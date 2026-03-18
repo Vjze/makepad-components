@@ -90,7 +90,15 @@ impl RouterWidget {
             && normalized_path_ref.starts_with(normalized_base_ref)
             && normalized_path_ref.as_bytes()[normalized_base_ref.len()] == b'/'
         {
-            return normalized_path_ref[normalized_base_ref.len()..].to_string();
+            let stripped = normalized_path_ref[normalized_base_ref.len()..].trim_start_matches('/');
+            if stripped.is_empty() {
+                return "/".to_string();
+            }
+
+            let mut normalized = String::with_capacity(stripped.len() + 1);
+            normalized.push('/');
+            normalized.push_str(stripped);
+            return normalized;
         }
 
         normalized_path.into_owned()
@@ -444,6 +452,17 @@ mod tests {
         );
         assert_eq!(
             RouterWidget::strip_browser_base_path("/makepad-components/", "/makepad-components"),
+            "/"
+        );
+        assert_eq!(
+            RouterWidget::strip_browser_base_path(
+                "/makepad-components//alert",
+                "/makepad-components"
+            ),
+            "/alert"
+        );
+        assert_eq!(
+            RouterWidget::strip_browser_base_path("/makepad-components///", "/makepad-components"),
             "/"
         );
     }
