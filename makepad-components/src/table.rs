@@ -135,6 +135,19 @@ fn replace_arc_slice_if_changed<T>(dst: &mut Arc<[T]>, src: &Arc<[T]>) -> bool {
     true
 }
 
+fn sync_vec_if_changed<T: PartialEq + Clone>(dst: &mut Vec<T>, src: &[T]) -> bool {
+    if dst.as_slice() == src {
+        return false;
+    }
+
+    // Optimization: header data is refreshed from table draw/layout sync paths.
+    // Previously: `src.to_vec()` rebuilt the Vec storage on every content change.
+    // Now: clear + extend reuses the existing allocation when capacity is sufficient.
+    dst.clear();
+    dst.extend_from_slice(src);
+    true
+}
+
 /// Ensures the table width buffer tracks the current column count while reusing allocations.
 ///
 /// The common case for virtualized updates is a stable column count, so this returns early and
@@ -242,12 +255,10 @@ impl ShadTableHeaderView {
         text_align: f64,
     ) {
         let mut changed = false;
-        if self.headers != headers {
-            self.headers = headers.to_vec();
+        if sync_vec_if_changed(&mut self.headers, headers) {
             changed = true;
         }
-        if self.widths != widths {
-            self.widths = widths.to_vec();
+        if sync_vec_if_changed(&mut self.widths, widths) {
             changed = true;
         }
         if self.text_align != text_align {
@@ -1212,7 +1223,7 @@ fn draw_border(cx: &mut Cx2d, draw: &mut DrawColor, rect: Rect, color: Vec4) {
 
 #[cfg(test)]
 mod tests {
-    use super::{replace_arc_slice_if_changed, sync_default_widths};
+    use super::{replace_arc_slice_if_changed, sync_default_widths, sync_vec_if_changed};
     use std::hint::black_box;
     use std::sync::Arc;
     use std::time::Instant;
@@ -1326,5 +1337,67 @@ mod tests {
         assert_eq!(widths.len(), 8);
         assert_eq!(widths.capacity(), capacity_before);
         assert!(widths.iter().all(|width| *width == 160.0));
+    }
+
+    #[test]
+    fn sync_vec_if_changed_reuses_allocation_for_header_updates() {
+        let mut headers = vec!["old".to_string(), "header".to_string()];
+        headers.reserve(2);
+        let ptr_before = headers.as_ptr();
+        let capacity_before = headers.capacity();
+
+        assert!(sync_vec_if_changed(
+            &mut headers,
+            &["new".to_string(), "labels".to_string()]
+        ));
+        assert_eq!(headers.as_ptr(), ptr_before);
+        assert_eq!(headers.capacity(), capacity_before);
+        assert_eq!(headers, ["new".to_string(), "labels".to_string()]);
+    }
+
+    #[test]
+    fn sync_vec_if_changed_performance_comparison() {
+        // Performance comparison helper: this prints timings for manual verification.
+        // It intentionally does not assert wall-clock durations to avoid flaky CI failures.
+        const BENCHMARK_ITERATIONS: usize = 100_000;
+        let source_a = vec![
+            "A".to_string(),
+            "B".to_string(),
+            "C".to_string(),
+            "D".to_string(),
+        ];
+        let source_b = vec![
+            "W".to_string(),
+            "X".to_string(),
+            "Y".to_string(),
+            "Z".to_string(),
+        ];
+
+        let old_start = Instant::now();
+        let mut old = source_b.clone();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            if old != source_a {
+                old = source_a.to_vec();
+            }
+            if old != source_b {
+                old = source_b.to_vec();
+            }
+            black_box(&old);
+        }
+        let old_elapsed = old_start.elapsed();
+
+        let new_start = Instant::now();
+        let mut optimized = source_b.clone();
+        let optimized_capacity = optimized.capacity();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            sync_vec_if_changed(&mut optimized, &source_a);
+            sync_vec_if_changed(&mut optimized, &source_b);
+            black_box(&optimized);
+        }
+        let new_elapsed = new_start.elapsed();
+
+        assert_eq!(optimized.capacity(), optimized_capacity);
+        assert_eq!(old, optimized);
+        println!("sync_vec_if_changed benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
     }
 }
