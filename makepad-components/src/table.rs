@@ -167,18 +167,6 @@ fn sync_default_widths(widths: &mut Vec<f64>, column_count: usize, default_width
     }
 }
 
-fn update_cached_width(cached_width: &mut f64, width: f64) -> bool {
-    if *cached_width == width {
-        return false;
-    }
-    *cached_width = width;
-    true
-}
-
-fn invalidate_cached_width(cached_width: &mut f64) {
-    *cached_width = f64::NAN;
-}
-
 fn calculate_content_based_widths(headers: &[String], rows_data: &[Arc<[String]>]) -> Vec<f64> {
     let column_count = headers.len();
     if column_count == 0 {
@@ -636,20 +624,6 @@ impl ShadTable {
         }
 
         Some((Arc::clone(&self.stretched_widths_shared), avail))
-    }
-
-    fn sync_content_width(&mut self, cx: &mut Cx, width: f64) {
-        if !update_cached_width(&mut self.applied_content_width, width) {
-            return;
-        }
-
-        // Optimization: only re-run `script_apply_eval!` when the stretched content width
-        // actually changes. Previously the auto-fill draw path re-applied the same width every
-        // frame, which forced unnecessary script evaluation in a hot render loop.
-        let mut content = self.view.view(cx, ids!(table_view.scroll.content));
-        script_apply_eval!(cx, content, {
-            width: #(width)
-        });
     }
 
     fn sync_layout(&mut self, cx: &mut Cx) {
