@@ -13,3 +13,7 @@
 ## 2026-03-17 – [Keep live search controls stable]
 **Learning:** In the gallery, a live-filtering search field became less obvious when a submit-style `Search` button implied delayed execution and the `Clear` button appeared and disappeared, shifting the toolbar.
 **Action:** For live search in this codebase, keep reset actions in a stable slot, disable them when idle, and label any secondary button by what it actually does, like refocusing the field.
+
+## 2026-03-17 – [Label transient search surfaces]
+**Learning:** In the gallery, modal and toolbar search fields can become placeholder-only once users begin typing, which removes the only visible cue about what the field searches.
+**Action:** For search UIs in this codebase, keep a persistent visible label or live summary near the field so the search scope stays clear after input starts.
