@@ -34,6 +34,14 @@ macro_rules! define_gallery_root {
                 text: "Light theme"
             }
 
+            mod.widgets.GalleryMobileThemeToggle = ShadButtonOutline{
+                width: 36
+                height: 36
+                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
+                text: "☀"
+                draw_text.text_style.font_size: 14
+            }
+
             mod.widgets.GalleryCommandPaletteHeaderTrigger = View{
                 width: Fit
                 height: Fit
@@ -185,7 +193,7 @@ macro_rules! define_gallery_root {
                         height: Fit
                     }
 
-                    mobile_theme_toggle := mod.widgets.GalleryThemeToggle{}
+                    mobile_theme_toggle := mod.widgets.GalleryMobileThemeToggle{}
                 }
 
                 ShadSeparator{}

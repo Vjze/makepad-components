@@ -85,17 +85,18 @@ impl App {
     }
 
     fn sync_theme_toggle_copy(&self, cx: &mut Cx) {
-        let label = if self.is_light_theme {
+        let desktop_label = if self.is_light_theme {
             "Dark theme"
         } else {
             "Light theme"
         };
+        let mobile_label = if self.is_light_theme { "☾" } else { "☀" };
         self.ui
             .button(cx, ids!(desktop_theme_toggle))
-            .set_text(cx, label);
+            .set_text(cx, desktop_label);
         self.ui
             .button(cx, ids!(mobile_theme_toggle))
-            .set_text(cx, label);
+            .set_text(cx, mobile_label);
     }
 
     fn sync_page_metadata(&self, cx: &mut Cx) {
