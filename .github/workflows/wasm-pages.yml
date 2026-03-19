@@ -61,7 +61,7 @@ jobs:
       - name: Install wasm-bindgen CLI
         run: cargo install wasm-bindgen-cli --version "${WASM_BINDGEN_VERSION}" --locked --force
 
-      - name: Build Wasm package (small profile, no bindgen)
+      - name: Build Wasm package
         run: ./scripts/build_wasm.sh -p "${APP_PACKAGE}" --bindgen
 
       - name: Patch index.html for GitHub Pages subpath hosting
