@@ -10,10 +10,12 @@ Builds a Makepad wasm app using cargo-makepad with --strip and --brotli enabled.
 EOF
 }
 
-APP_PACKAGE="makepad-example-component-gallery"
+APP_PACKAGE="makepad-gallery"
 PROFILE="small"
 MODE_FLAGS=()
 EXTRA_FLAGS=()
+HAS_RELEASE=0
+HAS_PROFILE=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -23,9 +25,13 @@ while [[ $# -gt 0 ]]; do
             ;;
         --profile)
             PROFILE="${2:?missing profile name}"
+            HAS_PROFILE=1
             shift 2
             ;;
         --release|--bindgen|--no-threads)
+            if [[ "$1" == "--release" ]]; then
+                HAS_RELEASE=1
+            fi
             MODE_FLAGS+=("$1")
             shift
             ;;
@@ -40,4 +46,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-cargo makepad wasm --wasm-opt --strip --split --brotli --no-threads --bindgen build -p "${APP_PACKAGE}" --profile=small
+if [[ ${HAS_RELEASE} -eq 1 && ${HAS_PROFILE} -eq 1 ]]; then
+    echo "error: --release and --profile cannot be used together" >&2
+    exit 1
+fi
+
+CMD=(cargo makepad wasm --wasm-opt --strip --split --brotli)
+CMD+=("${MODE_FLAGS[@]}")
+CMD+=(build -p "${APP_PACKAGE}")
+
+if [[ ${HAS_RELEASE} -eq 0 ]]; then
+    CMD+=("--profile=${PROFILE}")
+fi
+
+CMD+=("${EXTRA_FLAGS[@]}")
+
+"${CMD[@]}"
