@@ -77,7 +77,7 @@ cargo run -p makepad-gallery --release
 ```bash
 cargo install --git https://github.com/wheregmis/makepad.git --branch small_web_nits cargo-makepad --locked
 cargo makepad wasm install-toolchain
-./scripts/build_wasm.sh -p makepad-gallery --profile small --bindgen
+./scripts/build_wasm.sh -p makepad-gallery --profile small --bindgen --no-threads
 ```
 
 Expected output directory:
@@ -963,6 +963,8 @@ GitHub Actions workflows:
 Both workflows materialize the sibling `../makepad` checkout that the workspace `Cargo.toml` patches expect, so CI matches the local dev layout instead of silently falling back to a different dependency graph.
 
 For clean-path deep links on GitHub Pages, both deploy workflows patch `index.html` and also emit `404.html`. That patched app shell is reused for route refreshes so paths like `/scroll-area` and `/pr-preview/pr-123/scroll-area` still bootstrap the app.
+
+The GitHub Pages deploys are built with `--no-threads`. Threaded Makepad wasm needs `Cross-Origin-Embedder-Policy: require-corp` and `Cross-Origin-Opener-Policy: same-origin`, and GitHub Pages does not let this repo set those headers.
 
 On pull requests, the preview workflow:
 - builds `makepad-gallery` with profile `small`
