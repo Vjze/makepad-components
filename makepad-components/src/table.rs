@@ -99,7 +99,7 @@ script_mod! {
                     header := mod.widgets.ShadTableHeaderView{}
                     list := PortalList{
                         width: Fill
-                        height: Fill
+                        height: 208
                         flow: Down
                         max_pull_down: 0.0
                         capture_overload: true

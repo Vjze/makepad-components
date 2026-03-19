@@ -301,6 +301,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "makepad-example-date-picker-table"
+version = "0.1.0"
+dependencies = [
+ "makepad-components",
+ "makepad-widgets",
+]
+
+[[package]]
 name = "makepad-example-notification"
 version = "0.1.0"
 dependencies = [
