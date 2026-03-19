@@ -147,13 +147,13 @@ impl App {
         let active_text = theme_color(cx, id!(color_primary)).unwrap_or(Vec4f::all(1.0));
         let inactive_bg_hover = theme_color(cx, id!(color_ghost_hover)).unwrap_or(Vec4f::all(0.0));
         let inactive_bg_down = theme_color(cx, id!(color_ghost_down)).unwrap_or(active_bg_down);
-        let inactive_text = theme_color(cx, id!(color_muted_foreground)).unwrap_or(Vec4f::all(1.0));
+        let inactive_text = theme_color(cx, id!(color_primary)).unwrap_or(Vec4f::all(1.0));
         let inactive_focus_bg = inactive_bg_hover;
         let inactive_focus_text = active_text;
 
         for entry in catalog::entries() {
             let is_active = entry.page == self.current_page;
-            let mut item = self.ui.button(cx, &[entry.sidebar_id]);
+            let mut item = self.ui.widget(cx, &[entry.sidebar_id]);
             script_apply_eval!(cx, item, {
                 draw_bg +: {
                     color: #(if is_active { active_bg } else { Vec4f::all(0.0) })
@@ -168,6 +168,7 @@ impl App {
                     color_focus: #(if is_active { active_text } else { inactive_focus_text })
                 }
             });
+            item.redraw(cx);
         }
     }
 
