@@ -179,6 +179,8 @@ struct SonnerGlobalState {
     host_uid: Option<WidgetUid>,
     host_overlay: Option<WidgetRef>,
     toasts: VecDeque<SonnerToastKind>,
+    rendered_toasts: [Option<SonnerToastKind>; MAX_VISIBLE_TOASTS],
+    rendered_open: Option<bool>,
 }
 
 #[derive(Default, Clone)]
@@ -253,6 +255,23 @@ impl ScriptHook for ShadSonner {
 }
 
 impl ShadSonner {
+    fn visible_toasts_snapshot(
+        state: &SonnerGlobalState,
+    ) -> [Option<SonnerToastKind>; MAX_VISIBLE_TOASTS] {
+        let mut visible = [None; MAX_VISIBLE_TOASTS];
+        for (index, kind) in state
+            .toasts
+            .iter()
+            .rev()
+            .take(MAX_VISIBLE_TOASTS)
+            .copied()
+            .enumerate()
+        {
+            visible[index] = Some(kind);
+        }
+        visible
+    }
+
     fn default_toast_kind(&self) -> SonnerToastKind {
         match self.toast_kind.as_ref() {
             "description" => SonnerToastKind::Description,
@@ -262,38 +281,34 @@ impl ShadSonner {
     }
 
     fn register_global_host(&mut self, cx: &mut Cx) {
-        let global = cx.global::<SonnerGlobal>().clone();
+        let global = cx.global::<SonnerGlobal>();
         let mut state = global.state.borrow_mut();
         if state.host_uid.is_none() || state.host_uid == Some(self.widget_uid()) {
+            if state.host_uid != Some(self.widget_uid()) || state.host_overlay.is_none() {
+                state.rendered_toasts = [None; MAX_VISIBLE_TOASTS];
+                state.rendered_open = None;
+            }
             state.host_uid = Some(self.widget_uid());
             state.host_overlay = Some(self.overlay.clone());
         }
     }
 
     fn is_global_host(&self, cx: &mut Cx) -> bool {
-        let global = cx.global::<SonnerGlobal>().clone();
+        let global = cx.global::<SonnerGlobal>();
         let is_host = global.state.borrow().host_uid == Some(self.widget_uid());
         is_host
     }
 
     fn global_is_open(&self, cx: &mut Cx) -> bool {
-        let global = cx.global::<SonnerGlobal>().clone();
+        let global = cx.global::<SonnerGlobal>();
         let is_open = !global.state.borrow().toasts.is_empty();
         is_open
     }
 
-    fn visible_toasts(&self, cx: &mut Cx) -> Vec<SonnerToastKind> {
-        let global = cx.global::<SonnerGlobal>().clone();
-        let visible = global
-            .state
-            .borrow()
-            .toasts
-            .iter()
-            .rev()
-            .take(MAX_VISIBLE_TOASTS)
-            .copied()
-            .collect();
-        visible
+    fn visible_toasts(&self, cx: &mut Cx) -> [Option<SonnerToastKind>; MAX_VISIBLE_TOASTS] {
+        let global = cx.global::<SonnerGlobal>();
+        let state = global.state.borrow();
+        Self::visible_toasts_snapshot(&state)
     }
 
     fn sync_overlay_slot(
@@ -301,15 +316,15 @@ impl ShadSonner {
         overlay: &WidgetRef,
         index: usize,
         kind: Option<SonnerToastKind>,
-    ) {
+    ) -> bool {
         let slot = overlay.widget(cx, Self::toast_slot_path(index));
         if slot.is_empty() {
-            return;
+            return false;
         }
 
         let Some(kind) = kind else {
             slot.set_visible(cx, false);
-            return;
+            return true;
         };
 
         slot.set_visible(cx, true);
@@ -323,27 +338,29 @@ impl ShadSonner {
             .set_visible(cx, Self::kind_shows_check(kind));
         slot.widget(cx, ids!(close_btn))
             .set_visible(cx, Self::kind_shows_close(kind));
+        true
     }
 
     fn sync_global_host_overlay(cx: &mut Cx) {
         let global = cx.global::<SonnerGlobal>().clone();
-        let (host_overlay, visible_toasts) = {
+        let (host_overlay, visible_toasts, rendered_toasts, rendered_open) = {
             let state = global.state.borrow();
             (
                 state.host_overlay.clone(),
-                state
-                    .toasts
-                    .iter()
-                    .rev()
-                    .take(MAX_VISIBLE_TOASTS)
-                    .copied()
-                    .collect::<Vec<_>>(),
+                Self::visible_toasts_snapshot(&state),
+                state.rendered_toasts,
+                state.rendered_open,
             )
         };
 
         if let Some(overlay) = host_overlay {
+            let next_open = visible_toasts[0].is_some();
+            let mut changed = false;
             if let Some(mut popup) = overlay.borrow_mut::<PopupNotification>() {
-                if visible_toasts.is_empty() {
+                if rendered_open != Some(next_open) {
+                    changed = true;
+                }
+                if !next_open {
                     popup.close(cx);
                 } else {
                     popup.open(cx);
@@ -351,9 +368,17 @@ impl ShadSonner {
             }
 
             for index in 0..MAX_VISIBLE_TOASTS {
-                Self::sync_overlay_slot(cx, &overlay, index, visible_toasts.get(index).copied());
+                if rendered_toasts[index] != visible_toasts[index] {
+                    changed |= Self::sync_overlay_slot(cx, &overlay, index, visible_toasts[index]);
+                }
             }
-            overlay.redraw(cx);
+
+            if changed {
+                let mut state = global.state.borrow_mut();
+                state.rendered_toasts = visible_toasts;
+                state.rendered_open = Some(next_open);
+                overlay.redraw(cx);
+            }
         }
     }
 
@@ -455,8 +480,8 @@ impl ShadSonner {
         }
 
         let visible_toasts = self.visible_toasts(cx);
-        for index in 0..MAX_VISIBLE_TOASTS {
-            Self::sync_overlay_slot(cx, &self.overlay, index, visible_toasts.get(index).copied());
+        for (index, kind) in visible_toasts.into_iter().enumerate().take(MAX_VISIBLE_TOASTS) {
+            Self::sync_overlay_slot(cx, &self.overlay, index, kind);
         }
         self.sync_overlay_open_state(cx);
     }

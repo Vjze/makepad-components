@@ -123,6 +123,31 @@ grep -r "texture_2d" widgets/src/
 RUST_BACKTRACE=1 cargo run -p makepad-example-splash --release & PID=$!; sleep 15; kill $PID 2>/dev/null; echo "Process $PID killed"
 ```
 
+## Current Workspace Commands
+
+Use the package names from the local `Cargo.toml` files when repo docs disagree.
+
+```bash
+# Check the whole workspace
+cargo check --workspace
+
+# Run the current gallery app package
+cargo run -p makepad-gallery --release
+
+# Run the standalone date-picker/table example
+cargo run -p makepad-example-date-picker-table --release
+
+# Run the router examples
+cargo run -p router_example --release
+cargo run -p router_advanced_example --release
+
+# Run or build the gallery for wasm from the workspace root
+cargo makepad wasm run -p makepad-gallery --release
+./scripts/build_wasm.sh -p makepad-gallery --profile small --no-threads
+```
+
+TODO: `README.md` and `scripts/build_wasm.sh` still reference `makepad-example-component-gallery`; pass `-p makepad-gallery` explicitly until those defaults are reconciled.
+
 ## Cargo.toml Setup
 
 ```toml

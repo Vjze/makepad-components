@@ -1,11 +1,11 @@
 use crate::ui::page_macros::gallery_stateful_page_shell;
 use makepad_components::makepad_widgets::*;
+use makepad_components::table::ShadTableWidgetExt;
+use std::sync::Arc;
 
 #[derive(Clone, Copy)]
 struct IconGalleryEntry {
-    row_index: usize,
-    row_id: &'static str,
-    card_id: &'static str,
+    template_id: &'static str,
     icon_name: &'static str,
     widget_name: &'static str,
 }
@@ -20,20 +20,36 @@ macro_rules! icon_gallery_page_generated {
             divider: { ShadHr{} },
             preview_spacing: 12.0,
             preview: {
-                search_toolbar := View{
+                search_controls := ShadField{
                     width: Fill
-                    height: Fit
-                    flow: Right
-                    spacing: 8.0
 
-                    search_field := ShadInputWithIcon{
-                        width: Fill
-                        input +: {
-                            empty_text: "Search icons or widget names..."
-                        }
+                    search_label := ShadFieldLabel{
+                        text: "Search icons or widget names"
                     }
 
-                    icon_search_btn := ShadButtonSm{text: "Search"}
+                    search_toolbar := View{
+                        width: Fill
+                        height: Fit
+                        flow: Right
+                        spacing: 8.0
+
+                        search_field := ShadInputWithIcon{
+                            width: Fill
+                            input +: {
+                                empty_text: "Search icons or widget names..."
+                            }
+                        }
+
+                        clear_search_btn := ShadButtonOutline{
+                            text: "Clear"
+                        }
+
+                        icon_search_btn := ShadButtonSm{text: "Focus search"}
+                    }
+                }
+
+                search_hint := ShadFieldDescription{
+                    text: "Results update as you type. Press Esc or Clear to reset the search."
                 }
 
                 icon_results_summary := ShadFieldDescription{
@@ -64,19 +80,60 @@ macro_rules! icon_gallery_page_generated {
                     }
                 }
 
-                icon_grid := View{
-                    width: Fill
-                    height: Fit
-                    flow: Down
-                    spacing: 10.0
+                icon_table := ShadTable{
+                    headers: []
+                    rows: []
+                    selectable: false
+                    empty_message: "No icons matched the current search."
+                    table_view := View{
+                        width: Fill
+                        height: Fit
+                        flow: Down
+                        spacing: 8.0
 
-                    $($icon_rows)*
+                        caption_label := ShadFieldDescription{
+                            visible: false
+                            text: ""
+                        }
+
+                        scroll := ScrollXView{
+                            width: Fill
+                            height: Fit
+                            flow: Down
+                            padding: Inset{left: 0.0, right: 0.0, top: 0.0, bottom: 0.0}
+                            spacing: 0.0
+
+                            content := View{
+                                width: Fit
+                                height: Fit
+                                flow: Down
+                                spacing: 8.0
+
+                                header := mod.widgets.ShadTableHeaderView{}
+                                list := PortalList{
+                                    width: Fill
+                                    height: 420.0
+                                    flow: Down
+                                    max_pull_down: 0.0
+                                    capture_overload: true
+                                    grab_key_focus: false
+                                    auto_tail: false
+                                    selectable: false
+                                    drag_scrolling: true
+
+                                    Empty := mod.widgets.ShadTableEmptyRow{}
+
+                                    $($icon_rows)*
+                                }
+                            }
+                        }
+                    }
                 }
             },
             action_flow: {
                 mod.widgets.GalleryActionFlowStep{text: "1. Run `python3 makepad-icon/scripts/download_lucide_icons.py --clean` to refresh SVG assets from Lucide."}
-                mod.widgets.GalleryActionFlowStep{text: "2. Build `makepad-icon` or `makepad-gallery`; build.rs scans icons and regenerates both the preview grid and the search metadata automatically."}
-                mod.widgets.GalleryActionFlowStep{text: "3. Search by Lucide asset name like `search` or by Rust widget name like `IconSearch` to narrow the grid quickly."}
+                mod.widgets.GalleryActionFlowStep{text: "2. Build `makepad-icon` or `makepad-gallery`; build.rs scans icons and regenerates the virtualized list rows plus the search metadata automatically."}
+                mod.widgets.GalleryActionFlowStep{text: "3. Search by Lucide asset name like `search` or by Rust widget name like `IconSearch` to narrow the virtualized list quickly."}
                 mod.widgets.GalleryActionFlowStep{text: "4. Use the widget name shown on each tile directly in script_mod!, and start from the usage snippet panel when you need sizing or color overrides."}
             },
         }
@@ -95,17 +152,13 @@ pub struct GalleryIconGalleryPage {
     #[rust]
     query: String,
     #[rust]
-    entry_row_ids: Vec<LiveId>,
-    #[rust]
-    entry_card_ids: Vec<LiveId>,
-    #[rust]
-    row_live_ids: Vec<LiveId>,
+    template_live_ids: Vec<LiveId>,
     #[rust]
     widget_name_lower: Vec<String>,
     #[rust]
-    card_visible_cache: Vec<bool>,
+    filtered_template_ids: Arc<[LiveId]>,
     #[rust]
-    row_visible_cache: Vec<bool>,
+    filtered_template_ids_scratch: Vec<LiveId>,
     #[rust]
     summary_cache: String,
     #[rust]
@@ -113,13 +166,6 @@ pub struct GalleryIconGalleryPage {
 }
 
 impl GalleryIconGalleryPage {
-    fn default_entry_index() -> usize {
-        ICON_GALLERY_ENTRIES
-            .iter()
-            .position(|entry| entry.widget_name == "IconSearch")
-            .unwrap_or(0)
-    }
-
     fn normalize_query(query: &str) -> String {
         query.trim().to_ascii_lowercase()
     }
@@ -128,7 +174,7 @@ impl GalleryIconGalleryPage {
         if query.is_empty() {
             format!("Showing all {ICON_GALLERY_TOTAL} generated icons.")
         } else if matches_count == 0 {
-            format!("No icons matched \"{query}\".")
+            format!("No icons matched \"{query}\". Press Esc to clear the search.")
         } else {
             format!(
                 "Showing {matches_count} of {ICON_GALLERY_TOTAL} icons for \"{query}\"."
@@ -140,6 +186,26 @@ impl GalleryIconGalleryPage {
         format!(
             "{widget_name}{{\n    icon_walk: Walk{{width: 18, height: 18}}\n    draw_icon.color: (shad_theme.color_primary)\n}}\n"
         )
+    }
+
+    fn sync_empty_usage_preview(&self, cx: &mut Cx, query: &str) {
+        self.view
+            .label(cx, ids!(icon_usage_title))
+            .set_text(cx, "No matching icon");
+        self.view
+            .label(cx, ids!(icon_usage_description))
+            .set_text(
+                cx,
+                &format!(
+                    "No generated icon matched \"{query}\". Clear or broaden the search to restore the usage snippet."
+                ),
+            );
+        self.view
+            .widget(cx, ids!(icon_usage_snippet.container.code_view))
+            .set_text(
+                cx,
+                "// No icon snippet available while the current search has no matches.\n",
+            );
     }
 
     fn sync_usage_preview(&self, cx: &mut Cx, entry: &IconGalleryEntry) {
@@ -161,83 +227,54 @@ impl GalleryIconGalleryPage {
     }
 
     fn ensure_filter_cache(&mut self) {
-        if self.entry_row_ids.len() == ICON_GALLERY_ENTRIES.len()
-            && self.entry_card_ids.len() == ICON_GALLERY_ENTRIES.len()
+        if self.template_live_ids.len() == ICON_GALLERY_ENTRIES.len()
             && self.widget_name_lower.len() == ICON_GALLERY_ENTRIES.len()
-            && self.card_visible_cache.len() == ICON_GALLERY_ENTRIES.len()
-            && self.row_live_ids.len() == ICON_GALLERY_ROW_IDS.len()
-            && self.row_visible_cache.len() == ICON_GALLERY_ROW_IDS.len()
         {
             return;
         }
 
-        self.entry_row_ids = ICON_GALLERY_ENTRIES
+        self.template_live_ids = ICON_GALLERY_ENTRIES
             .iter()
-            .map(|entry| LiveId::from_str(entry.row_id))
-            .collect();
-        self.entry_card_ids = ICON_GALLERY_ENTRIES
-            .iter()
-            .map(|entry| LiveId::from_str(entry.card_id))
+            .map(|entry| LiveId::from_str(entry.template_id))
             .collect();
         self.widget_name_lower = ICON_GALLERY_ENTRIES
             .iter()
             .map(|entry| entry.widget_name.to_ascii_lowercase())
             .collect();
-        self.card_visible_cache = vec![false; ICON_GALLERY_ENTRIES.len()];
-
-        self.row_live_ids = ICON_GALLERY_ROW_IDS
-            .iter()
-            .map(|row_id| LiveId::from_str(row_id))
-            .collect();
-        self.row_visible_cache = vec![false; ICON_GALLERY_ROW_IDS.len()];
+        self.filtered_template_ids = Arc::default();
+        self.filtered_template_ids_scratch = Vec::with_capacity(ICON_GALLERY_ENTRIES.len());
     }
 
     fn apply_filter(&mut self, cx: &mut Cx) {
         self.ensure_filter_cache();
         let display_query = self.query.trim().to_string();
         let query = Self::normalize_query(&self.query);
-        let mut visible_rows = vec![false; self.row_live_ids.len()];
         let mut matches_count = 0;
         let mut first_match_index = None;
         let mut changed = false;
+        self.filtered_template_ids_scratch.clear();
 
         for (index, entry) in ICON_GALLERY_ENTRIES.iter().enumerate() {
             let matches = query.is_empty()
                 || entry.icon_name.contains(&query)
                 || self.widget_name_lower[index].contains(&query);
             if matches {
-                visible_rows[entry.row_index] = true;
+                self.filtered_template_ids_scratch
+                    .push(self.template_live_ids[index]);
                 matches_count += 1;
                 if first_match_index.is_none() {
                     first_match_index = Some(index);
                 }
             }
-
-            if self.card_visible_cache[index] != matches {
-                self.card_visible_cache[index] = matches;
-                self.view
-                    .widget(
-                        cx,
-                        &[
-                            live_id!(icon_grid),
-                            self.entry_row_ids[index],
-                            self.entry_card_ids[index],
-                        ],
-                    )
-                    .set_visible(cx, matches);
-                changed = true;
-            }
         }
 
-        for (row_index, row_id) in self.row_live_ids.iter().enumerate() {
-            let is_visible = visible_rows[row_index];
-            if self.row_visible_cache[row_index] != is_visible {
-                self.row_visible_cache[row_index] = is_visible;
-                self.view
-                    .widget(cx, &[live_id!(icon_grid), *row_id])
-                    .set_visible(cx, is_visible);
-                changed = true;
-            }
+        if self.filtered_template_ids.as_ref() != self.filtered_template_ids_scratch.as_slice() {
+            self.filtered_template_ids =
+                Arc::from(self.filtered_template_ids_scratch.as_slice());
+            self.view
+                .shad_table(cx, ids!(icon_table))
+                .set_custom_row_templates(cx, Arc::clone(&self.filtered_template_ids));
+            changed = true;
         }
 
         let summary = Self::summary_text(&display_query, matches_count);
@@ -249,15 +286,25 @@ impl GalleryIconGalleryPage {
             changed = true;
         }
 
-        let target_entry_index = if query.is_empty() {
-            Self::default_entry_index()
-        } else {
-            first_match_index.unwrap_or(Self::default_entry_index())
-        };
-        if self.usage_entry_cache != Some(target_entry_index) {
-            self.usage_entry_cache = Some(target_entry_index);
-            self.sync_usage_preview(cx, &ICON_GALLERY_ENTRIES[target_entry_index]);
-            changed = true;
+        self.view
+            .button(cx, ids!(clear_search_btn))
+            .set_enabled(cx, !query.is_empty());
+
+        match first_match_index {
+            Some(target_entry_index) => {
+                if self.usage_entry_cache != Some(target_entry_index) {
+                    self.usage_entry_cache = Some(target_entry_index);
+                    self.sync_usage_preview(cx, &ICON_GALLERY_ENTRIES[target_entry_index]);
+                    changed = true;
+                }
+            }
+            None => {
+                if self.usage_entry_cache.is_some() || !query.is_empty() {
+                    self.usage_entry_cache = None;
+                    self.sync_empty_usage_preview(cx, &display_query);
+                    changed = true;
+                }
+            }
         }
 
         if changed {
@@ -294,9 +341,18 @@ impl Widget for GalleryIconGalleryPage {
             if let Some((text, _modifiers)) = search_input.returned(actions) {
                 next_query = Some(text);
             }
+            if search_input.escaped(actions) && !self.query.is_empty() {
+                search_input.set_text(cx, "");
+                search_input.set_key_focus(cx);
+                next_query = Some(String::new());
+            }
             if self.view.button(cx, ids!(icon_search_btn)).clicked(actions) {
                 search_input.set_key_focus(cx);
-                next_query = Some(search_input.text());
+            }
+            if self.view.button(cx, ids!(clear_search_btn)).clicked(actions) {
+                search_input.set_text(cx, "");
+                search_input.set_key_focus(cx);
+                next_query = Some(String::new());
             }
 
             if let Some(query) = next_query {

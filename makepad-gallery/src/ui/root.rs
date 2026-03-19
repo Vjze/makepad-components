@@ -28,25 +28,42 @@ macro_rules! define_gallery_root {
             use mod.draw.KeyCode
             use mod.widgets.*
 
-            mod.widgets.GalleryThemeToggle = ButtonFlatIcon{
+            mod.widgets.GalleryThemeToggle = ShadButtonOutline{
+                width: Fit
+                height: 36
+                text: "Light theme"
+            }
+
+            mod.widgets.GalleryMobileThemeToggle = ShadButtonOutline{
                 width: 36
                 height: 36
-                icon_walk: Walk{width: 16, height: 16}
-                draw_icon.svg: crate_resource("self://resources/icons/sun-moon.svg")
-                draw_icon.color: (shad_theme.color_primary)
+                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
+                text: "☀"
+                draw_text.text_style.font_size: 14
+            }
 
-                draw_bg +: {
-                    color: #0000
-                    color_hover: (shad_theme.color_ghost_hover)
-                    color_down: (shad_theme.color_ghost_down)
-                    color_focus: (shad_theme.color_ghost_hover)
-                    border_size: 1.0
-                    border_radius: (shad_theme.radius)
-                    border_color: (shad_theme.color_outline_border)
-                    border_color_hover: (shad_theme.color_outline_border_hover)
-                    border_color_down: (shad_theme.color_outline_border_down)
-                    border_color_focus: (shad_theme.color_outline_border_hover)
+            mod.widgets.GalleryCommandPaletteHeaderTrigger = View{
+                width: Fit
+                height: Fit
+                flow: Right
+                align: Align{y: 0.5}
+                spacing: 8.0
+
+                desktop_command_palette_trigger := ShadButtonOutline{text: "Search components"}
+
+                ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
+                ShadKbdSeparator{}
+                ShadKbd{ label := ShadKbdLabel{text: "K"} }
+
+                ShadSectionHeader{
+                    draw_text.color: (shad_theme.color_muted_foreground)
+                    draw_text.text_style.font_size: 10
+                    text: "or"
                 }
+
+                ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
+                ShadKbdSeparator{}
+                ShadKbd{ label := ShadKbdLabel{text: "K"} }
             }
 
             mod.widgets.GalleryContentFlip = RouterWidget{
@@ -96,6 +113,8 @@ macro_rules! define_gallery_root {
                         }
                     }
 
+                    mod.widgets.GalleryCommandPaletteHeaderTrigger{}
+
                     View{
                         width: Fill
                         height: Fit
@@ -116,71 +135,83 @@ macro_rules! define_gallery_root {
                 header_bar := View{
                     width: Fill
                     height: Fit
-                    flow: Right
-                    align: Align{y: 0.5}
+                    flow: Down
                     padding: Inset{left: 16, right: 16, top: 12, bottom: 12}
-                    spacing: 12.0
+                    spacing: 10.0
                     draw_bg.color: (shad_theme.color_background)
 
-                    mobile_sidebar_toggle := View{
-                        width: 36
-                        height: 36
-                        flow: Overlay
-
-                        mobile_sidebar_menu_button := IconButtonMenu{
-                            width: 36
-                            height: 36
-                            draw_bg +: {
-                                color: #0000
-                                color_hover: (shad_theme.color_ghost_hover)
-                                color_down: (shad_theme.color_ghost_down)
-                                color_focus: (shad_theme.color_ghost_hover)
-                                border_size: 0.0
-                                border_radius: (shad_theme.radius)
-                                border_color: #0000
-                            }
-                            draw_icon.color: (shad_theme.color_primary)
-                        }
-
-                        mobile_sidebar_close_button := IconButtonX{
-                            visible: false
-                            width: 36
-                            height: 36
-                            draw_bg +: {
-                                color: #0000
-                                color_hover: (shad_theme.color_ghost_hover)
-                                color_down: (shad_theme.color_ghost_down)
-                                color_focus: (shad_theme.color_ghost_hover)
-                                border_size: 0.0
-                                border_radius: (shad_theme.radius)
-                                border_color: #0000
-                            }
-                            draw_icon.color: (shad_theme.color_primary)
-                        }
-                    }
-
-                    mobile_header_meta := View{
-                        width: Fit
-                        height: Fit
-                        flow: Down
-                        spacing: 2.0
-
-                        mobile_header_caption := ShadSectionHeader{
-                            text: "Gallery"
-                        }
-
-                        mobile_page_label := ShadLabel{
-                            text: "Components"
-                            draw_text.text_style.font_size: 12
-                        }
-                    }
-
-                    View{
+                    header_top_row := View{
                         width: Fill
                         height: Fit
+                        flow: Right
+                        align: Align{y: 0.5}
+                        spacing: 12.0
+
+                        mobile_sidebar_toggle := View{
+                            width: 36
+                            height: 36
+                            flow: Overlay
+
+                            mobile_sidebar_menu_button := IconButtonMenu{
+                                width: 36
+                                height: 36
+                                draw_bg +: {
+                                    color: #0000
+                                    color_hover: (shad_theme.color_ghost_hover)
+                                    color_down: (shad_theme.color_ghost_down)
+                                    color_focus: (shad_theme.color_ghost_hover)
+                                    border_size: 0.0
+                                    border_radius: (shad_theme.radius)
+                                    border_color: #0000
+                                }
+                                draw_icon.color: (shad_theme.color_primary)
+                            }
+
+                            mobile_sidebar_close_button := IconButtonX{
+                                visible: false
+                                width: 36
+                                height: 36
+                                draw_bg +: {
+                                    color: #0000
+                                    color_hover: (shad_theme.color_ghost_hover)
+                                    color_down: (shad_theme.color_ghost_down)
+                                    color_focus: (shad_theme.color_ghost_hover)
+                                    border_size: 0.0
+                                    border_radius: (shad_theme.radius)
+                                    border_color: #0000
+                                }
+                                draw_icon.color: (shad_theme.color_primary)
+                            }
+                        }
+
+                        mobile_header_meta := View{
+                            width: Fit
+                            height: Fit
+                            flow: Down
+                            spacing: 2.0
+
+                            mobile_header_caption := ShadSectionHeader{
+                                text: "Gallery"
+                            }
+
+                            mobile_page_label := ShadLabel{
+                                text: "Components"
+                                draw_text.text_style.font_size: 12
+                            }
+                        }
+
+                        View{
+                            width: Fill
+                            height: Fit
+                        }
+
+                        mobile_theme_toggle := mod.widgets.GalleryThemeToggle{}
                     }
 
-                    mobile_theme_toggle := mod.widgets.GalleryThemeToggle{}
+                    mobile_command_palette_trigger := ShadButtonGhost{
+                        width: Fill
+                        text: "Search components"
+                    }
                 }
 
                 ShadSeparator{}

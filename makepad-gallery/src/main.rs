@@ -84,6 +84,21 @@ impl App {
             .set_visible(cx, show_close);
     }
 
+    fn sync_theme_toggle_copy(&self, cx: &mut Cx) {
+        let desktop_label = if self.is_light_theme {
+            "Dark theme"
+        } else {
+            "Light theme"
+        };
+        let mobile_label = if self.is_light_theme { "☾" } else { "☀" };
+        self.ui
+            .button(cx, ids!(desktop_theme_toggle))
+            .set_text(cx, desktop_label);
+        self.ui
+            .button(cx, ids!(mobile_theme_toggle))
+            .set_text(cx, mobile_label);
+    }
+
     fn sync_page_metadata(&self, cx: &mut Cx) {
         if let Some(entry) = catalog::entry_for_page(self.current_page) {
             self.ui
@@ -92,6 +107,67 @@ impl App {
             self.ui
                 .label(cx, ids!(mobile_page_label))
                 .set_text(cx, entry.title);
+        }
+        self.sync_sidebar_focus_behavior(cx);
+        self.sync_sidebar_selection(cx);
+    }
+
+    fn sync_sidebar_focus_behavior(&self, cx: &mut Cx) {
+        let allow_sidebar_focus = !self.is_small_screen;
+
+        for entry in catalog::entries() {
+            let mut item = self.ui.button(cx, &[entry.sidebar_id]);
+            script_apply_eval!(cx, item, {
+                grab_key_focus: #(allow_sidebar_focus)
+            });
+        }
+    }
+
+    fn sync_sidebar_selection(&self, cx: &mut Cx) {
+        fn theme_color(cx: &mut Cx, key: LiveId) -> Option<Vec4f> {
+            cx.with_vm(|vm| {
+                let mod_obj = vm.module(id!(mod));
+                let widgets = vm.bx.heap.value(mod_obj, id!(widgets).into(), NoTrap);
+                let widgets_obj = widgets.as_object()?;
+                let theme = vm
+                    .bx
+                    .heap
+                    .value(widgets_obj, id!(shad_theme).into(), NoTrap);
+                let theme_obj = theme.as_object()?;
+                vm.bx
+                    .heap
+                    .value(theme_obj, key.into(), NoTrap)
+                    .as_color()
+                    .map(Vec4f::from_u32)
+            })
+        }
+
+        let active_bg = theme_color(cx, id!(color_secondary_hover)).unwrap_or(Vec4f::all(0.0));
+        let active_bg_down = theme_color(cx, id!(color_secondary_down)).unwrap_or(active_bg);
+        let active_text = theme_color(cx, id!(color_primary)).unwrap_or(Vec4f::all(1.0));
+        let inactive_bg_hover = theme_color(cx, id!(color_ghost_hover)).unwrap_or(Vec4f::all(0.0));
+        let inactive_bg_down = theme_color(cx, id!(color_ghost_down)).unwrap_or(active_bg_down);
+        let inactive_text = theme_color(cx, id!(color_muted_foreground)).unwrap_or(Vec4f::all(1.0));
+        let inactive_focus_bg = inactive_bg_hover;
+        let inactive_focus_text = active_text;
+
+        for entry in catalog::entries() {
+            let is_active = entry.page == self.current_page;
+            let mut item = self.ui.button(cx, &[entry.sidebar_id]);
+            script_apply_eval!(cx, item, {
+                draw_bg +: {
+                    color: #(if is_active { active_bg } else { Vec4f::all(0.0) })
+                    color_hover: #(if is_active { active_bg } else { inactive_bg_hover })
+                    color_down: #(if is_active { active_bg_down } else { inactive_bg_down })
+                    color_focus: #(if is_active { active_bg } else { inactive_focus_bg })
+                }
+                draw_text +: {
+                    color: #(if is_active { active_text } else { inactive_text })
+                    color_hover: #(active_text)
+                    color_down: #(active_text)
+                    color_focus: #(if is_active { active_text } else { inactive_focus_text })
+                }
+            });
         }
     }
 
@@ -107,6 +183,7 @@ impl App {
             );
         });
         self.apply_responsive_visibility(cx);
+        self.sync_theme_toggle_copy(cx);
         self.set_current_page(cx, self.current_page);
         self.ui.redraw(cx);
     }
@@ -135,6 +212,7 @@ impl App {
             .view(cx, ids!(main_content))
             .set_visible(cx, !self.is_small_screen || !self.sidebar_open);
         self.sync_mobile_sidebar_button(cx);
+        self.sync_sidebar_focus_behavior(cx);
     }
 
     fn update_screen_mode(&mut self, cx: &mut Cx, window_width: f64) {
@@ -210,6 +288,17 @@ impl MatchEvent for App {
         {
             self.queue_theme_change(cx, !self.is_light_theme);
         }
+        if self
+            .ui
+            .button(cx, ids!(desktop_command_palette_trigger))
+            .clicked(actions)
+            || self
+                .ui
+                .button(cx, ids!(mobile_command_palette_trigger))
+                .clicked(actions)
+        {
+            self.open_command_palette(cx);
+        }
 
         self.handle_sidebar_navigation(cx, actions);
         if self
@@ -236,6 +325,7 @@ impl AppMain for App {
                 self.pending_theme = None;
                 self.theme_reload_next_frame = NextFrame::default();
                 self.apply_responsive_visibility(cx);
+                self.sync_theme_toggle_copy(cx);
                 self.set_current_page(cx, self.current_page);
             }
             Event::NextFrame(_) => {
