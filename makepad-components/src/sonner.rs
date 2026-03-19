@@ -79,13 +79,6 @@ script_mod! {
             icon_walk: Walk{width: 24, height: 24}
         }
     }
-    let CloseIcon = CheckIcon{
-        icon +: {
-            draw_icon.svg: crate_resource("self://resources/icons/x.svg")
-            draw_icon.color: (shad_theme.color_muted_foreground)
-            icon_walk: Walk{width: 24, height: 24}
-        }
-    }
     let ToastSlotPanel = RoundedView{
         visible: false
         width: 280
@@ -428,29 +421,19 @@ impl ShadSonner {
     }
 
     fn sync_toast_visibility(&mut self, cx: &mut Cx) {
-        if !cx
-            .global::<SonnerGlobal>()
-            .state
-            .borrow()
-            .host_uid
-            .map_or(false, |uid| uid == self.widget_uid())
-        {
+        if !self.is_global_host(cx) {
             return;
         }
-        let visible = self.visible_toasts(cx);
-        for (index, item) in visible.into_iter().enumerate() {
-            Self::sync_overlay_slot(cx, &self.overlay, index, item);
 
-            let visible_toasts = self.visible_toasts(cx);
-            for (index, kind) in visible_toasts
-                .into_iter()
-                .enumerate()
-                .take(MAX_VISIBLE_TOASTS)
-            {
-                Self::sync_overlay_slot(cx, &self.overlay, index, kind);
-            }
-            self.sync_overlay_open_state(cx);
+        let visible_toasts = self.visible_toasts(cx);
+        for (index, kind) in visible_toasts
+            .into_iter()
+            .enumerate()
+            .take(MAX_VISIBLE_TOASTS)
+        {
+            Self::sync_overlay_slot(cx, &self.overlay, index, kind);
         }
+        self.sync_overlay_open_state(cx);
     }
 
     fn visible_toasts(&self, cx: &mut Cx) -> [Option<SonnerItem>; MAX_VISIBLE_TOASTS] {
