@@ -36,5 +36,5 @@
 **Action:** Always ensure focus rings for interactive controls (Checkbox, Toggle, etc.) use a high-contrast primary color and a thicker stroke (e.g. 2px) for clear keyboard visibility.
 
 ## 2026-03-19 – [Grouped actions must stay in tab order]
-**Learning:** Shared grouped controls in this repo can accidentally ship with `grab_key_focus: false`, which makes menubar actions and button-group items unreachable for keyboard users even though their focus styles exist.
-**Action:** For reusable action rows and grouped buttons, keep keyboard focus enabled by default unless a component has a documented roving-focus model.
+**Learning:** In this codebase, toggling `grab_key_focus` on a styled `ButtonFlat` is not enough to make grouped actions meaningfully keyboard reachable because the upstream widget already manages its own nav stop and click-focus path.
+**Action:** When a reusable action row or grouped button needs real tab-stop control, wire keyboard reachability in the component widget itself: add or skip `cx.add_nav_stop(...)` in `draw_walk`, and gate click focus plus key activation in `handle_event`.
