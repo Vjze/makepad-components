@@ -19,6 +19,7 @@ env:
 
 jobs:
   cargo-check:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     name: cargo check (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -53,6 +54,7 @@ jobs:
         run: cargo check --workspace --locked
 
   cargo-check-wasm:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     name: cargo check (wasm32-unknown-unknown)
     runs-on: ubuntu-latest
 
