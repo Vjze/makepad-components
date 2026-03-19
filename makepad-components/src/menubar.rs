@@ -78,7 +78,7 @@ script_mod! {
         height: 32
         align: Align{x: 0.0, y: 0.5}
         padding: Inset{left: 10, right: 10, top: 0, bottom: 0}
-        grab_key_focus: false
+        grab_key_focus: true
         reset_hover_on_click: true
 
         draw_bg +: {

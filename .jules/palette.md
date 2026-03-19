@@ -34,3 +34,7 @@
 ## 2024-03-19 - [Focus ring contrast consistency]
 **Learning:** In Makepad components, thin 1px focus rings using subtle hover colors (like `color_outline_border_hover`) fail accessibility contrast guidelines for keyboard users, whereas other components (like `RadioGroup`) correctly use a 2px `color_primary` stroke.
 **Action:** Always ensure focus rings for interactive controls (Checkbox, Toggle, etc.) use a high-contrast primary color and a thicker stroke (e.g. 2px) for clear keyboard visibility.
+
+## 2026-03-19 – [Grouped actions must stay in tab order]
+**Learning:** Shared grouped controls in this repo can accidentally ship with `grab_key_focus: false`, which makes menubar actions and button-group items unreachable for keyboard users even though their focus styles exist.
+**Action:** For reusable action rows and grouped buttons, keep keyboard focus enabled by default unless a component has a documented roving-focus model.
