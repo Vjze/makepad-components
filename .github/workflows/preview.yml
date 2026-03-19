@@ -55,7 +55,7 @@ jobs:
 
       - name: Install cargo-makepad
         if: github.event.action != 'closed'
-        run: cargo install --path "${GITHUB_WORKSPACE}/../makepad/tools/cargo_makepad" --locked
+        run: cargo install --path "${GITHUB_WORKSPACE}/../makepad/tools/cargo_makepad" --locked --force
 
       - name: Install Wasm toolchain
         if: github.event.action != 'closed'
