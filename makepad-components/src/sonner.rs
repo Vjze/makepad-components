@@ -2,12 +2,11 @@ use crate::internal::actions::emit_widget_action;
 use crate::internal::overlay::button_clicked;
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
-use std::{
-    cell::RefCell,
-    collections::VecDeque,
-    rc::Rc,
-    time::{Duration, Instant},
-};
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::{Duration, Instant};
+use std::{cell::RefCell, collections::VecDeque, rc::Rc};
+#[cfg(target_arch = "wasm32")]
+use web_time::{Duration, Instant};
 
 const MAX_VISIBLE_TOASTS: usize = 4;
 const DEFAULT_TIMEOUT_SEC: f64 = 5.0;
