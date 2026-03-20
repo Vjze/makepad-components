@@ -26,9 +26,9 @@ gallery_stateful_page_shell! {
                 ShadFieldDescription{text: "Use dialogs when the user needs to stop, make one focused decision, and return to the page with a clear next state."}
 
                 View{
-                    width: Fit
+                    width: Fill
                     height: Fit
-                    flow: Right
+                    flow: Right{wrap: true}
                     spacing: 12.0
 
                     open_rename_dialog_btn := ShadButton{

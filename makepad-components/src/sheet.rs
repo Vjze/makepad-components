@@ -20,7 +20,7 @@ script_mod! {
         height: Fit
         open: false
         side: "right"
-        sheet_size: 420.0
+        sheet_size: 360.0
 
         overlay: Modal{
             align: Align{x: 1.0, y: 0.0}
@@ -29,7 +29,7 @@ script_mod! {
             }
 
             content +: {
-                width: 420
+                width: 360
                 height: Fill
                 flow: Down
 
@@ -130,7 +130,7 @@ impl ShadSheet {
     fn sync_side_layout(&mut self, cx: &mut Cx) {
         let current_side = self.side.as_ref();
 
-        // Optimization: only reapply script evaluation if the side has changed or on first run
+        // Optimization: only reapply script evaluation if the side has changed after initialization
         if self.is_side_initialized && current_side == self.last_side.as_str() {
             return;
         }
