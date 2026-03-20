@@ -59,7 +59,6 @@ impl MatchEvent for App {
                     kind: SonnerKind::Error,
                     duration: Some(3.0),
                     show_close: true,
-                    show_progress: true,
                 },
             );
         }
@@ -73,7 +72,6 @@ impl MatchEvent for App {
                     kind: SonnerKind::Success,
                     duration: Some(3.0),
                     show_close: false,
-                    show_progress: true,
                 },
             );
         }

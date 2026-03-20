@@ -92,7 +92,6 @@ impl Widget for GallerySonnerPage {
                         kind: SonnerKind::Success,
                         duration: Some(3.0),
                         show_close: true,
-                        show_progress: true,
                     },
                 );
             }
@@ -105,7 +104,6 @@ impl Widget for GallerySonnerPage {
                         kind: SonnerKind::Info,
                         duration: Some(3.0),
                         show_close: true,
-                        show_progress: true,
                     },
                 );
             }
@@ -118,7 +116,6 @@ impl Widget for GallerySonnerPage {
                         kind: SonnerKind::Error,
                         duration: Some(3.0),
                         show_close: false,
-                        show_progress: true,
                     },
                 );
             }
