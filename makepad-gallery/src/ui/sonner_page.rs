@@ -6,7 +6,7 @@ gallery_stateful_page_shell! {
     widget: GallerySonnerPage,
     page: sonner_page,
     title: "Sonner / Toast",
-    subtitle: "Toast notifications in a non-blocking overlay. Sonner variants share one global queue, so `ShadSonner`, `ShadSonnerWithDescription`, and `ShadSonnerWithClose` all append into the same stack.",
+    subtitle: "Toast notifications in a non-blocking overlay. Sonner variants share one global queue, so `ShadSonner`, `ShadSonnerWithDescription`, and `ShadSonner` all append into the same stack.",
     divider: { ShadHr{} },
     preview_spacing: 16.0,
     preview: {
@@ -53,7 +53,7 @@ gallery_stateful_page_shell! {
         View{
             width: Fill
             height: 200
-            toast_close := ShadSonnerWithClose{
+            toast_close := ShadSonner{
                 width: Fill
                 height: Fill
                 open: false
@@ -117,7 +117,7 @@ impl Widget for GallerySonnerPage {
                         description: Some("网络连接失败，请检查网络设置。".to_string()),
                         kind: SonnerKind::Error,
                         duration: Some(3.0),
-                        show_close: true,
+                        show_close: false,
                     },
                 );
                 cx.redraw_all();

@@ -140,14 +140,17 @@ script_mod! {
                 visible: false
                 width: 24
                 height: 24
+                margin: Inset{left: -4, right: -4, top: -4, bottom: -4}
+
                 draw_bg +: {
                     color: #0000
-                    color_hover: (shad_theme.color_ghost_hover)
-                    color_down: (shad_theme.color_ghost_down)
+                    color_hover: #ffffff1a
+                    color_down: #00000033
                     border_size: 0.0
                     border_radius: (shad_theme.radius)
                 }
                 draw_icon.color: (shad_theme.color_muted_foreground)
+                draw_icon.hover_color: #ef4444
             }
         }
 
@@ -176,10 +179,6 @@ script_mod! {
             }
         }
     }
-
-    // 为了兼容性保留旧组件名，但内部逻辑已统一
-    mod.widgets.ShadSonnerWithClose = mod.widgets.ShadSonner{}
-    mod.widgets.ShadSonnerWithDescription = mod.widgets.ShadSonner{}
 }
 
 #[derive(Clone, Debug, Default)]
@@ -196,7 +195,8 @@ struct SonnerGlobalState {
     toasts: VecDeque<SonnerToastEntry>,
     rendered_toasts: [Option<SonnerItem>; MAX_VISIBLE_TOASTS],
     rendered_open: Option<bool>,
-    timer: Timer,
+    // timer: Timer,
+    needs_next_frame: bool,
 }
 
 #[derive(Default, Clone)]
@@ -306,14 +306,6 @@ impl ShadSonner {
             }
         }
         changed
-    }
-
-    fn reschedule_timer(state: &mut SonnerGlobalState, cx: &mut Cx) {
-        if state.toasts.is_empty() {
-            state.timer = Timer::default();
-        } else {
-            state.timer = cx.start_timeout(0.1);
-        }
     }
 
     fn register_global_host(&mut self, cx: &mut Cx) {
@@ -515,11 +507,11 @@ impl ShadSonner {
 
     // --- 核心推送方法 ---
     pub fn enqueue(&mut self, cx: &mut Cx, item: SonnerItem) {
-        let was_empty = {
+        let (was_empty, needs_schedule) = {
             let global = cx.global::<SonnerGlobal>().clone();
             let mut state = global.state.borrow_mut();
             let now = Instant::now();
-            Self::prune_expired_toasts(&mut state, now);
+            let changed = Self::prune_expired_toasts(&mut state, now);
             let was_empty = state.toasts.is_empty();
 
             if state.toasts.len() >= MAX_VISIBLE_TOASTS {
@@ -532,16 +524,16 @@ impl ShadSonner {
                 item,
                 expires_at: now + timeout,
             });
-            if was_empty {
-                Self::reschedule_timer(&mut state, cx);
-            }
-            was_empty
+            (was_empty, changed || was_empty || !state.toasts.is_empty())
         };
 
         self.open = true;
         Self::sync_global_host_overlay(cx);
         if was_empty {
             self.emit_open_state(cx, true);
+        }
+        if needs_schedule {
+            cx.new_next_frame();
         }
     }
 
@@ -551,7 +543,7 @@ impl ShadSonner {
             let mut state = global.state.borrow_mut();
             let was_open = !state.toasts.is_empty();
             state.toasts.clear();
-            state.timer = Timer::default();
+            state.needs_next_frame = false;
             was_open
         };
         self.open = false;
@@ -562,59 +554,70 @@ impl ShadSonner {
     }
 
     fn remove_visible_toast(&mut self, cx: &mut Cx, visible_index: usize) {
-        let global = cx.global::<SonnerGlobal>().clone();
-        let mut state = global.state.borrow_mut();
-        if visible_index < state.toasts.len() {
+        let (was_open, is_open_now, needs_schedule) = {
+            let global = cx.global::<SonnerGlobal>().clone();
+            let mut state = global.state.borrow_mut();
+            if visible_index >= state.toasts.len() {
+                return;
+            }
+
             let was_open = !state.toasts.is_empty();
             let queue_index = state.toasts.len() - 1 - visible_index;
             state.toasts.remove(queue_index);
-            Self::reschedule_timer(&mut state, cx);
-            let is_open = !state.toasts.is_empty();
-            drop(state);
-            self.open = is_open;
-            Self::sync_global_host_overlay(cx);
-            if was_open && !is_open {
-                self.emit_open_state(cx, false);
-            }
+            let is_open_now = !state.toasts.is_empty();
+            let needs_schedule = is_open_now;
+            (was_open, is_open_now, needs_schedule)
+        };
+        self.open = is_open_now;
+        Self::sync_global_host_overlay(cx);
+        if was_open && !is_open_now {
+            self.emit_open_state(cx, false);
+        }
+        if needs_schedule {
+            cx.new_next_frame();
         }
     }
 }
 
 impl Widget for ShadSonner {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let global = cx.global::<SonnerGlobal>().clone();
+        self.register_global_host(cx);
+        
 
         // 定时器处理
-        if let Event::Timer(te) = event {
-            self.register_global_host(cx);
+        if let Event::NextFrame(_) = event {
+            
             if !self.is_global_host(cx) {
                 return;
             }
-            let mut state = global.state.borrow_mut();
-            if state.timer.is_timer(te).is_some() {
-                let was_open = !state.toasts.is_empty();
-                let changed = Self::prune_expired_toasts(&mut state, Instant::now());
-                let is_open = !state.toasts.is_empty();
-                Self::reschedule_timer(&mut state, cx);
+            let now = Instant::now();
+            let (changed, still_has_toasts,needs_schedule) = {
+                let global = cx.global::<SonnerGlobal>().clone();
+                let mut state = global.state.borrow_mut();
+                let changed = Self::prune_expired_toasts(&mut state, now);
+                let still_has_toasts = !state.toasts.is_empty();
+                let needs_schedule = still_has_toasts;
+                state.needs_next_frame = needs_schedule;
+                (changed, still_has_toasts,needs_schedule)
 
-                drop(state);
-                self.open = is_open;
-                if changed {
-                    Self::sync_global_host_overlay(cx);
-                }
-                if was_open && !is_open {
+            };
+            if changed || still_has_toasts != self.open {
+                self.open = still_has_toasts;
+                Self::sync_global_host_overlay(cx);
+                if !still_has_toasts {
                     self.emit_open_state(cx, false);
                 }
-                return;
             }
+            if needs_schedule {
+                cx.new_next_frame();
+            }
+            return;
         }
-
-        self.register_global_host(cx);
+        
         let is_host = self.sync_overlay_open_state(cx);
         if !is_host || !self.open {
             return;
         }
-
         self.overlay.handle_event(cx, event, scope);
 
         if let Event::Actions(actions) = event {
