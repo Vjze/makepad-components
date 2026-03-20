@@ -45,7 +45,11 @@ pub struct App {
 
 impl MatchEvent for App {
     fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
-        if self.ui.button(cx, ids!(open_btn_with_close)).clicked(actions) {
+        if self
+            .ui
+            .button(cx, ids!(open_btn_with_close))
+            .clicked(actions)
+        {
             let sonner = self.ui.shad_sonner(cx, ids!(toast));
             sonner.enqueue(
                 cx,
@@ -55,9 +59,9 @@ impl MatchEvent for App {
                     kind: SonnerKind::Error,
                     duration: Some(3.0),
                     show_close: true,
+                    show_progress: true,
                 },
             );
-            cx.redraw_all();
         }
         if self.ui.button(cx, ids!(open_btn_no_close)).clicked(actions) {
             let sonner = self.ui.shad_sonner(cx, ids!(toast));
@@ -69,9 +73,9 @@ impl MatchEvent for App {
                     kind: SonnerKind::Success,
                     duration: Some(3.0),
                     show_close: false,
+                    show_progress: true,
                 },
             );
-            cx.redraw_all();
         }
     }
 }

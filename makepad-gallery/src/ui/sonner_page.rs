@@ -92,9 +92,9 @@ impl Widget for GallerySonnerPage {
                         kind: SonnerKind::Success,
                         duration: Some(3.0),
                         show_close: true,
+                        show_progress: true,
                     },
                 );
-                cx.redraw_all();
             }
             if self.view.button(cx, ids!(toast_desc_btn)).clicked(actions) {
                 sonner.enqueue(
@@ -105,9 +105,9 @@ impl Widget for GallerySonnerPage {
                         kind: SonnerKind::Info,
                         duration: Some(3.0),
                         show_close: true,
+                        show_progress: true,
                     },
                 );
-                cx.redraw_all();
             }
             if self.view.button(cx, ids!(toast_close_btn)).clicked(actions) {
                 sonner.enqueue(
@@ -118,9 +118,9 @@ impl Widget for GallerySonnerPage {
                         kind: SonnerKind::Error,
                         duration: Some(3.0),
                         show_close: false,
+                        show_progress: true,
                     },
                 );
-                cx.redraw_all();
             }
         }
     }
