@@ -68,7 +68,7 @@ gallery_stateful_page_shell! {
                         spacing: 12.0
 
                         ShadSurface{
-                            width: 280
+                            width: Fill
                             height: Fit
                             flow: Down
                             spacing: 8.0
@@ -88,7 +88,7 @@ gallery_stateful_page_shell! {
                         }
 
                         ShadSurface{
-                            width: 280
+                            width: Fill
                             height: Fit
                             flow: Down
                             spacing: 8.0
@@ -115,7 +115,7 @@ gallery_stateful_page_shell! {
                         spacing: 12.0
 
                         ShadSurface{
-                            width: 280
+                            width: Fill
                             height: Fit
                             flow: Down
                             spacing: 8.0
@@ -135,7 +135,7 @@ gallery_stateful_page_shell! {
                         }
 
                         ShadSurface{
-                            width: 280
+                            width: Fill
                             height: Fit
                             flow: Down
                             spacing: 8.0

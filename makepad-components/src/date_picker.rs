@@ -13,19 +13,20 @@ script_mod! {
     mod.widgets.ShadDatePickerBase = #(ShadDatePicker::register_widget(vm))
 
     mod.widgets.ShadDatePicker = set_type_default() do mod.widgets.ShadDatePickerBase{
-        width: Fit
+        width: Fill
         height: Fit
         value: ""
         placeholder: "Pick a date"
         open: false
 
         popover := ShadPopover{
+            width: Fill
             open: false
             side: "bottom"
             align: "start"
 
             trigger := ShadButtonOutline{
-                width: 220
+                width: Fill
                 align: Align{x: 0.0, y: 0.5}
                 text: "Pick a date"
             }
