@@ -64,7 +64,7 @@ gallery_stateful_page_shell! {
                     View{
                         width: Fill
                         height: Fit
-                        flow: Right{wrap: true}
+                        flow: Down
                         spacing: 12.0
 
                         ShadSurface{
@@ -111,7 +111,7 @@ gallery_stateful_page_shell! {
                     View{
                         width: Fill
                         height: Fit
-                        flow: Right{wrap: true}
+                        flow: Down
                         spacing: 12.0
 
                         ShadSurface{

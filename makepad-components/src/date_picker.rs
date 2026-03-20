@@ -13,7 +13,7 @@ script_mod! {
     mod.widgets.ShadDatePickerBase = #(ShadDatePicker::register_widget(vm))
 
     mod.widgets.ShadDatePicker = set_type_default() do mod.widgets.ShadDatePickerBase{
-        width: Fill
+        width: Fit
         height: Fit
         value: ""
         placeholder: "Pick a date"
