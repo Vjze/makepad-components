@@ -188,32 +188,37 @@ impl RouterWidget {
             candidate.push('/');
             candidate.push_str(segment);
 
+            // Only infer bases that match the browser pathname byte-for-byte up to this
+            // offset. If redundant slashes appeared earlier in the candidate prefix, later
+            // stripping would reject that base anyway, so skip probing it here.
             // Optimization: this scan already walks a normalized `pathname` in order.
             // Slice the remaining suffix directly instead of rebuilding a stripped String
             // for every candidate prefix we probe during base-path inference. Normalize
             // duplicate leading slashes on the suffix so clean-path inference keeps the
             // same behavior as `strip_browser_base_path` for redundant-slash inputs.
             offset += segment.len();
-            let stripped = if offset >= normalized_path.len() {
-                std::borrow::Cow::Borrowed("/")
-            } else {
-                let stripped = &normalized_path[offset..];
-                if stripped.starts_with("//") {
-                    let trimmed = stripped.trim_start_matches('/');
-                    if trimmed.is_empty() {
-                        std::borrow::Cow::Borrowed("/")
-                    } else {
-                        let mut normalized = String::with_capacity(trimmed.len() + 1);
-                        normalized.push('/');
-                        normalized.push_str(trimmed);
-                        std::borrow::Cow::Owned(normalized)
-                    }
+            if normalized_path.get(..offset) == Some(candidate.as_str()) {
+                let stripped = if offset >= normalized_path.len() {
+                    std::borrow::Cow::Borrowed("/")
                 } else {
-                    std::borrow::Cow::Borrowed(stripped)
+                    let stripped = &normalized_path[offset..];
+                    if stripped.starts_with("//") {
+                        let trimmed = stripped.trim_start_matches('/');
+                        if trimmed.is_empty() {
+                            std::borrow::Cow::Borrowed("/")
+                        } else {
+                            let mut normalized = String::with_capacity(trimmed.len() + 1);
+                            normalized.push('/');
+                            normalized.push_str(trimmed);
+                            std::borrow::Cow::Owned(normalized)
+                        }
+                    } else {
+                        std::borrow::Cow::Borrowed(stripped)
+                    }
+                };
+                if self.has_real_route_match(stripped.as_ref()) {
+                    return candidate;
                 }
-            };
-            if self.has_real_route_match(stripped.as_ref()) {
-                return candidate;
             }
 
             offset += 1;
@@ -438,26 +443,28 @@ mod tests {
             candidate.push('/');
             candidate.push_str(segment);
             offset += segment.len();
-            let stripped = if offset >= normalized_path.len() {
-                std::borrow::Cow::Borrowed("/")
-            } else {
-                let stripped = &normalized_path[offset..];
-                if stripped.starts_with("//") {
-                    let trimmed = stripped.trim_start_matches('/');
-                    if trimmed.is_empty() {
-                        std::borrow::Cow::Borrowed("/")
-                    } else {
-                        let mut normalized = String::with_capacity(trimmed.len() + 1);
-                        normalized.push('/');
-                        normalized.push_str(trimmed);
-                        std::borrow::Cow::Owned(normalized)
-                    }
+            if normalized_path.get(..offset) == Some(candidate.as_str()) {
+                let stripped = if offset >= normalized_path.len() {
+                    std::borrow::Cow::Borrowed("/")
                 } else {
-                    std::borrow::Cow::Borrowed(stripped)
+                    let stripped = &normalized_path[offset..];
+                    if stripped.starts_with("//") {
+                        let trimmed = stripped.trim_start_matches('/');
+                        if trimmed.is_empty() {
+                            std::borrow::Cow::Borrowed("/")
+                        } else {
+                            let mut normalized = String::with_capacity(trimmed.len() + 1);
+                            normalized.push('/');
+                            normalized.push_str(trimmed);
+                            std::borrow::Cow::Owned(normalized)
+                        }
+                    } else {
+                        std::borrow::Cow::Borrowed(stripped)
+                    }
+                };
+                if stripped.as_ref() == match_path {
+                    return candidate;
                 }
-            };
-            if stripped.as_ref() == match_path {
-                return candidate;
             }
             offset += 1;
         }
@@ -587,6 +594,18 @@ mod tests {
                 "/examples/router/alert/details"
             ),
             "/makepad-components"
+        );
+    }
+
+    #[test]
+    fn infer_browser_base_path_rejects_malformed_prefixes() {
+        assert_eq!(
+            new_infer_browser_base_path("//makepad-components/alert", "/alert"),
+            ""
+        );
+        assert_eq!(
+            new_infer_browser_base_path("/makepad-components//alert/details", "/details"),
+            ""
         );
     }
 
