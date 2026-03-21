@@ -1,12 +1,13 @@
 use crate::internal::actions::emit_widget_action;
 use crate::internal::overlay::button_clicked;
+use crate::progress_test::MyProgressBarWidgetRefExt;
 use makepad_widgets::widget::WidgetActionData;
 use makepad_widgets::*;
-#[cfg(not(target_arch = "wasm32"))]
-use std::time::{Duration, Instant};
-use std::{cell::RefCell, collections::VecDeque, rc::Rc};
-#[cfg(target_arch = "wasm32")]
-use web_time::{Duration, Instant};
+use std::{
+    cell::RefCell,
+    collections::VecDeque,
+    rc::Rc,
+};
 
 const MAX_VISIBLE_TOASTS: usize = 4;
 const DEFAULT_TIMEOUT_SEC: f64 = 5.0;
@@ -33,7 +34,8 @@ pub struct SonnerItem {
 #[derive(Debug, Clone)]
 struct SonnerToastEntry {
     item: SonnerItem,
-    expires_at: Instant,
+    expires_at: Option<f64>,
+    total_duration: f64,
 }
 
 script_mod! {
@@ -77,7 +79,7 @@ script_mod! {
     let ForbiddenIcon = CheckIcon{
         icon +: {
             draw_icon.svg: crate_resource("self://resources/icons/forbidden.svg")
-            draw_icon.color: (shad_theme.color_destructive)
+            draw_icon.color: (shad_theme.color_error)
             icon_walk: Walk{width: 24, height: 24}
         }
     }
@@ -89,12 +91,13 @@ script_mod! {
             icon_walk: Walk{width: 24, height: 24}
         }
     }
-    let ToastSlotPanel = RoundedView{
+    let ToastSlotPanel = RoundedView {
         visible: false
         width: 280
         height: Fit
-        padding: Inset{left: 14, right: 8, top: 10, bottom: 10}
-        spacing: 4.0
+        flow: Down 
+        padding: 0.0 
+        spacing: 0.0
 
         draw_bg +: {
             color: (shad_theme.color_secondary)
@@ -103,36 +106,26 @@ script_mod! {
             border_color: (shad_theme.color_outline_border)
         }
 
-        header_row := View{
+        content_row := View {
             width: Fill
             height: Fit
             flow: Right
-            align: Align{y: 0.5}
+            align: Align {y: 0.5}
+            padding: Inset {left: 14, right: 8, top: 10, bottom: 10}
             spacing: 8.0
-            info_icon := InfoIcon{
-                visible: false
-            }
-            success_icon :=CheckIcon{
-                visible: false
-            }
-            warning_icon := WarningIcon{
-                visible: false
-            }
-            error_icon := ForbiddenIcon{
-                visible: false
-            }
+
+            info_icon := InfoIcon { visible: false }
+            success_icon := CheckIcon { visible: false }
+            warning_icon := WarningIcon { visible: false }
+            error_icon := ForbiddenIcon { visible: false }
+
             View {
                 width: Fill
                 height: Fit
                 flow: Down
                 spacing: 4.0
-                title_label := mod.widgets.ShadToastTitle{
-                    text: "Notification"
-                }
-                description_label := mod.widgets.ShadToastDescription{
-                    text: ""
-                    visible: false
-                }
+                title_label := mod.widgets.ShadToastTitle { text: "Notification" }
+                description_label := mod.widgets.ShadToastDescription { text: "", visible: false }
             }
 
             close_btn := mod.widgets.IconButtonX{
@@ -150,7 +143,8 @@ script_mod! {
             }
         }
 
-
+        // 底部进度条
+        progress_bar := mod.widgets.MyProgressBar {}
     }
 
     mod.widgets.ShadSonnerBase = #(ShadSonner::register_widget(vm))
@@ -175,10 +169,6 @@ script_mod! {
             }
         }
     }
-
-    // 为了兼容性保留旧组件名，但内部逻辑已统一
-    mod.widgets.ShadSonnerWithClose = mod.widgets.ShadSonner{}
-    mod.widgets.ShadSonnerWithDescription = mod.widgets.ShadSonner{}
 }
 
 #[derive(Clone, Debug, Default)]
@@ -195,7 +185,8 @@ struct SonnerGlobalState {
     toasts: VecDeque<SonnerToastEntry>,
     rendered_toasts: [Option<SonnerItem>; MAX_VISIBLE_TOASTS],
     rendered_open: Option<bool>,
-    timer: Timer,
+    // timer: Timer,
+    needs_next_frame: bool,
 }
 
 #[derive(Default, Clone)]
@@ -293,26 +284,20 @@ impl ShadSonner {
         visible
     }
 
-    fn prune_expired_toasts(state: &mut SonnerGlobalState, now: Instant) -> bool {
+    fn prune_expired_toasts(state: &mut SonnerGlobalState, now: f64) -> bool {
         let mut changed = false;
         let mut index = 0;
         while index < state.toasts.len() {
-            if state.toasts[index].expires_at <= now {
-                state.toasts.remove(index);
-                changed = true;
-            } else {
-                index += 1;
+            if let Some(exp) = state.toasts[index].expires_at {
+                if exp <= now {
+                    state.toasts.remove(index);
+                    changed = true;
+                    continue;
+                }
             }
+            index += 1;
         }
         changed
-    }
-
-    fn reschedule_timer(state: &mut SonnerGlobalState, cx: &mut Cx) {
-        if state.toasts.is_empty() {
-            state.timer = Timer::default();
-        } else {
-            state.timer = cx.start_timeout(0.1);
-        }
     }
 
     fn register_global_host(&mut self, cx: &mut Cx) {
@@ -437,25 +422,25 @@ impl ShadSonner {
             0 => &[
                 live_id!(content),
                 live_id!(toast_0),
-                live_id!(header_row),
+                live_id!(content_row),
                 live_id!(close_btn),
             ],
             1 => &[
                 live_id!(content),
                 live_id!(toast_1),
-                live_id!(header_row),
+                live_id!(content_row),
                 live_id!(close_btn),
             ],
             2 => &[
                 live_id!(content),
                 live_id!(toast_2),
-                live_id!(header_row),
+                live_id!(content_row),
                 live_id!(close_btn),
             ],
             _ => &[
                 live_id!(content),
                 live_id!(toast_3),
-                live_id!(header_row),
+                live_id!(content_row),
                 live_id!(close_btn),
             ],
         }
@@ -514,33 +499,32 @@ impl ShadSonner {
 
     // --- 核心推送方法 ---
     pub fn enqueue(&mut self, cx: &mut Cx, item: SonnerItem) {
-        let was_empty = {
+        let (was_empty, needs_schedule) = {
             let global = cx.global::<SonnerGlobal>().clone();
             let mut state = global.state.borrow_mut();
-            let now = Instant::now();
-            Self::prune_expired_toasts(&mut state, now);
+            
             let was_empty = state.toasts.is_empty();
 
             if state.toasts.len() >= MAX_VISIBLE_TOASTS {
                 state.toasts.pop_front();
             }
 
-            let timeout =
-                Duration::from_secs_f64(item.duration.unwrap_or(DEFAULT_TIMEOUT_SEC).max(0.0));
+            let timeout_sec = item.duration.unwrap_or(DEFAULT_TIMEOUT_SEC).max(0.0);
             state.toasts.push_back(SonnerToastEntry {
                 item,
-                expires_at: now + timeout,
+                expires_at: None, // 交由 NextFrame 处理初始化
+                total_duration: timeout_sec,
             });
-            if was_empty {
-                Self::reschedule_timer(&mut state, cx);
-            }
-            was_empty
+            (was_empty, true)
         };
 
         self.open = true;
         Self::sync_global_host_overlay(cx);
         if was_empty {
             self.emit_open_state(cx, true);
+        }
+        if needs_schedule {
+            cx.new_next_frame();
         }
     }
 
@@ -550,7 +534,7 @@ impl ShadSonner {
             let mut state = global.state.borrow_mut();
             let was_open = !state.toasts.is_empty();
             state.toasts.clear();
-            state.timer = Timer::default();
+            state.needs_next_frame = false;
             was_open
         };
         self.open = false;
@@ -561,59 +545,104 @@ impl ShadSonner {
     }
 
     fn remove_visible_toast(&mut self, cx: &mut Cx, visible_index: usize) {
-        let global = cx.global::<SonnerGlobal>().clone();
-        let mut state = global.state.borrow_mut();
-        if visible_index < state.toasts.len() {
+        let (was_open, is_open_now, needs_schedule) = {
+            let global = cx.global::<SonnerGlobal>().clone();
+            let mut state = global.state.borrow_mut();
+            if visible_index >= state.toasts.len() {
+                return;
+            }
+
             let was_open = !state.toasts.is_empty();
             let queue_index = state.toasts.len() - 1 - visible_index;
             state.toasts.remove(queue_index);
-            Self::reschedule_timer(&mut state, cx);
-            let is_open = !state.toasts.is_empty();
-            drop(state);
-            self.open = is_open;
-            Self::sync_global_host_overlay(cx);
-            if was_open && !is_open {
-                self.emit_open_state(cx, false);
-            }
+            let is_open_now = !state.toasts.is_empty();
+            let needs_schedule = is_open_now;
+            (was_open, is_open_now, needs_schedule)
+        };
+        self.open = is_open_now;
+        Self::sync_global_host_overlay(cx);
+        if was_open && !is_open_now {
+            self.emit_open_state(cx, false);
+        }
+        if needs_schedule {
+            cx.new_next_frame();
         }
     }
 }
 
 impl Widget for ShadSonner {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
-        let global = cx.global::<SonnerGlobal>().clone();
+        self.register_global_host(cx);
 
-        // 定时器处理
-        if let Event::Timer(te) = event {
-            self.register_global_host(cx);
+        if let Event::NextFrame(ne) = event {
             if !self.is_global_host(cx) {
                 return;
             }
-            let mut state = global.state.borrow_mut();
-            if state.timer.is_timer(te).is_some() {
-                let was_open = !state.toasts.is_empty();
-                let changed = Self::prune_expired_toasts(&mut state, Instant::now());
-                let is_open = !state.toasts.is_empty();
-                Self::reschedule_timer(&mut state, cx);
-
-                drop(state);
-                self.open = is_open;
-                if changed {
-                    Self::sync_global_host_overlay(cx);
+            let now = ne.time;
+            let mut needs_redraw = false;
+            let progresses: Vec<f64> = {
+                let global = cx.global::<SonnerGlobal>().clone();
+                let mut state = global.state.borrow_mut();
+                
+                // 初始化新 enqueue 的 toast 的过期时间
+                for entry in state.toasts.iter_mut() {
+                    if entry.expires_at.is_none() {
+                        entry.expires_at = Some(now + entry.total_duration);
+                    }
                 }
-                if was_open && !is_open {
+
+                state
+                    .toasts
+                    .iter()
+                    .rev()
+                    .take(MAX_VISIBLE_TOASTS)
+                    .map(|entry| {
+                        if entry.total_duration <= 0.0 {
+                            return 0.0;
+                        }
+                        let exp = entry.expires_at.unwrap();
+                        let remaining = if exp > now { exp - now } else { 0.0 };
+                        (remaining / entry.total_duration).clamp(0.0, 1.0)
+                    })
+                    .collect()
+            };
+            for (i, &prog) in progresses.iter().enumerate() {
+                let slot = self.overlay.widget(cx, Self::toast_slot_path(i));
+                if !slot.is_empty() {
+                    let progress_bar = slot.my_progress_bar(cx, ids!(progress_bar));
+                    progress_bar.set_progress(cx, prog * 100.0);
+                    needs_redraw = true;
+                }
+            }
+            if needs_redraw {
+                self.overlay.redraw(cx); // 触发重绘以更新进度条
+            }
+            let (changed, still_has_toasts, needs_schedule) = {
+                let global = cx.global::<SonnerGlobal>().clone();
+                let mut state = global.state.borrow_mut();
+                let changed = Self::prune_expired_toasts(&mut state, now);
+                let still_has_toasts = !state.toasts.is_empty();
+                let needs_schedule = still_has_toasts;
+                state.needs_next_frame = needs_schedule;
+                (changed, still_has_toasts, needs_schedule)
+            };
+            if changed || still_has_toasts != self.open {
+                self.open = still_has_toasts;
+                Self::sync_global_host_overlay(cx);
+                if !still_has_toasts {
                     self.emit_open_state(cx, false);
                 }
-                return;
             }
+            if needs_schedule {
+                cx.new_next_frame();
+            }
+            return;
         }
 
-        self.register_global_host(cx);
         let is_host = self.sync_overlay_open_state(cx);
         if !is_host || !self.open {
             return;
         }
-
         self.overlay.handle_event(cx, event, scope);
 
         if let Event::Actions(actions) = event {

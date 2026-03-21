@@ -20,10 +20,13 @@ script_mod! {
                     width: Fill
                     height: Fill
                     View{
-                        open_btn := ShadButton{text: "Open toast"}
+                        spacing: 16.0
+                        open_btn_with_close := ShadButton{text: "Open toast with close"}
+                        open_btn_no_close := ShadButton{text: "Open toast without close"}
+
 
                     }
-                    toast_close := ShadSonnerWithClose{
+                    toast := ShadSonner{
                         width: Fill
                         height: Fill
                         open: false
@@ -42,8 +45,12 @@ pub struct App {
 
 impl MatchEvent for App {
     fn handle_actions(&mut self, cx: &mut Cx, actions: &Actions) {
-        if self.ui.button(cx, ids!(open_btn)).clicked(actions) {
-            let sonner = self.ui.shad_sonner(cx, ids!(toast_close));
+        if self
+            .ui
+            .button(cx, ids!(open_btn_with_close))
+            .clicked(actions)
+        {
+            let sonner = self.ui.shad_sonner(cx, ids!(toast));
             sonner.enqueue(
                 cx,
                 SonnerItem {
@@ -54,11 +61,22 @@ impl MatchEvent for App {
                     show_close: true,
                 },
             );
-            cx.redraw_all();
+        }
+        if self.ui.button(cx, ids!(open_btn_no_close)).clicked(actions) {
+            let sonner = self.ui.shad_sonner(cx, ids!(toast));
+            sonner.enqueue(
+                cx,
+                SonnerItem {
+                    title: "连接成功".to_string(),
+                    description: Some("服务器连接成功。".to_string()),
+                    kind: SonnerKind::Success,
+                    duration: Some(3.0),
+                    show_close: false,
+                },
+            );
         }
     }
 }
-
 impl AppMain for App {
     fn script_mod(vm: &mut ScriptVm) -> ScriptValue {
         makepad_widgets::script_mod(vm);
