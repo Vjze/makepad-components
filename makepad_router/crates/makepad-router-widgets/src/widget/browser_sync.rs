@@ -179,17 +179,49 @@ impl RouterWidget {
         }
 
         let mut candidate = String::new();
+        let mut offset = normalized_path.len() - trimmed.len();
         for segment in trimmed.split('/') {
             if segment.is_empty() {
+                offset += 1;
                 continue;
             }
             candidate.push('/');
             candidate.push_str(segment);
 
-            let stripped = Self::strip_browser_base_path(&normalized_path, &candidate);
-            if self.has_real_route_match(&stripped) {
-                return candidate;
+            // Only infer bases that match the browser pathname byte-for-byte up to this
+            // offset. If redundant slashes appeared earlier in the candidate prefix, later
+            // stripping would reject that base anyway, so skip probing it here.
+            // Optimization: this scan already walks a normalized `pathname` in order.
+            // Slice the remaining suffix directly instead of rebuilding a stripped String
+            // for every candidate prefix we probe during base-path inference. Normalize
+            // duplicate leading slashes on the suffix so clean-path inference keeps the
+            // same behavior as `strip_browser_base_path` for redundant-slash inputs.
+            offset += segment.len();
+            if normalized_path.get(..offset) == Some(candidate.as_str()) {
+                let stripped = if offset >= normalized_path.len() {
+                    std::borrow::Cow::Borrowed("/")
+                } else {
+                    let stripped = &normalized_path[offset..];
+                    if stripped.starts_with("//") {
+                        let trimmed = stripped.trim_start_matches('/');
+                        if trimmed.is_empty() {
+                            std::borrow::Cow::Borrowed("/")
+                        } else {
+                            let mut normalized = String::with_capacity(trimmed.len() + 1);
+                            normalized.push('/');
+                            normalized.push_str(trimmed);
+                            std::borrow::Cow::Owned(normalized)
+                        }
+                    } else {
+                        std::borrow::Cow::Borrowed(stripped)
+                    }
+                };
+                if self.has_real_route_match(stripped.as_ref()) {
+                    return candidate;
+                }
             }
+
+            offset += 1;
         }
 
         String::new()
@@ -379,6 +411,66 @@ mod tests {
     use std::hint::black_box;
     use std::time::Instant;
 
+    fn old_infer_browser_base_path(pathname: &str, match_path: &str) -> String {
+        let normalized_path = RouterWidget::normalized_browser_path(pathname);
+        let trimmed = normalized_path.trim_start_matches('/');
+        let mut candidate = String::new();
+        for segment in trimmed.split('/') {
+            if segment.is_empty() {
+                continue;
+            }
+            candidate.push('/');
+            candidate.push_str(segment);
+
+            let stripped = RouterWidget::strip_browser_base_path(&normalized_path, &candidate);
+            if stripped == match_path {
+                return candidate;
+            }
+        }
+        String::new()
+    }
+
+    fn new_infer_browser_base_path(pathname: &str, match_path: &str) -> String {
+        let normalized_path = RouterWidget::normalized_browser_path(pathname);
+        let trimmed = normalized_path.trim_start_matches('/');
+        let mut candidate = String::new();
+        let mut offset = normalized_path.len() - trimmed.len();
+        for segment in trimmed.split('/') {
+            if segment.is_empty() {
+                offset += 1;
+                continue;
+            }
+            candidate.push('/');
+            candidate.push_str(segment);
+            offset += segment.len();
+            if normalized_path.get(..offset) == Some(candidate.as_str()) {
+                let stripped = if offset >= normalized_path.len() {
+                    std::borrow::Cow::Borrowed("/")
+                } else {
+                    let stripped = &normalized_path[offset..];
+                    if stripped.starts_with("//") {
+                        let trimmed = stripped.trim_start_matches('/');
+                        if trimmed.is_empty() {
+                            std::borrow::Cow::Borrowed("/")
+                        } else {
+                            let mut normalized = String::with_capacity(trimmed.len() + 1);
+                            normalized.push('/');
+                            normalized.push_str(trimmed);
+                            std::borrow::Cow::Owned(normalized)
+                        }
+                    } else {
+                        std::borrow::Cow::Borrowed(stripped)
+                    }
+                };
+                if stripped.as_ref() == match_path {
+                    return candidate;
+                }
+            }
+            offset += 1;
+        }
+        String::new()
+    }
+
     fn old_strip_browser_base_path(pathname: &str, base_path: &str) -> String {
         fn old_normalized_browser_base_path(base_path: &str) -> String {
             let trimmed = base_path.trim();
@@ -495,6 +587,29 @@ mod tests {
     }
 
     #[test]
+    fn infer_browser_base_path_normalizes_duplicate_slash_suffixes() {
+        assert_eq!(
+            new_infer_browser_base_path(
+                "/makepad-components//examples/router/alert/details",
+                "/examples/router/alert/details"
+            ),
+            "/makepad-components"
+        );
+    }
+
+    #[test]
+    fn infer_browser_base_path_rejects_malformed_prefixes() {
+        assert_eq!(
+            new_infer_browser_base_path("//makepad-components/alert", "/alert"),
+            ""
+        );
+        assert_eq!(
+            new_infer_browser_base_path("/makepad-components//alert/details", "/details"),
+            ""
+        );
+    }
+
+    #[test]
     fn strip_browser_base_path_performance_comparison() {
         // Performance comparison helper: it exercises a real browser-sync hot path without
         // asserting on absolute timings, which would be flaky in CI.
@@ -515,5 +630,28 @@ mod tests {
         let new_elapsed = new_start.elapsed();
 
         println!("strip_browser_base_path benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
+    }
+
+    #[test]
+    fn infer_browser_base_path_segment_scan_performance_comparison() {
+        // Performance comparison helper: base-path inference probes several prefixes while
+        // the browser URL is being synchronized, so avoiding per-probe String rebuilds helps.
+        const BENCHMARK_ITERATIONS: usize = 200_000;
+        const PATHNAME: &str = "/makepad-components/examples/router/alert/details";
+        const MATCH_PATH: &str = "/examples/router/alert/details";
+
+        let old_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(old_infer_browser_base_path(PATHNAME, MATCH_PATH));
+        }
+        let old_elapsed = old_start.elapsed();
+
+        let new_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(new_infer_browser_base_path(PATHNAME, MATCH_PATH));
+        }
+        let new_elapsed = new_start.elapsed();
+
+        println!("infer_browser_base_path benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
     }
 }
