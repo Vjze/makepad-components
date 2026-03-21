@@ -7,7 +7,6 @@ use std::{
     cell::RefCell,
     collections::VecDeque,
     rc::Rc,
-    time::{Duration, Instant},
 };
 
 const MAX_VISIBLE_TOASTS: usize = 4;
@@ -35,7 +34,7 @@ pub struct SonnerItem {
 #[derive(Debug, Clone)]
 struct SonnerToastEntry {
     item: SonnerItem,
-    expires_at: Instant,
+    expires_at: Option<f64>,
     total_duration: f64,
 }
 
@@ -285,16 +284,18 @@ impl ShadSonner {
         visible
     }
 
-    fn prune_expired_toasts(state: &mut SonnerGlobalState, now: Instant) -> bool {
+    fn prune_expired_toasts(state: &mut SonnerGlobalState, now: f64) -> bool {
         let mut changed = false;
         let mut index = 0;
         while index < state.toasts.len() {
-            if state.toasts[index].expires_at <= now {
-                state.toasts.remove(index);
-                changed = true;
-            } else {
-                index += 1;
+            if let Some(exp) = state.toasts[index].expires_at {
+                if exp <= now {
+                    state.toasts.remove(index);
+                    changed = true;
+                    continue;
+                }
             }
+            index += 1;
         }
         changed
     }
@@ -501,8 +502,7 @@ impl ShadSonner {
         let (was_empty, needs_schedule) = {
             let global = cx.global::<SonnerGlobal>().clone();
             let mut state = global.state.borrow_mut();
-            let now = Instant::now();
-            let changed = Self::prune_expired_toasts(&mut state, now);
+            
             let was_empty = state.toasts.is_empty();
 
             if state.toasts.len() >= MAX_VISIBLE_TOASTS {
@@ -510,13 +510,12 @@ impl ShadSonner {
             }
 
             let timeout_sec = item.duration.unwrap_or(DEFAULT_TIMEOUT_SEC).max(0.0);
-            let timeout = Duration::from_secs_f64(timeout_sec);
             state.toasts.push_back(SonnerToastEntry {
                 item,
-                expires_at: now + timeout,
+                expires_at: None, // 交由 NextFrame 处理初始化
                 total_duration: timeout_sec,
             });
-            (was_empty, changed || was_empty || !state.toasts.is_empty())
+            (was_empty, true)
         };
 
         self.open = true;
@@ -575,15 +574,23 @@ impl Widget for ShadSonner {
     fn handle_event(&mut self, cx: &mut Cx, event: &Event, scope: &mut Scope) {
         self.register_global_host(cx);
 
-        if let Event::NextFrame(_) = event {
+        if let Event::NextFrame(ne) = event {
             if !self.is_global_host(cx) {
                 return;
             }
-            let now = Instant::now();
+            let now = ne.time;
             let mut needs_redraw = false;
             let progresses: Vec<f64> = {
                 let global = cx.global::<SonnerGlobal>().clone();
-                let state = global.state.borrow();
+                let mut state = global.state.borrow_mut();
+                
+                // 初始化新 enqueue 的 toast 的过期时间
+                for entry in state.toasts.iter_mut() {
+                    if entry.expires_at.is_none() {
+                        entry.expires_at = Some(now + entry.total_duration);
+                    }
+                }
+
                 state
                     .toasts
                     .iter()
@@ -593,10 +600,8 @@ impl Widget for ShadSonner {
                         if entry.total_duration <= 0.0 {
                             return 0.0;
                         }
-                        let remaining = entry
-                            .expires_at
-                            .saturating_duration_since(now)
-                            .as_secs_f64();
+                        let exp = entry.expires_at.unwrap();
+                        let remaining = if exp > now { exp - now } else { 0.0 };
                         (remaining / entry.total_duration).clamp(0.0, 1.0)
                     })
                     .collect()
