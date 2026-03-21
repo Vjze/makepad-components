@@ -40,6 +40,10 @@
 **Learning:** `RouterWidget` builds current and preview URLs frequently during browser sync and nested-route resolution. Using `format!` for `join_paths` and then formatting the final URL again adds avoidable heap churn on a hot router path.
 **Action:** When extending a route path with child segments, query strings, or hashes, pre-size one `String`, append into it with `push_str`, and reuse the initial path allocation instead of formatting a second URL string.
 
+## 2026-03-21 - Browser base-path inference should slice normalized URLs
+**Learning:** `RouterWidget::infer_browser_base_path` scans each leading path segment while syncing browser URLs. Rebuilding a stripped `String` for every candidate prefix added avoidable heap churn inside that probe loop even though the normalized pathname was already available.
+**Action:** For prefix-probe loops over normalized URLs, track the current byte offset and pass borrowed suffix slices into route matching instead of re-running String-building helpers per candidate.
+
 ## 2026-03-20 - Router query serialization should stream percent-encoding
 **Learning:** `makepad-router-core` rebuilt query strings by percent-encoding each key and value into temporary `String`s before copying them into the final URL, which adds heap churn on every router URL update.
 **Action:** For hot URL serialization paths, collect borrowed `(&str, &str)` entries, sort those, and write percent-encoded bytes directly into one pre-sized output buffer.

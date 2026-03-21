@@ -179,17 +179,29 @@ impl RouterWidget {
         }
 
         let mut candidate = String::new();
+        let mut offset = normalized_path.len() - trimmed.len();
         for segment in trimmed.split('/') {
             if segment.is_empty() {
+                offset += 1;
                 continue;
             }
             candidate.push('/');
             candidate.push_str(segment);
 
-            let stripped = Self::strip_browser_base_path(&normalized_path, &candidate);
-            if self.has_real_route_match(&stripped) {
+            // Optimization: this scan already walks a normalized `pathname` in order.
+            // Slice the remaining suffix directly instead of rebuilding a stripped String
+            // for every candidate prefix we probe during base-path inference.
+            offset += segment.len();
+            let stripped = if offset >= normalized_path.len() {
+                "/"
+            } else {
+                &normalized_path[offset..]
+            };
+            if self.has_real_route_match(stripped) {
                 return candidate;
             }
+
+            offset += 1;
         }
 
         String::new()
@@ -379,6 +391,51 @@ mod tests {
     use std::hint::black_box;
     use std::time::Instant;
 
+    fn old_infer_browser_base_path(pathname: &str, match_path: &str) -> String {
+        let normalized_path = RouterWidget::normalized_browser_path(pathname);
+        let trimmed = normalized_path.trim_start_matches('/');
+        let mut candidate = String::new();
+        for segment in trimmed.split('/') {
+            if segment.is_empty() {
+                continue;
+            }
+            candidate.push('/');
+            candidate.push_str(segment);
+
+            let stripped = RouterWidget::strip_browser_base_path(&normalized_path, &candidate);
+            if stripped == match_path {
+                return candidate;
+            }
+        }
+        String::new()
+    }
+
+    fn new_infer_browser_base_path(pathname: &str, match_path: &str) -> String {
+        let normalized_path = RouterWidget::normalized_browser_path(pathname);
+        let trimmed = normalized_path.trim_start_matches('/');
+        let mut candidate = String::new();
+        let mut offset = normalized_path.len() - trimmed.len();
+        for segment in trimmed.split('/') {
+            if segment.is_empty() {
+                offset += 1;
+                continue;
+            }
+            candidate.push('/');
+            candidate.push_str(segment);
+            offset += segment.len();
+            let stripped = if offset >= normalized_path.len() {
+                "/"
+            } else {
+                &normalized_path[offset..]
+            };
+            if stripped == match_path {
+                return candidate;
+            }
+            offset += 1;
+        }
+        String::new()
+    }
+
     fn old_strip_browser_base_path(pathname: &str, base_path: &str) -> String {
         fn old_normalized_browser_base_path(base_path: &str) -> String {
             let trimmed = base_path.trim();
@@ -515,5 +572,28 @@ mod tests {
         let new_elapsed = new_start.elapsed();
 
         println!("strip_browser_base_path benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
+    }
+
+    #[test]
+    fn infer_browser_base_path_segment_scan_performance_comparison() {
+        // Performance comparison helper: base-path inference probes several prefixes while
+        // the browser URL is being synchronized, so avoiding per-probe String rebuilds helps.
+        const BENCHMARK_ITERATIONS: usize = 200_000;
+        const PATHNAME: &str = "/makepad-components/examples/router/alert/details";
+        const MATCH_PATH: &str = "/examples/router/alert/details";
+
+        let old_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(old_infer_browser_base_path(PATHNAME, MATCH_PATH));
+        }
+        let old_elapsed = old_start.elapsed();
+
+        let new_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(new_infer_browser_base_path(PATHNAME, MATCH_PATH));
+        }
+        let new_elapsed = new_start.elapsed();
+
+        println!("infer_browser_base_path benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
     }
 }
