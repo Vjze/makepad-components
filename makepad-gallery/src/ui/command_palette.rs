@@ -82,6 +82,29 @@ script_mod! {
 
     mod.widgets.GalleryCommandPaletteBase = #(GalleryCommandPalette::register_widget(vm))
 
+    mod.widgets.GalleryCommandPaletteRowButton = set_type_default() do mod.widgets.ShadNavButtonBase{
+        width: Fill
+        height: 36
+        grab_key_focus: false
+        padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
+        align: Align{x: 0.0, y: 0.5}
+        text: "Command"
+        draw_bg +: {
+            color: #0000
+            color_hover: #0000
+            color_down: #0000
+            color_focus: #0000
+            border_size: 0.0
+            border_radius: 10.0
+            border_color: #0000
+        }
+        draw_text.color: (shad_theme.color_primary)
+        draw_text.color_hover: (shad_theme.color_primary)
+        draw_text.color_down: (shad_theme.color_primary)
+        draw_text.color_focus: (shad_theme.color_primary)
+        draw_text.text_style.font_size: 13
+    }
+
     mod.widgets.GalleryCommandPaletteRow = View{
         width: Fill
         height: Fit
@@ -108,21 +131,7 @@ script_mod! {
                 border_size: 0.0
             }
 
-            button := ShadButtonGhost{
-                width: Fill
-                height: 36
-                grab_key_focus: false
-                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
-                align: Align{x: 0.0, y: 0.5}
-                text: "Command"
-                draw_bg +: {
-                    color: #0000
-                    color_hover: #0000
-                    color_down: #0000
-                    color_focus: #0000
-                }
-                draw_text.text_style.font_size: 13
-            }
+            button := mod.widgets.GalleryCommandPaletteRowButton{}
 
             shortcut := ShadSectionHeader{
                 width: Fit
