@@ -127,6 +127,25 @@ fn estimate_text_width(text: &str, font_size: f64) -> f64 {
     text.len() as f64 * font_size * CHAR_WIDTH_FACTOR
 }
 
+fn sync_text_x_offsets<T: AsRef<str>>(
+    offsets: &mut Vec<f64>,
+    texts: &[T],
+    widths: &[f64],
+    text_align: f64,
+    font_size: f64,
+) {
+    offsets.clear();
+    offsets.reserve(texts.len());
+
+    let mut x = 0.0;
+    for (index, text) in texts.iter().enumerate() {
+        let width = widths.get(index).copied().unwrap_or(DEFAULT_COLUMN_WIDTH);
+        let text_width = estimate_text_width(text.as_ref(), font_size);
+        offsets.push(x + (width - text_width) * text_align);
+        x += width;
+    }
+}
+
 fn replace_arc_slice_if_changed<T>(dst: &mut Arc<[T]>, src: &Arc<[T]>) -> bool {
     if Arc::ptr_eq(dst, src) {
         return false;
@@ -213,7 +232,7 @@ pub enum ShadTableAction {
     None,
 }
 
-#[derive(Script, ScriptHook, Widget)]
+#[derive(Script, Widget)]
 pub struct ShadTableHeaderView {
     #[uid]
     uid: WidgetUid,
@@ -243,6 +262,27 @@ pub struct ShadTableHeaderView {
     headers: Vec<String>,
     #[rust]
     widths: Vec<f64>,
+    #[rust]
+    text_x_offsets: Vec<f64>,
+}
+
+impl ScriptHook for ShadTableHeaderView {
+    fn on_after_apply(
+        &mut self,
+        vm: &mut ScriptVm,
+        _apply: &Apply,
+        _scope: &mut Scope,
+        _value: ScriptValue,
+    ) {
+        sync_text_x_offsets(
+            &mut self.text_x_offsets,
+            &self.headers,
+            &self.widths,
+            self.text_align,
+            self.draw_text.text_style.font_size as f64,
+        );
+        vm.with_cx_mut(|cx| self.area.redraw(cx));
+    }
 }
 
 impl ShadTableHeaderView {
@@ -270,6 +310,16 @@ impl ShadTableHeaderView {
             changed = true;
         }
         if changed {
+            // Optimization: header text positions only depend on header content, widths, and
+            // alignment. Cache the x offsets during sync so draw_walk avoids recalculating text
+            // widths for every visible column on every redraw.
+            sync_text_x_offsets(
+                &mut self.text_x_offsets,
+                headers,
+                widths,
+                text_align,
+                self.draw_text.text_style.font_size as f64,
+            );
             self.area.redraw(cx);
         }
     }
@@ -285,19 +335,10 @@ impl Widget for ShadTableHeaderView {
         self.draw_bg.draw_abs(cx, rect);
         draw_border(cx, &mut self.draw_bg, rect, self.border_color);
 
-        let mut x = rect.pos.x;
-        for (index, header) in self.headers.iter().enumerate() {
-            let width = self
-                .widths
-                .get(index)
-                .copied()
-                .unwrap_or(DEFAULT_COLUMN_WIDTH);
-            let text_width = estimate_text_width(header, HEADER_FONT_SIZE);
-            let align_offset = (width - text_width) * self.text_align;
+        for (header, x_offset) in self.headers.iter().zip(self.text_x_offsets.iter()) {
             self.draw_text.color = self.text_color;
             self.draw_text
-                .draw_abs(cx, dvec2(x + align_offset, rect.pos.y + 12.0), header);
-            x += width;
+                .draw_abs(cx, dvec2(rect.pos.x + *x_offset, rect.pos.y + 12.0), header);
         }
 
         cx.end_turtle_with_area(&mut self.area);
@@ -305,7 +346,7 @@ impl Widget for ShadTableHeaderView {
     }
 }
 
-#[derive(Script, ScriptHook, Widget)]
+#[derive(Script, Widget)]
 pub struct ShadTableRowView {
     #[uid]
     uid: WidgetUid,
@@ -342,6 +383,8 @@ pub struct ShadTableRowView {
     #[rust]
     widths: Arc<[f64]>,
     #[rust]
+    text_x_offsets: Vec<f64>,
+    #[rust]
     selected: bool,
     #[rust]
     striped: bool,
@@ -350,6 +393,25 @@ pub struct ShadTableRowView {
     #[action_data]
     #[rust]
     action_data: WidgetActionData,
+}
+
+impl ScriptHook for ShadTableRowView {
+    fn on_after_apply(
+        &mut self,
+        vm: &mut ScriptVm,
+        _apply: &Apply,
+        _scope: &mut Scope,
+        _value: ScriptValue,
+    ) {
+        sync_text_x_offsets(
+            &mut self.text_x_offsets,
+            self.cells.as_ref(),
+            self.widths.as_ref(),
+            self.text_align,
+            self.draw_text.text_style.font_size as f64,
+        );
+        vm.with_cx_mut(|cx| self.area.redraw(cx));
+    }
 }
 
 impl ShadTableRowView {
@@ -393,6 +455,16 @@ impl ShadTableRowView {
             changed = true;
         }
         if changed {
+            // Optimization: row text layout is reused across many redraws while scrolling and
+            // hovering. Cache the aligned x positions when row data changes so draw_walk only
+            // emits glyphs instead of remeasuring each visible cell every frame.
+            sync_text_x_offsets(
+                &mut self.text_x_offsets,
+                self.cells.as_ref(),
+                self.widths.as_ref(),
+                self.text_align,
+                self.draw_text.text_style.font_size as f64,
+            );
             self.area.redraw(cx);
         }
     }
@@ -448,19 +520,10 @@ impl Widget for ShadTableRowView {
         self.draw_bg.draw_abs(cx, rect);
         draw_border(cx, &mut self.draw_bg, rect, self.border_color);
 
-        let mut x = rect.pos.x;
-        for (index, cell) in self.cells.iter().enumerate() {
-            let width = self
-                .widths
-                .get(index)
-                .copied()
-                .unwrap_or(DEFAULT_COLUMN_WIDTH);
-            let text_width = estimate_text_width(cell, CELL_FONT_SIZE);
-            let align_offset = (width - text_width) * self.text_align;
+        for (cell, x_offset) in self.cells.iter().zip(self.text_x_offsets.iter()) {
             self.draw_text.color = self.text_color;
             self.draw_text
-                .draw_abs(cx, dvec2(x + align_offset, rect.pos.y + 14.0), cell);
-            x += width;
+                .draw_abs(cx, dvec2(rect.pos.x + *x_offset, rect.pos.y + 14.0), cell);
         }
 
         cx.end_turtle_with_area(&mut self.area);
@@ -1248,7 +1311,7 @@ fn draw_border(cx: &mut Cx2d, draw: &mut DrawColor, rect: Rect, color: Vec4) {
 mod tests {
     use super::{
         invalidate_content_width_cache, replace_arc_slice_if_changed, should_apply_content_width,
-        sync_default_widths,
+        sync_default_widths, sync_text_x_offsets, CELL_FONT_SIZE,
     };
     use std::hint::black_box;
     use std::sync::Arc;
@@ -1405,5 +1468,70 @@ mod tests {
         invalidate_content_width_cache(&mut cached_width);
 
         assert!(should_apply_content_width(&mut cached_width, 960.0));
+    }
+
+    #[test]
+    fn text_offset_cache_benchmark() {
+        // Performance comparison helper: steady-state table redraws can reuse cached text
+        // positions instead of recalculating widths/alignment for every visible cell.
+        const ROWS: usize = 128;
+        const COLS: usize = 6;
+        const FRAMES: usize = 2_000;
+
+        let widths = vec![140.0; COLS];
+        let texts: Vec<Vec<String>> = (0..ROWS)
+            .map(|row| (0..COLS).map(|col| format!("cell-{row}-{col}")).collect())
+            .collect();
+
+        let old_start = Instant::now();
+        let mut old_total = 0.0;
+        for _ in 0..FRAMES {
+            for row in &texts {
+                let mut x = 0.0;
+                for (index, cell) in row.iter().enumerate() {
+                    let width = widths[index];
+                    let text_width = cell.len() as f64 * CELL_FONT_SIZE * 0.6;
+                    old_total += x + (width - text_width) * 0.5;
+                    x += width;
+                }
+            }
+        }
+        let old_elapsed = old_start.elapsed();
+
+        let cached: Vec<Vec<f64>> = texts
+            .iter()
+            .map(|row| {
+                let mut offsets = Vec::new();
+                sync_text_x_offsets(&mut offsets, row, &widths, 0.5, CELL_FONT_SIZE);
+                offsets
+            })
+            .collect();
+        let new_start = Instant::now();
+        let mut new_total = 0.0;
+        for _ in 0..FRAMES {
+            for offsets in &cached {
+                for x in offsets {
+                    new_total += *x;
+                }
+            }
+        }
+        let new_elapsed = new_start.elapsed();
+
+        black_box((old_total, new_total));
+        println!("text_offset_cache benchmark: old={old_elapsed:?}, new={new_elapsed:?}");
+    }
+
+    #[test]
+    fn text_offsets_track_font_size_changes() {
+        let texts = vec!["header".to_string()];
+        let widths = vec![140.0];
+        let mut small = Vec::new();
+        let mut large = Vec::new();
+
+        sync_text_x_offsets(&mut small, &texts, &widths, 0.5, 10.0);
+        sync_text_x_offsets(&mut large, &texts, &widths, 0.5, 18.0);
+
+        assert_ne!(small, large);
+        assert!(large[0] < small[0]);
     }
 }
