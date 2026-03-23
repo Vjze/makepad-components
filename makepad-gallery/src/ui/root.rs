@@ -45,18 +45,6 @@ macro_rules! define_gallery_root {
                 draw_icon.color: (shad_theme.color_primary)
             }
 
-            mod.widgets.GalleryMobileSidebarMenuButton = ShadButtonOutline{
-                width: Fit
-                height: 36
-                text: "Menu"
-            }
-
-            mod.widgets.GalleryMobileSidebarCloseButton = ShadButtonOutline{
-                width: Fit
-                height: 36
-                text: "Close menu"
-            }
-
             mod.widgets.GalleryCommandPaletteHeaderTrigger = View{
                 width: Fit
                 height: Fit
