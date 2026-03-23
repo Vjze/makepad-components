@@ -374,8 +374,8 @@ impl ShadSonner {
     }
 
     fn sync_global_host_overlay(cx: &mut Cx) {
-        let global = cx.global::<SonnerGlobal>().clone();
         let (host_overlay, visible_toasts) = {
+            let global = cx.global::<SonnerGlobal>();
             let state = global.state.borrow();
             (
                 state.host_overlay.clone(),
@@ -397,9 +397,12 @@ impl ShadSonner {
                 Self::sync_overlay_slot(cx, &overlay, index, toast.clone());
             }
 
-            let mut state = global.state.borrow_mut();
-            state.rendered_toasts = visible_toasts;
-            state.rendered_open = Some(next_open);
+            {
+                let global = cx.global::<SonnerGlobal>();
+                let mut state = global.state.borrow_mut();
+                state.rendered_toasts = visible_toasts;
+                state.rendered_open = Some(next_open);
+            }
             overlay.redraw(cx);
         }
     }
