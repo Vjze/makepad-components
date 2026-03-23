@@ -246,14 +246,26 @@ macro_rules! define_gallery_root {
                         spacing: 12.0
 
                         mobile_sidebar_toggle := View{
-                            width: 36
+                            width: Fit
                             height: 36
-                            flow: Overlay
+                            flow: Right
+                            align: Align{y: 0.5}
+                            spacing: 8.0
 
-                            mobile_sidebar_menu_button := mod.widgets.GalleryMobileSidebarMenuButton{}
+                            mobile_sidebar_toggle_icon := View{
+                                width: 36
+                                height: 36
+                                flow: Overlay
 
-                            mobile_sidebar_close_button := mod.widgets.GalleryMobileSidebarCloseButton{
-                                visible: false
+                                mobile_sidebar_menu_button := mod.widgets.GalleryMobileSidebarMenuButton{}
+
+                                mobile_sidebar_close_button := mod.widgets.GalleryMobileSidebarCloseButton{
+                                    visible: false
+                                }
+                            }
+
+                            mobile_sidebar_toggle_label := ShadSectionHeader{
+                                text: "Menu"
                             }
                         }
 
