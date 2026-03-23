@@ -50,6 +50,14 @@ fn command_results_summary(query: &str, matches_count: usize) -> String {
     }
 }
 
+fn command_palette_secondary_action_label(query: &str) -> &'static str {
+    if query.trim().is_empty() {
+        "Close"
+    } else {
+        "Clear"
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 struct CommandPaletteRowState {
     command_index: usize,
@@ -202,7 +210,7 @@ script_mod! {
                         }
 
                         clear_search_btn := ShadButtonGhost{
-                            text: "Clear"
+                            text: "Close"
                         }
                     }
 
@@ -459,7 +467,7 @@ impl GalleryCommandPalette {
         );
         self.overlay
             .button(cx, ids!(clear_search_btn))
-            .set_enabled(cx, !query.is_empty());
+            .set_text(cx, command_palette_secondary_action_label(&display_query));
         self.reset_results_position(cx);
         if results_changed || active_changed {
             self.redraw(cx);
@@ -558,8 +566,8 @@ impl GalleryCommandPalette {
 #[cfg(test)]
 mod tests {
     use super::{
-        command_results_summary, matches_command_query, sync_cached_row_state,
-        CommandPaletteRowState, CommandSearchTerm,
+        command_palette_secondary_action_label, command_results_summary, matches_command_query,
+        sync_cached_row_state, CommandPaletteRowState, CommandSearchTerm,
     };
     use std::collections::HashMap;
 
@@ -582,6 +590,13 @@ mod tests {
         assert!(command_results_summary("", 12).contains("Showing all"));
         assert!(command_results_summary("dialog", 1).contains("Showing 1 of"));
         assert!(command_results_summary("missing", 0).contains("No gallery components matched"));
+    }
+
+    #[test]
+    fn command_palette_secondary_action_switches_between_close_and_clear() {
+        assert_eq!(command_palette_secondary_action_label(""), "Close");
+        assert_eq!(command_palette_secondary_action_label("  "), "Close");
+        assert_eq!(command_palette_secondary_action_label("dialog"), "Clear");
     }
 
     #[test]
@@ -688,7 +703,11 @@ impl Widget for GalleryCommandPalette {
                     .button(cx, ids!(clear_search_btn))
                     .clicked(actions)
                 {
-                    self.clear_query(cx);
+                    if self.normalize_query().is_empty() {
+                        self.close(cx);
+                    } else {
+                        self.clear_query(cx);
+                    }
                     return;
                 }
 
