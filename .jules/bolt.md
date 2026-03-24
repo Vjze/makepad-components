@@ -52,6 +52,10 @@
 **Learning:** `RoutePattern::parse` was allocating a temporary `Vec<&str>` for every route registration just to verify that `**` was trailing. In router live-reload and batch-registration flows, that extra pass shows up as measurable heap churn even before the owned segment strings are built.
 **Action:** For parser paths that only need look-ahead validation, prefer a `Peekable` iterator and allocate only the final owned data structure; keep a small ignored benchmark nearby so the win stays documented.
 
+## 2026-03-24 - Nested router tail matching should slice clean suffixes
+**Learning:** `RoutePattern::matches_prefix_with_tail` sits on the nested-router resolution path. Rebuilding clean suffixes through `split('/')` and repeated `push_str()` calls adds avoidable heap churn even when the remaining path is already normalized.
+**Action:** When matching nested route prefixes, track the unconsumed `&str` remainder directly, fast-path clean suffix copies with one `String` allocation, and fall back to segment normalization only for duplicate or trailing slashes.
+
 ## 2026-03-20 - Router query serialization should stream percent-encoding
 **Learning:** `makepad-router-core` rebuilt query strings by percent-encoding each key and value into temporary `String`s before copying them into the final URL, which adds heap churn on every router URL update.
 **Action:** For hot URL serialization paths, collect borrowed `(&str, &str)` entries, sort those, and write percent-encoded bytes directly into one pre-sized output buffer.
