@@ -19,7 +19,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MAKEPAD_BRANCH: small_web_nits
+  MAKEPAD_BRANCH: explicitly_redraw_overlay
   WASM_BINDGEN_VERSION: 0.2.114
 
 jobs:
