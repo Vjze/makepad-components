@@ -93,7 +93,7 @@ script_mod! {
     mod.widgets.GalleryCommandPaletteRowButton = set_type_default() do mod.widgets.ShadNavButtonBase{
         width: Fill
         height: 36
-        grab_key_focus: false
+        grab_key_focus: true
         padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
         align: Align{x: 0.0, y: 0.5}
         text: "Command"
