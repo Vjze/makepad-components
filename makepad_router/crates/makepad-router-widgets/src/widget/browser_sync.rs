@@ -104,55 +104,44 @@ impl RouterWidget {
         normalized_path.into_owned()
     }
 
-    fn prefix_clean_browser_base_path(route_url: &str, base_path: &str) -> String {
+    fn prefix_clean_browser_base_path_parts(
+        path: &str,
+        query: &str,
+        hash: &str,
+        base_path: &str,
+    ) -> String {
         let normalized_base = Self::normalized_browser_base_path_cow(base_path);
         if normalized_base.is_empty() {
-            return route_url.to_string();
+            let mut out = String::with_capacity(path.len() + query.len() + hash.len());
+            out.push_str(path);
+            out.push_str(query);
+            out.push_str(hash);
+            return out;
         }
 
-        let route_url = route_url.trim();
-        let route_url = if route_url.is_empty() { "/" } else { route_url };
-        let (path_and_query, hash) = match route_url.split_once('#') {
-            Some((head, tail)) => (head, tail),
-            None => (route_url, ""),
-        };
-        let (path, query) = match path_and_query.split_once('?') {
-            Some((head, tail)) => (head.trim(), tail),
-            None => (path_and_query.trim(), ""),
-        };
-        let normalized_path = if path.is_empty() { "/" } else { path };
-        let needs_leading_slash = !normalized_path.starts_with('/');
-
+        let path = if path.is_empty() { "/" } else { path };
         let mut out = String::with_capacity(
-            normalized_base.len()
-                + normalized_path.len()
-                + query.len()
-                + hash.len()
-                + usize::from(needs_leading_slash)
-                + usize::from(!query.is_empty())
-                + usize::from(!hash.is_empty()),
+            normalized_base.len() + path.len() + query.len() + hash.len() + 1,
         );
         out.push_str(normalized_base.as_ref());
-        // Optimization: browser sync already has a normalized route URL string.
-        // Split it on borrowed slices and append directly into the destination buffer instead of
-        // allocating a temporary `RouterUrl` with separate path/query/hash Strings first.
-        if normalized_path == "/" {
+        if path == "/" {
             out.push('/');
         } else {
-            if needs_leading_slash {
-                out.push('/');
-            }
-            out.push_str(normalized_path);
+            out.push_str(path);
         }
-        if !query.is_empty() {
-            out.push('?');
-            out.push_str(query);
-        }
-        if !hash.is_empty() {
-            out.push('#');
-            out.push_str(hash);
-        }
+        out.push_str(query);
+        out.push_str(hash);
         out
+    }
+
+    fn prefix_clean_browser_base_path(route_url: &str, base_path: &str) -> String {
+        let parsed = RouterUrl::parse(route_url);
+        Self::prefix_clean_browser_base_path_parts(
+            &parsed.path,
+            &parsed.query,
+            &parsed.hash,
+            base_path,
+        )
     }
 
     fn prefix_hash_browser_base_path(route_url: &str, base_path: &str) -> String {
@@ -327,7 +316,31 @@ impl RouterWidget {
     }
 
     fn browser_sync_url(&self) -> String {
-        self.route_url_to_browser_url(&self.current_url())
+        match self.browser_url_mode {
+            BrowserUrlMode::CleanPath => {
+                let base_path = self.effective_browser_base_path();
+                if let Some(route) = self.router.current_route() {
+                    let path = self.current_path_for_route(route);
+                    let query = if route.query.data.is_empty() {
+                        String::new()
+                    } else {
+                        // Optimization: browser sync already has the current route parts.
+                        // Previously: built a full route URL, reparsed it, then appended the base path.
+                        // Now: append the base path directly to the path/query/hash pieces and skip that extra work.
+                        route.query_string()
+                    };
+                    Self::prefix_clean_browser_base_path_parts(
+                        &path,
+                        &query,
+                        &route.hash,
+                        base_path,
+                    )
+                } else {
+                    Self::prefix_clean_browser_base_path_parts("/", "", "", base_path)
+                }
+            }
+            BrowserUrlMode::HashPath => self.route_url_to_browser_url(&self.current_url()),
+        }
     }
 
     fn sync_browser(&mut self, cx: &mut Cx, sync: BrowserSync) {
@@ -788,6 +801,39 @@ mod tests {
 
         println!(
             "route_url_from_browser_parts benchmark: old={old_elapsed:?}, new={new_elapsed:?}"
+        );
+    }
+
+    #[test]
+    #[ignore = "micro-benchmark; run explicitly in release mode for stable numbers"]
+    fn prefix_clean_browser_base_path_parts_avoids_reparse_benchmark() {
+        fn old_clean_browser_url(path: &str, query: &str, hash: &str, base_path: &str) -> String {
+            let route_url = format!("{path}{query}{hash}");
+            RouterWidget::prefix_clean_browser_base_path(&route_url, base_path)
+        }
+
+        const BENCHMARK_ITERATIONS: usize = 200_000;
+        const PATH: &str = "/examples/router/alert/details";
+        const QUERY: &str = "?tab=active&region=ca";
+        const HASH: &str = "#job-42";
+        const BASE_PATH: &str = "/makepad-components";
+
+        let old_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(old_clean_browser_url(PATH, QUERY, HASH, BASE_PATH));
+        }
+        let old_elapsed = old_start.elapsed();
+
+        let new_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(RouterWidget::prefix_clean_browser_base_path_parts(
+                PATH, QUERY, HASH, BASE_PATH,
+            ));
+        }
+        let new_elapsed = new_start.elapsed();
+
+        println!(
+            "prefix_clean_browser_base_path_parts benchmark: old={old_elapsed:?}, new={new_elapsed:?}"
         );
     }
 
