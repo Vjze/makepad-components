@@ -634,6 +634,13 @@ mod tests {
             ),
             "/makepad-components/alert?tab=api#hash"
         );
+        assert_eq!(
+            RouterWidget::prefix_clean_browser_base_path(
+                " alert?tab=api#hash ",
+                "/makepad-components"
+            ),
+            "/makepad-components/alert?tab=api#hash"
+        );
     }
 
     #[test]
@@ -645,6 +652,57 @@ mod tests {
         assert_eq!(
             RouterWidget::prefix_hash_browser_base_path("/alert", "/makepad-components"),
             "/makepad-components/#/alert"
+        );
+    }
+
+    #[test]
+    #[ignore = "micro-benchmark; run explicitly in release mode for stable numbers"]
+    fn prefix_clean_browser_base_path_direct_append_benchmark() {
+        fn old_prefix_clean_browser_base_path(route_url: &str, base_path: &str) -> String {
+            let normalized_base = RouterWidget::normalized_browser_base_path_cow(base_path);
+            if normalized_base.is_empty() {
+                return route_url.to_string();
+            }
+
+            let parsed = RouterUrl::parse(route_url);
+            let mut out = String::with_capacity(
+                normalized_base.len()
+                    + parsed.path.len()
+                    + parsed.query.len()
+                    + parsed.hash.len()
+                    + 1,
+            );
+            out.push_str(normalized_base.as_ref());
+            if parsed.path == "/" {
+                out.push('/');
+            } else {
+                out.push_str(&parsed.path);
+            }
+            out.push_str(&parsed.query);
+            out.push_str(&parsed.hash);
+            out
+        }
+
+        const BENCHMARK_ITERATIONS: usize = 200_000;
+        const ROUTE_URL: &str = "/examples/router/alert/details?tab=active#job-42";
+        const BASE_PATH: &str = "/makepad-components";
+
+        let old_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(old_prefix_clean_browser_base_path(ROUTE_URL, BASE_PATH));
+        }
+        let old_elapsed = old_start.elapsed();
+
+        let new_start = Instant::now();
+        for _ in 0..BENCHMARK_ITERATIONS {
+            black_box(RouterWidget::prefix_clean_browser_base_path(
+                ROUTE_URL, BASE_PATH,
+            ));
+        }
+        let new_elapsed = new_start.elapsed();
+
+        println!(
+            "prefix_clean_browser_base_path benchmark: old={old_elapsed:?}, new={new_elapsed:?}"
         );
     }
 
