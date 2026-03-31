@@ -422,59 +422,6 @@ mod tests {
 
     #[test]
     #[ignore = "micro-benchmark; run explicitly in release mode for stable numbers"]
-    fn parse_query_map_fast_path_benchmark() {
-        fn old_decode_www_form_component(input: &str) -> String {
-            let mut bytes = Vec::<u8>::with_capacity(input.len());
-            let mut iter = input.as_bytes().iter().copied().peekable();
-            while let Some(b) = iter.next() {
-                match b {
-                    b'+' => bytes.push(b' '),
-                    b'%' => {
-                        let hi = iter.next();
-                        let lo = iter.next();
-                        if let (Some(hi), Some(lo)) = (hi, lo) {
-                            if let (Some(hi), Some(lo)) = (super::hex_val(hi), super::hex_val(lo)) {
-                                bytes.push((hi << 4) | lo);
-                            }
-                        }
-                    }
-                    _ => bytes.push(b),
-                }
-            }
-            String::from_utf8(bytes).unwrap_or_else(|_| input.to_string())
-        }
-
-        fn old_parse_query_map(query: &str) -> HashMap<String, String> {
-            let q = query.trim();
-            let q = q.strip_prefix('?').unwrap_or(q);
-            if q.is_empty() {
-                return HashMap::new();
-            }
-            let mut out = HashMap::new();
-            for pair in q.split('&') {
-                if pair.is_empty() {
-                    continue;
-                }
-                let (k, v) = match pair.split_once('=') {
-                    Some((k, v)) => (k, v),
-                    None => (pair, ""),
-                };
-                let key = old_decode_www_form_component(k);
-                if key.is_empty() {
-                    continue;
-                }
-                let val = old_decode_www_form_component(v);
-                out.insert(key, val);
-            }
-            out
-        }
-
-        const ITERATIONS: usize = 200_000;
-        let query = "?tab=active&sort=desc&view=team-members&page=42&empty=";
-
-        let old_start = Instant::now();
-        for _ in 0..ITERATIONS {
-            black_box(old_parse_query_map(query));
     fn append_query_string_avoids_temporary_copy_benchmark() {
         let mut query = HashMap::new();
         query.insert("tab".to_string(), "team members".to_string());
@@ -494,14 +441,14 @@ mod tests {
 
         let new_start = Instant::now();
         for _ in 0..ITERATIONS {
-            black_box(super::parse_query_map(query));
+            let mut url = String::from("/dashboard/jobs");
+            super::append_query_string(&mut url, &query);
+            black_box(url);
         }
         let new_elapsed = new_start.elapsed();
 
         println!(
-            "old_parse_query_map={:?} new_parse_query_map={:?} improvement={:.2}%",
-            old_elapsed,
-            new_elapsed,
+            "append_query_string benchmark: old={old_elapsed:?} new={new_elapsed:?} improvement={:.2}%",
             (1.0 - (new_elapsed.as_secs_f64() / old_elapsed.as_secs_f64())) * 100.0
         );
     }
