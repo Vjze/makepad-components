@@ -73,14 +73,21 @@ pub struct GalleryPaginationPage {
 impl GalleryPaginationPage {
     fn sync_status_labels(&self, cx: &mut Cx) {
         let pagination = self.view.shad_pagination(cx, ids!(pagination_demo));
+        let page = pagination.page();
+        let page_count = pagination.page_count();
         self.view.label(cx, ids!(pagination_status)).set_text(
             cx,
-            &format!(
-                "Current page: {} of {}",
-                pagination.page(),
-                pagination.page_count()
-            ),
+            &format!("Current page: {} of {}", page, page_count),
         );
+        self.view
+            .button(cx, ids!(prev_external_btn))
+            .set_enabled(cx, page > 1);
+        self.view
+            .button(cx, ids!(next_external_btn))
+            .set_enabled(cx, page < page_count);
+        self.view
+            .button(cx, ids!(jump_last_btn))
+            .set_enabled(cx, page < page_count);
 
         let compact = self.view.shad_pagination(cx, ids!(pagination_compact));
         self.view
@@ -93,6 +100,18 @@ impl GalleryPaginationPage {
                     compact.page_count()
                 ),
             );
+    }
+}
+
+impl ScriptHook for GalleryPaginationPage {
+    fn on_after_apply(
+        &mut self,
+        vm: &mut ScriptVm,
+        _apply: &Apply,
+        _scope: &mut Scope,
+        _value: ScriptValue,
+    ) {
+        vm.with_cx_mut(|cx| self.sync_status_labels(cx));
     }
 }
 
