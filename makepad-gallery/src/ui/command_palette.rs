@@ -157,6 +157,7 @@ script_mod! {
         active_row_color: (shad_theme.color_secondary_hover)
 
         overlay: Modal{
+            align: Align{x: 0.5, y: 0.0}
             bg_view +: {
                 draw_bg.color: (shad_theme.color_overlay)
             }
@@ -164,6 +165,7 @@ script_mod! {
             content +: {
                 width: 360
                 height: Fit
+                margin: Inset{top: 72, left: 0, right: 0, bottom: 0}
 
                 panel := ShadSurface{
                     width: Fill

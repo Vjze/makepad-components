@@ -22,16 +22,44 @@ macro_rules! define_gallery_sidebar {
             use mod.prelude.widgets.*
             use mod.widgets.*
 
-            mod.widgets.GalleryMobileSidebarMenuButton = ShadButtonOutline{
-                width: Fit
+            mod.widgets.GalleryMobileSidebarMenuButton = IconButtonMenu{
+                width: 36
                 height: 36
-                text: "Menu"
+                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
+                spacing: 0.0
+                draw_bg +: {
+                    color: #0000
+                    color_hover: (shad_theme.color_ghost_hover)
+                    color_down: (shad_theme.color_ghost_down)
+                    color_focus: (shad_theme.color_ghost_hover)
+                    border_size: 1.0
+                    border_radius: (shad_theme.radius)
+                    border_color: (shad_theme.color_outline_border)
+                    border_color_hover: (shad_theme.color_outline_border_hover)
+                    border_color_down: (shad_theme.color_outline_border_hover)
+                    border_color_focus: (shad_theme.color_primary)
+                }
+                draw_icon.color: (shad_theme.color_primary)
             }
 
-            mod.widgets.GalleryMobileSidebarCloseButton = ShadButtonOutline{
-                width: Fit
+            mod.widgets.GalleryMobileSidebarCloseButton = IconButtonX{
+                width: 36
                 height: 36
-                text: "Close menu"
+                padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
+                spacing: 0.0
+                draw_bg +: {
+                    color: #0000
+                    color_hover: (shad_theme.color_ghost_hover)
+                    color_down: (shad_theme.color_ghost_down)
+                    color_focus: (shad_theme.color_ghost_hover)
+                    border_size: 1.0
+                    border_radius: (shad_theme.radius)
+                    border_color: (shad_theme.color_outline_border)
+                    border_color_hover: (shad_theme.color_outline_border_hover)
+                    border_color_down: (shad_theme.color_outline_border_hover)
+                    border_color_focus: (shad_theme.color_primary)
+                }
+                draw_icon.color: (shad_theme.color_primary)
             }
 
             mod.widgets.GallerySidebar = ShadSidebar{

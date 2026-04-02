@@ -39,7 +39,7 @@ script_mod! {
             border_color: (shad_theme.color_outline_border)
             border_color_hover: (shad_theme.color_outline_border_hover)
             border_color_down: (shad_theme.color_primary)
-            border_color_focus: (shad_theme.color_primary)
+            border_color_focus: (shad_theme.color_outline_border_hover)
             border_color_active: (shad_theme.color_primary)
             border_color_disabled: (shad_theme.color_outline_border)
 

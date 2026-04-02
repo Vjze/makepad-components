@@ -89,18 +89,18 @@ impl App {
     }
 
     fn sync_theme_toggle_copy(&self, cx: &mut Cx) {
-        let desktop_label = if self.is_light_theme {
-            "Dark theme"
-        } else {
-            "Light theme"
-        };
-        let mobile_label = if self.is_light_theme { "Dark" } else { "Light" };
         self.ui
-            .button(cx, ids!(desktop_theme_toggle))
-            .set_text(cx, desktop_label);
+            .button(cx, ids!(desktop_theme_toggle_sun))
+            .set_visible(cx, self.is_light_theme);
         self.ui
-            .button(cx, ids!(mobile_theme_toggle))
-            .set_text(cx, mobile_label);
+            .button(cx, ids!(desktop_theme_toggle_moon))
+            .set_visible(cx, !self.is_light_theme);
+        self.ui
+            .button(cx, ids!(mobile_theme_toggle_sun))
+            .set_visible(cx, self.is_light_theme);
+        self.ui
+            .button(cx, ids!(mobile_theme_toggle_moon))
+            .set_visible(cx, !self.is_light_theme);
     }
 
     fn sync_page_metadata(&self, cx: &mut Cx) {
@@ -299,11 +299,19 @@ impl MatchEvent for App {
         }
         if self
             .ui
-            .button(cx, ids!(desktop_theme_toggle))
+            .button(cx, ids!(desktop_theme_toggle_sun))
             .clicked(actions)
             || self
                 .ui
-                .button(cx, ids!(mobile_theme_toggle))
+                .button(cx, ids!(desktop_theme_toggle_moon))
+                .clicked(actions)
+            || self
+                .ui
+                .button(cx, ids!(mobile_theme_toggle_sun))
+                .clicked(actions)
+            || self
+                .ui
+                .button(cx, ids!(mobile_theme_toggle_moon))
                 .clicked(actions)
         {
             self.queue_theme_change(cx, !self.is_light_theme);

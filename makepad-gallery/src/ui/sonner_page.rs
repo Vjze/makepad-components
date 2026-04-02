@@ -6,7 +6,7 @@ gallery_stateful_page_shell! {
     widget: GallerySonnerPage,
     page: sonner_page,
     title: "Sonner / Toast",
-    subtitle: "Toast notifications in a non-blocking overlay. Sonner variants share one global queue, so `ShadSonner`, `ShadSonnerWithDescription`, and `ShadSonner` all append into the same stack.",
+    subtitle: "Toast notifications in a non-blocking overlay. The demo triggers all feed the same shared `ShadSonner` queue so different message styles stack in one place.",
     divider: { ShadHr{} },
     preview_spacing: 16.0,
     preview: {
@@ -87,8 +87,9 @@ impl Widget for GallerySonnerPage {
                 sonner.enqueue(
                     cx,
                     SonnerItem {
-                        title: "连接成功".to_string(),
-                        description: Some("服务器连接成功。".to_string()),
+                        title: "Connection successful".to_string(),
+                        description: Some("Your workspace is now connected and ready to sync."
+                            .to_string()),
                         kind: SonnerKind::Success,
                         duration: Some(3.0),
                         show_close: true,
@@ -99,8 +100,11 @@ impl Widget for GallerySonnerPage {
                 sonner.enqueue(
                     cx,
                     SonnerItem {
-                        title: "提示".to_string(),
-                        description: Some("网络连接不稳定，请稍后再试。".to_string()),
+                        title: "Heads up".to_string(),
+                        description: Some(
+                            "Network quality dropped for a moment. We will keep retrying in the background."
+                                .to_string(),
+                        ),
                         kind: SonnerKind::Info,
                         duration: Some(3.0),
                         show_close: true,
@@ -111,8 +115,11 @@ impl Widget for GallerySonnerPage {
                 sonner.enqueue(
                     cx,
                     SonnerItem {
-                        title: "错误".to_string(),
-                        description: Some("网络连接失败，请检查网络设置。".to_string()),
+                        title: "Sync failed".to_string(),
+                        description: Some(
+                            "We could not reach the server. Check your connection and try again."
+                                .to_string(),
+                        ),
                         kind: SonnerKind::Error,
                         duration: Some(3.0),
                         show_close: false,
