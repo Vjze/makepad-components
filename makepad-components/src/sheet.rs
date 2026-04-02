@@ -33,25 +33,11 @@ script_mod! {
                 height: Fill
                 flow: Down
 
-                sheet_frame := RoundedView{
+                sheet_frame := mod.widgets.ShadSurfacePanel{
                     width: Fill
                     height: Fill
-                    flow: Down
 
-                    draw_bg +: {
-                        color: (shad_theme.color_background)
-                        border_radius: (shad_theme.radius)
-                        border_size: 1.0
-                        border_color: (shad_theme.color_outline_border)
-                    }
-
-                    header := View{
-                        width: Fill
-                        height: Fit
-                        flow: Down
-                        spacing: 6.0
-                        padding: Inset{left: 20, right: 20, top: 20, bottom: 12}
-
+                    header := mod.widgets.ShadSurfaceHeader{
                         title := ShadAlertTitle{
                             text: "Edit profile"
                         }
@@ -61,22 +47,9 @@ script_mod! {
                         }
                     }
 
-                    body := View{
-                        width: Fill
-                        height: Fit
-                        flow: Down
-                        spacing: 12.0
-                        padding: Inset{left: 20, right: 20, top: 0, bottom: 16}
-                    }
+                    body := mod.widgets.ShadSurfaceContent{}
 
-                    footer := View{
-                        width: Fill
-                        height: Fit
-                        flow: Right
-                        spacing: 8.0
-                        padding: Inset{left: 20, right: 20, top: 0, bottom: 20}
-                        align: Align{x: 1.0, y: 0.5}
-                    }
+                    footer := mod.widgets.ShadSurfaceFooter{}
                 }
             }
         }

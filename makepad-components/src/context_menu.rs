@@ -151,6 +151,7 @@ impl Widget for ShadContextMenu {
             let mut close = false;
             let mut close_for_outside_click = false;
             let Some(menu) = self.popup_menu_state.as_mut() else {
+                self.close(cx);
                 return;
             };
             menu.handle_event_with(
@@ -202,6 +203,7 @@ impl Widget for ShadContextMenu {
 
         if self.is_active && !self.popup_menu.is_nil() {
             let Some(popup_menu) = self.popup_menu_state.as_mut() else {
+                self.is_active = false;
                 return DrawStep::done();
             };
 

@@ -30,7 +30,7 @@ gallery_stateful_page_shell! {
                 height: Fill
                 open: false
             }
-            toast_desc := ShadSonnerWithDescription{
+            toast_desc := ShadSonner{
                 width: Fill
                 height: Fill
                 open: false

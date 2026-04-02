@@ -8,19 +8,11 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.ShadPopoverContent = RoundedView{
+    mod.widgets.ShadPopoverContent = mod.widgets.ShadSurfacePopover{
         width: 320
         height: Fit
-        flow: Down
         spacing: 8.0
         padding: Inset{left: 16, right: 16, top: 16, bottom: 16}
-
-        draw_bg +: {
-            color: (shad_theme.color_popover)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadPopoverBase = #(ShadPopover::register_widget(vm))
@@ -130,7 +122,9 @@ impl ScriptHook for ShadPopover {
 
 impl ShadPopover {
     fn draw_overlay_content(&mut self, cx: &mut Cx2d, scope: &mut Scope, popup_pos: Vec2d) {
-        let draw_list = self.draw_list.as_mut().unwrap();
+        let Some(draw_list) = self.draw_list.as_mut() else {
+            return;
+        };
         draw_list.begin_overlay_reuse(cx);
 
         let pass_size = cx.current_pass_size();
@@ -406,11 +400,11 @@ impl Widget for ShadPopover {
             {
                 self.open(cx);
             }
-            Hit::FingerUp(fe) if fe.is_primary_hit() => {
-                if !self.open_on_hover || !fe.device.has_hovers() {
-                    self.set_open(cx, !self.open);
-                    return;
-                }
+            Hit::FingerUp(fe)
+                if fe.is_primary_hit() && (!self.open_on_hover || !fe.device.has_hovers()) =>
+            {
+                self.set_open(cx, !self.open);
+                return;
             }
             Hit::KeyDown(ke) if matches!(ke.key_code, KeyCode::ReturnKey | KeyCode::Space) => {
                 self.set_open(cx, !self.open);

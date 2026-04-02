@@ -44,19 +44,11 @@ script_mod! {
         }
     }
 
-    mod.widgets.ShadNavigationMenuContent = RoundedView{
+    mod.widgets.ShadNavigationMenuContent = mod.widgets.ShadSurfacePopover{
         width: 320
         height: Fit
-        flow: Down
         spacing: 12.0
         padding: Inset{left: 18, right: 18, top: 18, bottom: 18}
-
-        draw_bg +: {
-            color: (shad_theme.color_popover)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadNavigationMenuSectionLabel = Label{
@@ -65,34 +57,18 @@ script_mod! {
         text: "Section"
     }
 
-    mod.widgets.ShadNavigationMenuCallout = RoundedView{
+    mod.widgets.ShadNavigationMenuCallout = mod.widgets.ShadSurfaceSecondary{
         width: 196
         height: Fit
-        flow: Down
         spacing: 8.0
         padding: Inset{left: 16, right: 16, top: 16, bottom: 16}
-
-        draw_bg +: {
-            color: (shad_theme.color_secondary)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
-    mod.widgets.ShadNavigationMenuPanel = RoundedView{
+    mod.widgets.ShadNavigationMenuPanel = mod.widgets.ShadSurfaceSecondary{
         width: Fill
         height: Fit
-        flow: Down
         spacing: 6.0
         padding: Inset{left: 12, right: 12, top: 12, bottom: 12}
-
-        draw_bg +: {
-            color: (shad_theme.color_secondary)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadNavigationMenuItem = mod.widgets.ShadPopover{

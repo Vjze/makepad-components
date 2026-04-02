@@ -4,23 +4,13 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.ShadCard = mod.widgets.RoundedView{
+    mod.widgets.ShadCard = mod.widgets.ShadSurfacePanel{
         width: Fill
         height: Fit
-        flow: Down
-        padding: Inset{left: 0, right: 0, top: 0, bottom: 0}
-        draw_bg +: {
-            color: (shad_theme.color_background)
-            border_radius: (shad_theme.radius)
-            border_size: 1.0
-            border_color: (shad_theme.color_outline_border_hover)
-        }
+        draw_bg.border_color: (shad_theme.color_outline_border_hover)
     }
 
-    mod.widgets.ShadCardHeader = mod.widgets.View{
-        width: Fill
-        height: Fit
-        flow: Down
+    mod.widgets.ShadCardHeader = mod.widgets.ShadSurfaceHeader{
         spacing: 4.0
         padding: Inset{left: 20, right: 20, top: 20, bottom: 14}
     }
@@ -39,20 +29,11 @@ script_mod! {
         draw_text.text_style.font_size: 11
     }
 
-    mod.widgets.ShadCardContent = mod.widgets.View{
-        width: Fill
-        height: Fit
-        flow: Down
-        spacing: 12.0
+    mod.widgets.ShadCardContent = mod.widgets.ShadSurfaceContent{
         padding: Inset{left: 20, right: 20, top: 0, bottom: 20}
     }
 
-    mod.widgets.ShadCardFooter = mod.widgets.View{
-        width: Fill
-        height: Fit
-        flow: Right
-        align: Align{y: 0.5}
-        spacing: 8.0
-        padding: Inset{left: 20, right: 20, top: 0, bottom: 20}
+    mod.widgets.ShadCardFooter = mod.widgets.ShadSurfaceFooter{
+        align: Align{x: 0.0, y: 0.5}
     }
 }

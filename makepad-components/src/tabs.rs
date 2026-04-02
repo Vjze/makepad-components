@@ -11,19 +11,12 @@ script_mod! {
         spacing: 12.0
     }
 
-    mod.widgets.ShadTabsList = RoundedView{
+    mod.widgets.ShadTabsList = mod.widgets.ShadSurfaceMutedPanel{
         width: Fit
         height: Fit
         flow: Right
         spacing: 4.0
         padding: Inset{left: 4, right: 4, top: 4, bottom: 4}
-
-        draw_bg +: {
-            color: (shad_theme.color_muted)
-            border_radius: (shad_theme.radius)
-            border_size: 1.0
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadTabsTrigger = ButtonFlat{
@@ -54,18 +47,11 @@ script_mod! {
         draw_bg.color: (shad_theme.color_primary)
     }
 
-    mod.widgets.ShadTabsContent = RoundedView{
+    mod.widgets.ShadTabsContent = mod.widgets.ShadSurfaceTransparent{
         width: Fill
         height: Fit
         flow: Down
         spacing: 10.0
         padding: Inset{left: 16, right: 16, top: 16, bottom: 16}
-
-        draw_bg +: {
-            color: #0000
-            border_radius: (shad_theme.radius)
-            border_size: 1.0
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 }
