@@ -92,7 +92,7 @@ script_mod! {
 
                 content := View{
                     width: Fit
-                    height: Fill
+                    height: Fit
                     flow: Down
                     spacing: 6.0
 
