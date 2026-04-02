@@ -990,14 +990,14 @@ impl ShadTable {
         }
         self.rows_data = into_arc_rows(rows);
         self.rows_source = ScriptValue::default();
-        let row_count = self.data_row_count();
-        let clamped_start = if row_count == 0 {
+        let total_rows = self.virtual_total_rows;
+        let clamped_start = if total_rows == 0 {
             0
         } else {
-            start_row.min(row_count.saturating_sub(1))
+            start_row.min(total_rows.saturating_sub(1))
         };
         self.virtual_window_start = clamped_start;
-        let max_window_len = row_count.saturating_sub(clamped_start);
+        let max_window_len = total_rows.saturating_sub(clamped_start);
         debug_assert!(
             self.rows_data.len() <= max_window_len,
             "set_virtual_window received {} rows but only {} fit into the declared virtual_total_rows={} from start_row={}",
@@ -1009,11 +1009,14 @@ impl ShadTable {
         if self.rows_data.len() > max_window_len {
             self.rows_data.truncate(max_window_len);
         }
-        self.selected_row = clamp_selected_row(self.selected_row, row_count);
+        self.selected_row = clamp_selected_row(self.selected_row, total_rows);
         let column_count = resolved_column_count(&self.headers, &self.rows_data).max(1);
         if cleared_custom_rows || self.resolved_widths.len() != column_count {
             self.sync_layout(cx);
         }
+        self.view
+            .portal_list(cx, ids!(table_view.scroll.content.list))
+            .set_first_id(clamped_start);
         self.view.redraw(cx);
     }
 
