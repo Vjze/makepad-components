@@ -69,8 +69,12 @@ impl App {
         self.sync_content_route(cx);
         self.sync_page_metadata(cx);
         if self.is_small_screen {
-            self.sidebar_open = false;
-            self.apply_responsive_visibility(cx);
+            // Keep the drawer state and its animated width in sync on mobile.
+            if self.sidebar_open || self.sidebar_width > 0.5 || self.sidebar_animation.is_some() {
+                self.set_mobile_sidebar_open(cx, false);
+            } else {
+                self.apply_responsive_visibility(cx);
+            }
         }
     }
 
