@@ -24,7 +24,7 @@ script_mod! {
 
     mod.widgets.ShadSheet = set_type_default() do mod.widgets.ShadSheetBase{
         width: Fill
-        height: Fit
+        height: Fill
         open: false
         side: "right"
         sheet_size: 360.0
@@ -40,6 +40,8 @@ script_mod! {
                 width: 360
                 height: Fill
                 flow: Down
+                clip_x: true
+                clip_y: true
 
                 sheet_frame := mod.widgets.ShadSurfacePanel{
                     width: Fill
@@ -100,6 +102,8 @@ pub struct ShadSheet {
     animation: Option<SheetAnimation>,
     #[rust]
     animation_next_frame: NextFrame,
+    #[rust]
+    last_pass_size: Vec2d,
 
     #[rust]
     last_side: String,
@@ -135,36 +139,11 @@ impl ShadSheet {
         self.last_side.push_str(current_side);
         self.is_side_initialized = true;
 
-        let animated_extent = self.sheet_size * self.open_progress.clamp(0.0, 1.0);
-
-        let (align, content_width, content_height) = match current_side {
-            "left" => (
-                Align { x: 0.0, y: 0.0 },
-                Size::Fixed(animated_extent),
-                Size::fill(),
-            ),
-            "top" => (
-                Align { x: 0.0, y: 0.0 },
-                Size::fill(),
-                Size::Fixed(animated_extent),
-            ),
-            "bottom" => (
-                Align { x: 0.0, y: 1.0 },
-                Size::fill(),
-                Size::Fixed(animated_extent),
-            ),
-            _ => (
-                Align { x: 1.0, y: 0.0 },
-                Size::Fixed(animated_extent),
-                Size::fill(),
-            ),
-        };
-
         // Optimization: avoid cloning the `WidgetRef`
         // Previously: created a new cloned reference using `self.overlay.clone()`
         // Now: apply directly to `self.overlay`, eliminating clone overhead
         script_apply_eval!(cx, self.overlay, {
-            align: #(align)
+            align: #(Align { x: 0.0, y: 0.0 })
         });
 
         let mut bg_view = self.overlay.widget(cx, ids!(bg_view));
@@ -180,11 +159,39 @@ impl ShadSheet {
             }
         });
 
-        let mut content = self.overlay.widget(cx, ids!(content));
-        script_apply_eval!(cx, content, {
-            width: #(content_width)
-            height: #(content_height)
-        });
+        let content = self.overlay.widget(cx, ids!(content));
+        if let Some(mut content_view) = content.borrow_mut::<View>() {
+            let progress = self.open_progress.clamp(0.0, 1.0);
+            let pass_width = self.last_pass_size.x.max(0.0);
+            let pass_height = self.last_pass_size.y.max(0.0);
+
+            let (content_width, content_height, abs_pos) = match current_side {
+                "left" => (
+                    self.sheet_size,
+                    pass_height,
+                    dvec2(-self.sheet_size * (1.0 - progress), 0.0),
+                ),
+                "top" => (
+                    pass_width,
+                    self.sheet_size,
+                    dvec2(0.0, -self.sheet_size * (1.0 - progress)),
+                ),
+                "bottom" => (
+                    pass_width,
+                    self.sheet_size,
+                    dvec2(0.0, pass_height - self.sheet_size * progress),
+                ),
+                _ => (
+                    self.sheet_size,
+                    pass_height,
+                    dvec2(pass_width - self.sheet_size * progress, 0.0),
+                ),
+            };
+
+            content_view.walk.width = Size::Fixed(content_width.max(0.0));
+            content_view.walk.height = Size::Fixed(content_height.max(0.0));
+            content_view.walk.abs_pos = Some(abs_pos);
+        }
 
         let mut sheet_frame = self.overlay.widget(cx, ids!(content.sheet_frame));
         script_apply_eval!(cx, sheet_frame, {
@@ -311,6 +318,7 @@ impl Widget for ShadSheet {
     }
 
     fn draw_walk(&mut self, cx: &mut Cx2d, scope: &mut Scope, walk: Walk) -> DrawStep {
+        self.last_pass_size = cx.current_pass_size();
         self.sync_open_state(cx);
         draw_modal_overlay(
             cx,

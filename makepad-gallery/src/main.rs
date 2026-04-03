@@ -156,13 +156,27 @@ impl App {
     }
 
     fn sync_sidebar_focus_behavior(&self, cx: &mut Cx) {
-        let allow_sidebar_focus = !self.is_small_screen || self.sidebar_width > 0.5;
+        let allow_sidebar_focus = !self.is_small_screen || self.sidebar_open;
 
         for entry in catalog::entries() {
             let mut item = self.ui.button(cx, &[entry.sidebar_id]);
             script_apply_eval!(cx, item, {
                 grab_key_focus: #(allow_sidebar_focus)
             });
+        }
+    }
+
+    fn clear_mobile_sidebar_focus(&self, cx: &mut Cx) {
+        let close_button_has_focus = self
+            .ui
+            .button(cx, ids!(mobile_sidebar_close_button.button))
+            .key_focus(cx);
+        let sidebar_item_has_focus = catalog::entries()
+            .iter()
+            .any(|entry| self.ui.widget(cx, &[entry.sidebar_id]).key_focus(cx));
+
+        if close_button_has_focus || sidebar_item_has_focus {
+            cx.set_key_focus(Area::Empty);
         }
     }
 
@@ -275,6 +289,9 @@ impl App {
 
     fn set_mobile_sidebar_open(&mut self, cx: &mut Cx, open: bool) {
         self.sidebar_open = open;
+        if !open {
+            self.clear_mobile_sidebar_focus(cx);
+        }
         let target = if open { Self::MOBILE_SIDEBAR_WIDTH } else { 0.0 };
         self.start_sidebar_animation(cx, target);
         self.apply_responsive_visibility(cx);
