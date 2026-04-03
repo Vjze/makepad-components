@@ -157,6 +157,7 @@ script_mod! {
         active_row_color: (shad_theme.color_secondary_hover)
 
         overlay: Modal{
+            align: Align{x: 0.5, y: 0.0}
             bg_view +: {
                 draw_bg.color: (shad_theme.color_overlay)
             }
@@ -164,6 +165,7 @@ script_mod! {
             content +: {
                 width: 360
                 height: Fit
+                margin: Inset{top: 72, left: 0, right: 0, bottom: 0}
 
                 panel := ShadSurface{
                     width: Fill
@@ -385,6 +387,7 @@ impl GalleryCommandPalette {
                 self.active_index,
                 RESULTS_SCROLL_SPEED,
                 Some(RESULTS_MAX_ITEMS_TO_SHOW),
+                0.0,
             );
     }
 
@@ -434,8 +437,17 @@ impl GalleryCommandPalette {
         let previous_active = self.active_index;
         self.filtered_indices_scratch.clear();
 
-        for (index, _command) in catalog::entries().iter().enumerate() {
-            if matches_command_query(&search_terms[index], &query) {
+        for (index, command) in catalog::entries().iter().enumerate() {
+            let matches = search_terms
+                .get(index)
+                .map(|term| matches_command_query(term, &query))
+                .unwrap_or_else(|| {
+                    query.is_empty()
+                        || command.title.to_ascii_lowercase().contains(&query)
+                        || command.section.to_ascii_lowercase().contains(&query)
+                        || command.shortcut.to_ascii_lowercase().contains(&query)
+                });
+            if matches {
                 self.filtered_indices_scratch.push(index);
             }
         }
@@ -482,14 +494,17 @@ impl GalleryCommandPalette {
                 continue;
             };
 
-            let command = entries[command_index];
+            let Some(command) = entries.get(command_index).copied() else {
+                continue;
+            };
             let (item, item_existed) = list.item_with_existed(cx, item_id, id!(Item));
             let item = item.as_view();
             let show_header = item_id == 0
                 || self
                     .filtered_indices
                     .get(item_id - 1)
-                    .is_some_and(|previous| entries[*previous].section != command.section);
+                    .and_then(|previous| entries.get(*previous))
+                    .is_none_or(|previous| previous.section != command.section);
 
             let mut row = item.view(cx, ids!(row));
             let row_uid = row.widget_uid();
@@ -550,11 +565,13 @@ impl GalleryCommandPalette {
 
     fn activate(&mut self, cx: &mut Cx) {
         if let Some(command_index) = self.filtered_indices.get(self.active_index).copied() {
-            cx.widget_action(
-                self.uid,
-                GalleryCommandPaletteAction::Selected(catalog::entries()[command_index].page),
-            );
-            self.close(cx);
+            if let Some(command) = catalog::entries().get(command_index) {
+                cx.widget_action(
+                    self.uid,
+                    GalleryCommandPaletteAction::Selected(command.page),
+                );
+                self.close(cx);
+            }
         }
     }
 

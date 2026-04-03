@@ -28,21 +28,34 @@ macro_rules! define_gallery_root {
             use mod.draw.KeyCode
             use mod.widgets.*
 
-            mod.widgets.GalleryThemeToggle = ShadButtonOutline{
-                width: Fit
+            mod.widgets.GalleryThemeToggleButton = View{
+                width: 36
                 height: 36
-                text: "Light theme"
+                flow: Overlay
+                align: Align{x: 0.5, y: 0.5}
+
+                button := mod.widgets.ShadButtonIconOutline{
+                    width: Fill
+                    height: Fill
+                }
             }
 
-            mod.widgets.GalleryMobileThemeToggle = ShadButtonOutline{
-                width: Fit
-                height: 36
-                padding: Inset{left: 10, right: 12, top: 0, bottom: 0}
-                spacing: 6.0
-                text: "Theme"
-                icon_walk: Walk{width: 16, height: 16}
-                draw_icon.svg: crate_resource("self://resources/icons/sun-moon.svg")
-                draw_icon.color: (shad_theme.color_primary)
+            mod.widgets.GalleryThemeToggleSun = mod.widgets.GalleryThemeToggleButton{
+                icon := IconSun{
+                    width: 16
+                    height: 16
+                    icon_walk: Walk{width: 16, height: 16}
+                    draw_icon.color: (shad_theme.color_primary)
+                }
+            }
+
+            mod.widgets.GalleryThemeToggleMoon = mod.widgets.GalleryThemeToggleButton{
+                icon := IconMoon{
+                    width: 16
+                    height: 16
+                    icon_walk: Walk{width: 16, height: 16}
+                    draw_icon.color: (shad_theme.color_primary)
+                }
             }
 
             mod.widgets.GalleryCommandPaletteHeaderTrigger = View{
@@ -50,23 +63,9 @@ macro_rules! define_gallery_root {
                 height: Fit
                 flow: Right
                 align: Align{y: 0.5}
-                spacing: 8.0
+                spacing: 0.0
 
-                desktop_command_palette_trigger := ShadButtonOutline{text: "Search components"}
-
-                ShadKbd{ label := ShadKbdLabel{text: "Cmd"} }
-                ShadKbdSeparator{}
-                ShadKbd{ label := ShadKbdLabel{text: "K"} }
-
-                ShadSectionHeader{
-                    draw_text.color: (shad_theme.color_muted_foreground)
-                    draw_text.text_style.font_size: 10
-                    text: "or"
-                }
-
-                ShadKbd{ label := ShadKbdLabel{text: "Ctrl"} }
-                ShadKbdSeparator{}
-                ShadKbd{ label := ShadKbdLabel{text: "K"} }
+                desktop_command_palette_trigger := ShadButtonGhost{text: "Search"}
             }
 
             mod.widgets.GalleryContentFlip = RouterWidget{
@@ -101,7 +100,7 @@ macro_rules! define_gallery_root {
                     draw_bg.color: (shad_theme.color_background)
 
                     desktop_header_meta := View{
-                        width: Fit
+                        width: Fill
                         height: Fit
                         flow: Down
                         spacing: 4.0
@@ -118,12 +117,16 @@ macro_rules! define_gallery_root {
 
                     mod.widgets.GalleryCommandPaletteHeaderTrigger{}
 
-                    View{
+                    desktop_header_actions := View{
                         width: Fill
                         height: Fit
-                    }
+                        flow: Right
+                        align: Align{x: 1.0, y: 0.5}
+                        spacing: 8.0
 
-                    desktop_theme_toggle := mod.widgets.GalleryThemeToggle{}
+                        desktop_theme_toggle_sun := mod.widgets.GalleryThemeToggleSun{}
+                        desktop_theme_toggle_moon := mod.widgets.GalleryThemeToggleMoon{visible: false}
+                    }
                 }
 
                 ShadSeparator{}
@@ -173,7 +176,8 @@ macro_rules! define_gallery_root {
                             height: Fit
                         }
 
-                        mobile_theme_toggle := mod.widgets.GalleryMobileThemeToggle{}
+                        mobile_theme_toggle_sun := mod.widgets.GalleryThemeToggleSun{}
+                        mobile_theme_toggle_moon := mod.widgets.GalleryThemeToggleMoon{visible: false}
                     }
 
                     mobile_command_palette_trigger := ShadButtonGhost{
@@ -199,8 +203,22 @@ macro_rules! define_gallery_root {
                 width: Fill
                 height: Fill
                 flow: Right
-                sidebar := mod.widgets.GallerySidebar{}
-                main_content := mod.widgets.GalleryMainContent{}
+                spacing: 0.0
+
+                sidebar_shell := View{
+                    width: 280
+                    height: Fill
+                    flow: Overlay
+                    clip_x: true
+                    clip_y: true
+
+                    sidebar := mod.widgets.GallerySidebar{}
+                }
+
+                main_content := mod.widgets.GalleryMainContent{
+                    width: Fill
+                    height: Fill
+                }
             }
 
             mod.widgets.GalleryAppUi = Root{

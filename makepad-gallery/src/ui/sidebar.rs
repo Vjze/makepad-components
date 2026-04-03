@@ -22,16 +22,34 @@ macro_rules! define_gallery_sidebar {
             use mod.prelude.widgets.*
             use mod.widgets.*
 
-            mod.widgets.GalleryMobileSidebarMenuButton = ShadButtonOutline{
-                width: Fit
+            mod.widgets.GalleryMobileSidebarIconButton = View{
+                width: 36
                 height: 36
-                text: "Menu"
+                flow: Overlay
+                align: Align{x: 0.5, y: 0.5}
+
+                button := ShadButtonIconOutline{
+                    width: Fill
+                    height: Fill
+                }
             }
 
-            mod.widgets.GalleryMobileSidebarCloseButton = ShadButtonOutline{
-                width: Fit
-                height: 36
-                text: "Close menu"
+            mod.widgets.GalleryMobileSidebarMenuButton = mod.widgets.GalleryMobileSidebarIconButton{
+                icon := IconMenu{
+                    width: 18
+                    height: 18
+                    icon_walk: Walk{width: 18, height: 18}
+                    draw_icon.color: (shad_theme.color_primary)
+                }
+            }
+
+            mod.widgets.GalleryMobileSidebarCloseButton = mod.widgets.GalleryMobileSidebarIconButton{
+                icon := IconX{
+                    width: 16
+                    height: 16
+                    icon_walk: Walk{width: 16, height: 16}
+                    draw_icon.color: (shad_theme.color_primary)
+                }
             }
 
             mod.widgets.GallerySidebar = ShadSidebar{

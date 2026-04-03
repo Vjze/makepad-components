@@ -4,24 +4,18 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.ShadMenubar = RoundedView{
+    mod.widgets.ShadMenubar = mod.widgets.ShadSurfacePanel{
         width: Fit
         height: Fit
         flow: Right
         align: Align{y: 0.5}
         spacing: 4.0
         padding: Inset{left: 4, right: 4, top: 4, bottom: 4}
-
-        draw_bg +: {
-            color: (shad_theme.color_background)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadMenubarTrigger = ButtonFlat{
         height: 30
+        enable_long_press: true
         padding: Inset{left: 10, right: 10, top: 0, bottom: 0}
 
         draw_bg +: {
@@ -45,19 +39,11 @@ script_mod! {
         }
     }
 
-    mod.widgets.ShadMenubarContent = RoundedView{
+    mod.widgets.ShadMenubarContent = mod.widgets.ShadSurfacePopover{
         width: 220
         height: Fit
-        flow: Down
         spacing: 4.0
         padding: Inset{left: 6, right: 6, top: 6, bottom: 6}
-
-        draw_bg +: {
-            color: (shad_theme.color_popover)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadMenubarLabel = Label{

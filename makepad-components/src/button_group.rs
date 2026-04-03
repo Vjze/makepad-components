@@ -4,18 +4,12 @@ script_mod! {
     use mod.prelude.widgets.*
     use mod.widgets.*
 
-    mod.widgets.ShadButtonGroup = mod.widgets.RoundedView{
+    mod.widgets.ShadButtonGroup = mod.widgets.ShadSurfaceSecondary{
         width: Fit
         height: Fit
         flow: Right
         align: Align{y: 0.5}
         spacing: 0.0
-        draw_bg +: {
-            color: (shad_theme.color_secondary)
-            border_size: 1.0
-            border_radius: (shad_theme.radius)
-            border_color: (shad_theme.color_outline_border)
-        }
     }
 
     mod.widgets.ShadButtonGroupItem = set_type_default() do mod.widgets.ShadNavButtonBase{
