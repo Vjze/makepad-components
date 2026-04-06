@@ -63,7 +63,7 @@ script_mod! {
 
     mod.widgets.ShadTable = set_type_default() do mod.widgets.ShadTableBase{
         width: Fill
-        height: Fit
+        height: Fill
         caption: ""
         empty_message: "No rows available."
         selectable: true
@@ -75,7 +75,7 @@ script_mod! {
 
         table_view := View{
             width: Fill
-            height: Fit
+            height: Fill
             flow: Down
             spacing: 8.0
 
@@ -86,21 +86,21 @@ script_mod! {
 
             scroll := ScrollXView{
                 width: Fill
-                height: Fit
+                height: Fill
                 flow: Down
                 padding: Inset{left: 0.0, right: 0.0, top: 0.0, bottom: 0.0}
                 spacing: 0.0
 
                 content := View{
                     width: Fit
-                    height: Fit
+                    height: Fill
                     flow: Down
                     spacing: 6.0
 
                     header := mod.widgets.ShadTableHeaderView{}
                     list := PortalList{
                         width: Fill
-                        height: 208
+                        height: Fill
                         flow: Down
                         max_pull_down: 0.0
                         capture_overload: true
